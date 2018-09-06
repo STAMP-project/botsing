@@ -81,6 +81,7 @@
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-source-plugin.version>2.4</maven-source-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+        <evosuite-client.version>1.0.6</evosuite-client.version>
     </properties>
 
     <profiles>

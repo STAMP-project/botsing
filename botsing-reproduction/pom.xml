@@ -26,6 +26,12 @@
             <version>${hamcrest-all.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.evosuite</groupId>
+            <artifactId>evosuite-client</artifactId>
+            <version>${evosuite-client.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
