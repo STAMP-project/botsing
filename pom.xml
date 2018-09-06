@@ -7,9 +7,6 @@
     <groupId>eu.stamp-project</groupId>
     <artifactId>botsing</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <modules>
-        <module>botsing-reproduction</module>
-    </modules>
     <packaging>pom</packaging>
 
     <name>botsing</name>
@@ -244,5 +241,10 @@
             </plugin>
         </plugins>
     </build>
+
+    <modules>
+        <module>botsing-reproduction</module>
+        <module>botsing-maven</module>
+    </modules>
 
 </project>
