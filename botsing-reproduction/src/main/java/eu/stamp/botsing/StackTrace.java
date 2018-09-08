@@ -1,5 +1,9 @@
 package eu.stamp.botsing;
 
+import eu.stamp.botsing.reproduction.CrashReproduction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -9,6 +13,8 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 public class StackTrace {
+
+    private static final Logger LOG = LoggerFactory.getLogger(StackTrace.class);
     private String exceptionType;
     private ArrayList<StackTraceElement> frames =  new ArrayList<StackTraceElement>();
     private int target_frame_level;
@@ -36,7 +42,7 @@ public class StackTrace {
             // Parse type of the exception
             StringTokenizer st = new StringTokenizer(reader.readLine(), ":");
             exceptionType =  st.nextToken();
-            System.out.println("Exception type is detected: "+exceptionType);
+            LOG.info("Exception type is detected: "+exceptionType);
 
             // Parse frames
             for(int counter=0;counter<frame_level;counter++){
@@ -46,15 +52,15 @@ public class StackTrace {
                 }
                 frames.add(stringToStackTraceElement(tempFrame));
             }
-            System.out.println("Target frame is set to: "+frames.get(frame_level-1).toString());
+            LOG.info("Target frame is set to: "+frames.get(frame_level-1).toString());
 
             // Parse Target class
             targetClass = frames.get(frame_level-1).getClassName();
             org.evosuite.Properties.TARGET_CLASS = targetClass;
-            System.out.println("Target Class is set to: "+targetClass);
+            LOG.info("Target Class is set to: "+targetClass);
 
         } catch (Exception e){
-            System.out.println("Unable to parse the stack trace:");
+            LOG.error("Unable to parse the stack trace:");
             e.printStackTrace();
         }
     }
@@ -96,5 +102,17 @@ public class StackTrace {
 
     public StackTraceElement getFrame(int index){
         return frames.get(index-1);
+    }
+    public int getNumberOfFrames(){return frames.size();}
+
+    public String getTargetMethod(){
+        return frames.get(target_frame_level-1).getMethodName();
+    }
+    public int getTargetLine(){
+        return frames.get(target_frame_level-1).getLineNumber();
+    }
+
+    public ArrayList<StackTraceElement> getFrames(){
+        return frames;
     }
 }
