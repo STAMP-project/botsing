@@ -45,7 +45,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>eu.stamp.botsing.reproduction.Main</mainClass>
+                            <mainClass>eu.stamp.botsing.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
