@@ -29,8 +29,10 @@ public class WeightedSum extends TestFitnessFunction {
 
     private static final Logger LOG = LoggerFactory.getLogger(BotsingIndividualStrategy.class);
 
-    public WeightedSum (){
+    Throwable targetException;
 
+    public WeightedSum (Throwable targetException){
+        this.targetException = targetException;
         this.publicCalls = getPublicCalls();
     }
     @Override
@@ -223,6 +225,13 @@ public class WeightedSum extends TestFitnessFunction {
         } // while
 
         LoggingUtils.getEvoLogger().info("CrashCoverageTestFitness: public calls size after search: " + publicCalls.size());
+    }
+
+
+    public String getKey(){
+        StackTrace st = CrashProperties.getInstance().getStackTrace();
+        //Using the CUT name and top method caller!
+        return st.getTargetClass()+"_"+st.getTargetMethod();
     }
 
 }

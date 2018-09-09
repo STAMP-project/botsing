@@ -1,6 +1,7 @@
 package eu.stamp.botsing.reproduction;
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.fitnessfunction.WeightedSum;
 import eu.stamp.botsing.setup.botsingDependencyAnalysor;
 import org.evosuite.Properties;
 import org.evosuite.TimeController;
@@ -46,9 +47,9 @@ import java.util.*;
 public class CrashReproduction {
     private static final Logger LOG = LoggerFactory.getLogger(CrashReproduction.class);
 
-    public static List<List<TestGenerationResult>> execute(){
+    public static List<TestGenerationResult> execute(){
         CrashProperties crashProperties = CrashProperties.getInstance();
-        List<List<TestGenerationResult>> generatedTests = new ArrayList<List<TestGenerationResult>>();
+        List<TestGenerationResult> generatedTests = new ArrayList<TestGenerationResult>();
 
 
         //Before starting search, activate the sandbox
@@ -70,8 +71,8 @@ public class CrashReproduction {
     }
 
 
-    private static List<TestGenerationResult> generateCrashReproductionTests(){
-        List<TestGenerationResult> result= new ArrayList<>();
+    private static TestGenerationResult generateCrashReproductionTests(){
+//        List<TestGenerationResult> result= new ArrayList<>();
         ClientServices.getInstance().getClientNode().changeState(ClientState.INITIALIZATION);
 
         // Deactivate loop counter to make sure classes initialize properly
@@ -98,8 +99,7 @@ public class CrashReproduction {
 
         if (!Properties.hasTargetClassBeenLoaded()) {
             // initialization failed, then build error message
-            result.add(TestGenerationResultBuilder.buildErrorResult("Could not load target class"));
-            return result;
+            return TestGenerationResultBuilder.buildErrorResult("Could not load target class");
         }
 
 
@@ -114,7 +114,7 @@ public class CrashReproduction {
 
         LOG.info("The solution test is saved!");
 
-        return result;
+        return writingTest;
 
     }
 
@@ -146,6 +146,7 @@ public class CrashReproduction {
 
     private static List<TestFitnessFactory<? extends TestFitnessFunction>> getFitnessFactories() {
         List<TestFitnessFactory<? extends TestFitnessFunction>> goalsFactory = new ArrayList<TestFitnessFactory<? extends TestFitnessFunction>>();
+        goalsFactory.add(new CrashReproductionFactory());
         return goalsFactory;
     }
 

@@ -86,6 +86,6 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     }
 
     private TestFitnessFunction getFF(){
-        return new WeightedSum();
+        return new WeightedSum(CrashProperties.getTargetException());
     }
 }

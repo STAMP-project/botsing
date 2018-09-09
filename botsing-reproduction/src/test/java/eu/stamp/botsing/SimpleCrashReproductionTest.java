@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 @Ignore
 public class SimpleCrashReproductionTest {
 
-    public static int target_frame_level = 2;
+    public static int target_frame_level = 3;
 
     public static String user_dir = System.getProperty("user.dir");
     public static String test_dir = Paths.get(user_dir,"src","test","java","eu","stamp","botsing").toString();

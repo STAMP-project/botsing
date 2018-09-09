@@ -45,8 +45,7 @@ public class BotSing {
 
 
 
-        List<List<TestGenerationResult>> result = CrashReproduction.execute();
-        return result;
+        return CrashReproduction.execute();
 
     }
 }
