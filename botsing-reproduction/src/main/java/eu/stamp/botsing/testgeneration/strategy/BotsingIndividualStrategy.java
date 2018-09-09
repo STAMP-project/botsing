@@ -26,6 +26,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     public TestSuiteChromosome generateTests() {
         LOG.info("test generation strategy: BotSing individual");
         LOG.info("The single goal is crash coverage.");
+        TestSuiteChromosome suite = new TestSuiteChromosome();
         StoppingCondition stoppingCondition = getStoppingCondition();
         try {
             stoppingCondition.setLimit(CrashProperties.getLongValue("search_budget"));
@@ -52,12 +53,23 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         ga.addFitnessFunction(ff);
         ga.generateSolution();
 
+
+
+        if (ga.getBestIndividual().getFitness() == 0.0) {
+            TestChromosome solution = (TestChromosome) ga.getBestIndividual();
+            LOG.info("* The target crash is covered. The generated test is: "+solution.getTestCase().toCode());
+            suite.addTest(solution);
+
+
+        }else{
+            LOG.info("* The target crash is not covered! The best solution has "+ga.getBestIndividual().getFitness()+" fitness value.");
+        }
+
         // after finishing the search check: ga.getBestIndividual().getFitness() == 0.0
         // add best individual to final result and return result (TestSuiteChromosome)
 
 
-
-        return null;
+        return suite;
     }
 
     private GeneticAlgorithm getGA(){
