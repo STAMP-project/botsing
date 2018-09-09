@@ -1,13 +1,11 @@
 package eu.stamp.botsing.ga.strategy;
 
-import com.oracle.tools.packager.Log;
+
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.WeightedSum;
 import org.evosuite.Properties;
 import org.evosuite.ga.*;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
-import org.evosuite.ga.metaheuristics.MonotonicGA;
-import org.evosuite.ga.stoppingconditions.MaxFitnessEvaluationsStoppingCondition;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
