@@ -46,10 +46,6 @@ public class BotSing {
 
 
         List<List<TestGenerationResult>> result = CrashReproduction.execute();
-
-        // here I should start working on a class named CrashReproduction.
-        // a) This class needs to 1- load target class (generate a test and run it) 2- use DependencyAnalysis class 3- control this class after analysis for loading classes. *) we can use configureclassReinitializer we can get the list of loaded classes.
-        // b) Call generate test method (Here we will manage strategy factories)
         return result;
 
     }
