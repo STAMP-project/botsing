@@ -5,8 +5,8 @@ jdk:
 
 install: true
 
-script:
-  - mvn clean compile
+before_script: 
+  - mvn clean
 
 after_success:
-  - mvn clean test jacoco:report coveralls:report
+  - mvn jacoco:report coveralls:report
