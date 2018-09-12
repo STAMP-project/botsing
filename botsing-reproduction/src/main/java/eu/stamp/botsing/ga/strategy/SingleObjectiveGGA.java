@@ -316,26 +316,21 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
         TestChromosome candidateChrom = (TestChromosome) individual;
         TestCase candidate = candidateChrom.getTestCase();
         if (candidate.size() == 0){
-            return true;
+            return false;
         }
         while (publicCallsIterator.hasNext()){
             String callName = publicCallsIterator.next();
             for ( int index= 0 ; index < candidate.size() ;index++) {
                 Statement currentStatement = candidate.getStatement(index);
-                if (currentStatement instanceof MethodStatement) {
+                if (!callName.contains(".") && currentStatement instanceof MethodStatement) {
                     MethodStatement candidateMethod = (MethodStatement) candidate.getStatement(index);
                     if (candidateMethod.getMethodName().equalsIgnoreCase(callName)) {
                         return true;
                     }
-                } else if (currentStatement instanceof ConstructorStatement && callName.contains(".")){
-//                    ConstructorStatement candidateConstructor = (ConstructorStatement) candidate.getStatement(index);
-//                    if(callName.contains(".")){
+                } else if (callName.contains(".") && currentStatement instanceof ConstructorStatement){
+                    if (callName.equals(((ConstructorStatement) currentStatement).getDeclaringClassName())) {
                         return true;
-//                    }
-                }else {
-
-                    //FIXME: We should detec all of the target methods
-//					LOG.error("The method is neither a constructor nor method call!");
+                    }
                 }
             }
         }
@@ -358,7 +353,7 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
             try {
                 permission = includesPublicCall(offspring);
             }catch(Exception e){
-                LOG.error("* EvoCrash: Something went wrong when checking the target call after mutation! \n ");
+                LOG.error("Something went wrong when checking the target call after mutation! \n ");
             }
         }
     }

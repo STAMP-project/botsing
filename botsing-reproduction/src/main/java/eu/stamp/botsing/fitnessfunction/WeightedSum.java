@@ -23,8 +23,8 @@ package eu.stamp.botsing.fitnessfunction;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.fitnessfunction.fitnessCalculator.CrashCoverageFitnessCalculator;
+import eu.stamp.botsing.fitnessfunction.testcase.factories.FitnessFunctionHelper;
 import eu.stamp.botsing.testgeneration.strategy.BotsingIndividualStrategy;
-import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.coverage.exception.ExceptionCoverageHelper;
 
@@ -130,6 +130,7 @@ public class WeightedSum extends TestFitnessFunction {
         StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
         int numberOfFrames = givenStackTrace.getNumberOfFrames();
         String targetClass = givenStackTrace.getTargetClass();
+//        String fullTargetClass = givenStackTrace.getTargetClassFullName();
         String targetMethod =givenStackTrace.getTargetMethod();
         int targetLine = givenStackTrace.getTargetLine();
         List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
@@ -138,29 +139,28 @@ public class WeightedSum extends TestFitnessFunction {
         if (targetInstruction.getActualCFG().isPublicMethod() ||
                 isProtectedMethod(targetInstruction.getActualCFG())){
             LOG.info("The target method is public!");
-            // If the public call is to a constructor, just add the class name
-            // because this is how it will be retrieved in RootMethodTestChromosomeFactory!
-            if(targetInstruction.getActualCFG().getName().contains("<init>")){
+
+            if(FitnessFunctionHelper.isConstructor(targetInstruction)){
+                LOG.info("The target is a constructor!");
                 publicCalls.add(targetClass);
             } else {
+                LOG.info("The target is a method!");
                 publicCalls.add(cleanMethodName(targetInstruction.getMethodName()));
             }
 
         } else {
-            // So the target call is private
+            // The target call is private
             LOG.info("The target call '{}' is private!", targetInstruction.getMethodName());
             LOG.info("Searching for public callers");
             searchForNonPrivateMethods(targetInstruction, targetClass);
         }
 
-
-        LoggingUtils.getEvoLogger().info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> The retrived call(s) to inject in the tests are:");
+        LOG.info("Botsing found "+publicCalls.size()+" Target call(s):");
         Iterator<String> iterateParents = WeightedSum.publicCalls.iterator();
 
-        // Fill up the set of parent calls by assessing the method names
         while (iterateParents.hasNext()) {
             String nextCall = iterateParents.next();
-            LoggingUtils.getEvoLogger().info(">>>>>> " + nextCall);
+            LOG.info(nextCall);
         }
 
         return publicCalls;
@@ -195,56 +195,54 @@ public class WeightedSum extends TestFitnessFunction {
     private static void searchForNonPrivateMethods(BytecodeInstruction targetInstruction, String targetClass){
         List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
 
-        LinkedList<String> methods =  new LinkedList<String>(); // linked list to store all methods to analyze
-        Set<String> visitedMethods = new HashSet<String>();    // set to keep track of already visited methods
-        HashMap<BytecodeInstruction, ArrayList<String>> methodsInCUT = new HashMap<>(); // all of the methods in Class Under Test!
-        targetInstruction.getActualCFG().getMethodName();     // let's take the name of the method containing the instruction to cover
-        methods.add(targetInstruction.getActualCFG().getMethodName()); // this is the first non-public method to visit
-        // let's prepare the hashMap containing methods and the methods which is called by them!
+        LinkedList<String> callers =  new LinkedList<String>(); // all of the callers will be stored here
+        Set<String> visitedMethods = new HashSet<String>();    // list of visited methods
+        HashMap<BytecodeInstruction, ArrayList<String>> CUTMethods = new HashMap<>(); // all of the methods in Class Under Test!
+//        targetInstruction.getActualCFG().getMethodName();     // let's take the name of the method containing the instruction to cover
+        callers.add(targetInstruction.getActualCFG().getMethodName()); // this is the first non-public method to visit //FixMe: Why??
+        // Preparing CUTMethods
         for (BytecodeInstruction instruct : instructions) {
-            if(!methodsInCUT.containsKey(instruct)) {
+            if(!CUTMethods.containsKey(instruct)) {
                 ArrayList<String> calledMethods =  new ArrayList<>();
                 for (BytecodeInstruction method_call : instruct.getRawCFG().determineMethodCalls()){
                     calledMethods.add(method_call.getCalledMethod());
                 }
-                methodsInCUT.put(instruct, calledMethods);
+                CUTMethods.put(instruct, calledMethods);
             }
         }
         // until there are non-public methods to visit
-        while (methods.size()>0){
-            String target_method = methods.removeFirst(); // get the name of one of the private methods to analyze
-            if (visitedMethods.contains(target_method)) // if it has been already visited, we skip it to avoid infinite loop
+        while (callers.size()>0){
+            String privateMethod = callers.removeFirst();
+            if (visitedMethods.contains(privateMethod)) // if it has been already visited, we skip it
                 continue;
             else
-                visitedMethods.add(target_method);
+                visitedMethods.add(privateMethod);
 
-            for( BytecodeInstruction key : methodsInCUT.keySet()) {
-                ArrayList<String> list = methodsInCUT.get(key);
+            for( BytecodeInstruction key : CUTMethods.keySet()) {
+                ArrayList<String> list = CUTMethods.get(key);
                 for (String invokedMethod : list) {
-                    if (invokedMethod.equals(target_method)) {
-                        // we know that key is parent.
-                        // now, we want to know if key is private or not!
+                    if (invokedMethod.equals(CUTMethods)) {
+                        // the key is a caller.
+                        // Checking the caller to see if it is private or not.
                         if(key.getActualCFG().isPublicMethod() || isProtectedMethod(key.getActualCFG())){
-                            // this parent is public or protected.
-                            if(key.getMethodName().contains("<init>")){
-                                LoggingUtils.getEvoLogger().info("* EvoCrash: The target call is made to a protected constructor!");
+                            // this caller is public or protected.
+                            if(FitnessFunctionHelper.isConstructor(key)){
+                                LOG.info("One target constructor is added");
                                 publicCalls.add(key.getMethodName());
                             } else {
-                                LoggingUtils.getEvoLogger().info("* EvoCrash: The target call is made to a protected method!");
+                                LOG.info("One target method is added");
                                 publicCalls.add(cleanMethodName(key.getMethodName()));
                             }
                         }else {
                             //this parent is private
-                            methods.addLast(key.getMethodName());
+                            callers.addLast(key.getMethodName());
 
                         }
                     }
                 }
             }
 
-        } // while
-
-        LoggingUtils.getEvoLogger().info("CrashCoverageTestFitness: public calls size after search: " + publicCalls.size());
+        }
     }
 
 
