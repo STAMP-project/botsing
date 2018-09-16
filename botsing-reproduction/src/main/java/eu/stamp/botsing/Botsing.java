@@ -30,7 +30,7 @@ import org.evosuite.result.TestGenerationResult;
 
 import java.util.List;
 
-public class BotSing {
+public class Botsing {
 
     public Object parseCommandLine(String[] args) {
         CommandLineParser parser = new GnuParser();

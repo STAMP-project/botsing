@@ -43,7 +43,7 @@ public class SimpleCrashReproductionTest {
     public void runtest(){
         setLoggingLevel(Level.INFO);
 
-        BotSing botsing = new BotSing();
+        Botsing botsing = new Botsing();
         String[] prop = {
                 "-Dcrash_log="+log_dir,
                 "-Dtarget_frame="+target_frame_level,

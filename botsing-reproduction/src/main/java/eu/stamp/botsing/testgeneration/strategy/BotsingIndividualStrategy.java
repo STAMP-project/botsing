@@ -44,7 +44,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
     @Override
     public TestSuiteChromosome generateTests() {
-        LOG.info("test generation strategy: BotSing individual");
+        LOG.info("test generation strategy: Botsing individual");
         LOG.info("The single goal is crash coverage.");
         TestSuiteChromosome suite = new TestSuiteChromosome();
         StoppingCondition stoppingCondition = getStoppingCondition();

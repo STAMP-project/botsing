@@ -32,7 +32,7 @@ public class Main {
     public static String  bin_path = Paths.get(user_dir, "sample_dep").toString();
     private static String separator = System.getProperty("path.separator");
     public static void main(String[] args) {
-        BotSing botsing = new BotSing();
+        Botsing botsing = new Botsing();
         String[] prop = {
                 "-Dcrash_log="+log_dir,
                 "-Dtarget_frame="+target_frame_level,
