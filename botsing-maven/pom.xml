@@ -10,7 +10,15 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>botsing-maven</artifactId>
-	<description>The maven plugin for crash reproduction using botsing.</description>
+	<packaging>maven-plugin</packaging>
+	<name>Botsing Maven Plugin</name>
+	<description>The Maven plugin for crash reproduction using Botsing.</description>
+
+	<developers>
+		<developer>
+			<name>Luca Andreatta</name>
+		</developer>
+	</developers>
 
 	<dependencies>
 		<dependency>
@@ -70,5 +78,28 @@
 		</dependency>
 
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-plugin-plugin</artifactId>
+				<version>3.5</version>
+				<executions>
+					<execution>
+						<id>default-descriptor</id>
+						<phase>process-classes</phase>
+					</execution>
+					<execution>
+						<id>help-goal</id>
+						<goals>
+							<goal>helpmojo</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+	</build>
 
 </project>
