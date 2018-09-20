@@ -88,7 +88,6 @@ public class BotsingMojo extends AbstractMojo {
 
 	public void execute() throws MojoExecutionException {
 		getLog().info("Starting EvoSuite to generate tests with EvoCrash");
-		//getLog().info("test_dir: " + testDir);
 		getLog().info("user_dir: " + binDir);
 		getLog().info("log_file: " + logFile);
 
@@ -106,63 +105,73 @@ public class BotsingMojo extends AbstractMojo {
 		}
 
 		getLog().debug("dependencies: " + dependencies);
+		propertiesList.add("-projectCP");
 		propertiesList.add(dependencies);
 		
+		// TODO fin a way to pass parameters to botsing
+		try {
+			botsing.parseCommandLine(propertiesList.toArray(new String[0]));
+		} catch (Exception e) {
+			throw new MojoExecutionException("Error executing Botsing", e);
+		}
 		
-		// TODO cambiare il modo di passare i parametri a botsing
-		botsing.parseCommandLine(propertiesList.toArray(new String[0]));
-
 		getLog().info("Stopping EvoSuite");
 	}
 
 	public String getDependenciesFromPom() throws MojoExecutionException {
-		String result = "target" + SEPARATOR;
+		String result = "";
 
+		// Add the project artifact itself
+		//File projectArtifactFile = project.getArtifact().getFile();
+		//result += projectArtifactFile.getAbsolutePath() + SEPARATOR;
+		// TODO find a better way to get the project artifact path
+		result += "/home/luca/Progetti/stamp/commons-collections/target/"+project.getArtifact().getArtifactId()+"-"+project.getArtifact().getVersion()+"."+project.getArtifact().getType() + SEPARATOR;
+
+		// Add project dependencies
+		for( Artifact unresolvedArtifact : this.project.getDependencyArtifacts()) {
+			File file = getArtifactFile(unresolvedArtifact);
+			
+			result += file.getAbsolutePath() + SEPARATOR;
+		}
+		
+		return result;
+	}
+	
+	private File getArtifactFile(Artifact artifact) throws MojoExecutionException {
 		/**
 		 * Taken from https://gist.github.com/vincent-zurczak/282775f56d27e12a70d3
 		 */
-		for( Artifact unresolvedArtifact : this.project.getDependencyArtifacts()) {
-			// Here, it becomes messy. We ask Maven to resolve the artifact's location.
-			// It may imply downloading it from a remote repository,
-			// searching the local repository or looking into the reactor's cache.
-	
-			// To achieve this, we must use Aether
-			// (the dependency mechanism behind Maven).
-			String artifactId = unresolvedArtifact.getArtifactId();
-			org.eclipse.aether.artifact.Artifact aetherArtifact = new DefaultArtifact(
-					unresolvedArtifact.getGroupId(),
-					unresolvedArtifact.getArtifactId(),
-					unresolvedArtifact.getClassifier(),
-					unresolvedArtifact.getType(),
-					unresolvedArtifact.getVersion());
+		
+		// We ask Maven to resolve the artifact's location.
+		// It may imply downloading it from a remote repository,
+		// searching the local repository or looking into the reactor's cache.
+		
+		// To achieve this, we must use Aether
+		// (the dependency mechanism behind Maven).
+		String artifactId = artifact.getArtifactId();
+		org.eclipse.aether.artifact.Artifact aetherArtifact = new DefaultArtifact(
+				artifact.getGroupId(),
+				artifact.getArtifactId(),
+				artifact.getClassifier(),
+				artifact.getType(),
+				artifact.getVersion());
 
-			ArtifactRequest req = new ArtifactRequest().setRepositories( this.repositories ).setArtifact( aetherArtifact );
-			ArtifactResult resolutionResult;
-			try {
-				resolutionResult = this.repoSystem.resolveArtifact( this.repoSession, req );
+		ArtifactRequest req = new ArtifactRequest().setRepositories( this.repositories ).setArtifact( aetherArtifact );
+		ArtifactResult resolutionResult;
+		try {
+			resolutionResult = this.repoSystem.resolveArtifact( this.repoSession, req );
 
-			} catch( ArtifactResolutionException e ) {
-				throw new MojoExecutionException( "Artifact " + artifactId + " could not be resolved.", e );
-			}
+		} catch( ArtifactResolutionException e ) {
+			throw new MojoExecutionException( "Artifact " + artifactId + " could not be resolved.", e );
+		}
 
-			// The file should exists, but we never know.
-			File file = resolutionResult.getArtifact().getFile();
-			if( file == null || ! file.exists()) {
-				getLog().warn( "Artifact " + artifactId + " has no attached file. Its content will not be copied in the target model directory." );
-				continue;
-			}
-			
-			result += (file.getAbsolutePath() + SEPARATOR);
+		// The file should exists, but we never know.
+		File file = resolutionResult.getArtifact().getFile();
+		if( file == null || ! file.exists()) {
+			getLog().warn( "Artifact " + artifactId + " has no attached file. Its content will not be copied in the target model directory." );
 		}
 		
-//		List<Dependency> dependencies = project.getDependencies();
-//		for (Dependency dependency : dependencies) {
-//			result += (dependency.getSystemPath() + SEPARATOR);
-//			dependency.getLocation(key)
-//			project.get
-//		}
-		
-		return result;
+		return file;
 	}
 	
 	public static String getDependenciesFromFolder(String dependenciesFolder) {
