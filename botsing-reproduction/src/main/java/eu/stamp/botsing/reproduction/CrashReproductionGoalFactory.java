@@ -29,11 +29,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CrashReproductionFactory extends AbstractFitnessFactory<WeightedSum> {
+public class CrashReproductionGoalFactory extends AbstractFitnessFactory<WeightedSum> {
 
     private static Map<String, WeightedSum> goals = new LinkedHashMap<>();
 
-    public CrashReproductionFactory(){
+    public CrashReproductionGoalFactory(){
         Throwable targetException = CrashProperties.getTargetException();
         WeightedSum goal = new WeightedSum(targetException);
         String key = goal.getKey();
