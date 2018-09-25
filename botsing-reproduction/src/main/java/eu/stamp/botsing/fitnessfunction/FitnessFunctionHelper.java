@@ -1,4 +1,4 @@
-package eu.stamp.botsing.fitnessfunction.testcase.factories;
+package eu.stamp.botsing.fitnessfunction;
 
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 
