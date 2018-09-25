@@ -21,13 +21,11 @@ package eu.stamp.botsing.reproduction;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
-import eu.stamp.botsing.setup.botsingDependencyAnalysor;
+import eu.stamp.botsing.setup.BotsingDependencyAnalysor;
 import org.evosuite.Properties;
 import org.evosuite.TimeController;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.contracts.FailingTestSet;
-import org.evosuite.coverage.FitnessFunctions;
 import org.evosuite.coverage.TestFitnessFactory;
 import org.evosuite.junit.JUnitAnalyzer;
 import org.evosuite.junit.writer.TestSuiteWriter;
@@ -166,7 +164,7 @@ public class CrashReproduction {
 
     private static List<TestFitnessFactory<? extends TestFitnessFunction>> getFitnessFactories() {
         List<TestFitnessFactory<? extends TestFitnessFunction>> goalsFactory = new ArrayList<TestFitnessFactory<? extends TestFitnessFunction>>();
-        goalsFactory.add(new CrashReproductionFactory());
+        goalsFactory.add(new CrashReproductionGoalFactory());
         return goalsFactory;
     }
 
@@ -199,7 +197,7 @@ public class CrashReproduction {
                 throwable.printStackTrace();
             }
         }
-        botsingDependencyAnalysor.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+        BotsingDependencyAnalysor.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
         LOG.info("Analysing dependencies done!");
     }
     private static ExceptionInInitializerError getInitializerError(ExecutionResult execResult) {
