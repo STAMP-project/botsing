@@ -9,9 +9,9 @@ package eu.stamp.botsing.fitnessfunction.fitnessCalculator;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -65,7 +65,8 @@ public class CrashCoverageFitnessCalculator {
                     temp = normalize(temp);
                 }
                 if (temp < min){
-                    min = temp;}
+                    min = temp;
+                }
 
             }
 
@@ -132,17 +133,20 @@ public class CrashCoverageFitnessCalculator {
             BranchCoverageTestFitness singlefitness = BranchCoverageFactory.createBranchCoverageTestFitness(cd);
             branchCoverages.add(singlefitness);
         }
-        if (goalInstruction.isRootBranchDependent())
+        if (goalInstruction.isRootBranchDependent()) {
             branchCoverages.add(BranchCoverageFactory.createRootBranchTestFitness(goalInstruction));
+        }
 
-        if (deps.isEmpty() && !goalInstruction.isRootBranchDependent())
+        if (deps.isEmpty() && !goalInstruction.isRootBranchDependent()) {
             throw new IllegalStateException(
                     "expect control dependencies to be empty only for root dependent instructions: "
             );
+        }
 
-        if (branchCoverages.isEmpty())
+        if (branchCoverages.isEmpty()){
             throw new IllegalStateException(
                     "an instruction is at least on the root branch of it's method");
+        }
 
         branchCoverages.sort((a,b) -> a.compareTo(b));
 

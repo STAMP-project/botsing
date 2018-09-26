@@ -9,9 +9,9 @@ package eu.stamp.botsing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,6 @@ package eu.stamp.botsing;
  * #L%
  */
 
-import eu.stamp.botsing.reproduction.CrashReproduction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +28,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Properties;
 import java.util.StringTokenizer;
 
 public class StackTrace {
@@ -43,8 +41,9 @@ public class StackTrace {
     private static StackTrace instance;
 
     public static StackTrace getInstance(){
-        if (instance == null)
+        if (instance == null) {
             instance = new StackTrace();
+        }
         return instance;
     }
 
@@ -123,7 +122,9 @@ public class StackTrace {
     public StackTraceElement getFrame(int index){
         return frames.get(index-1);
     }
-    public int getNumberOfFrames(){return frames.size();}
+    public int getNumberOfFrames(){
+        return frames.size();
+    }
 
     public String getTargetMethod(){
         return frames.get(target_frame_level-1).getMethodName();

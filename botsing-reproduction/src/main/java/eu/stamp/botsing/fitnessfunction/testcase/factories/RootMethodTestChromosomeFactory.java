@@ -9,9 +9,9 @@ package eu.stamp.botsing.fitnessfunction.testcase.factories;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -68,8 +68,9 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 
     private TestCase getRandomTestCase(int size) {
         boolean tracerEnabled = ExecutionTracer.isEnabled();
-        if (tracerEnabled)
+        if (tracerEnabled) {
             ExecutionTracer.disable();
+        }
 
         // Counts the number of injected target calls in the created test.
         int target_counter = 0;
@@ -81,9 +82,9 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
             test = getNewTestCase();
             // Choose a random length in 0 - size
             double length = Randomness.nextInt(size);
-            while (length < 2)
+            while (length < 2) {
                 length = Randomness.nextInt(size);
-
+            }
             double prob = 1/length;
             boolean isIncluded = false;
             while (test.size() < length) {
@@ -124,8 +125,9 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 //						assert (false) : "Found test call that is neither method nor constructor";
 //					}
                 } catch (ConstructionFailedException e) {
-                    if (injecting)
-                        prob = 1/(length-test.size()+1);
+                    if (injecting) {
+                        prob = 1 / (length - test.size() + 1);
+                    }
                 }
             }
 
@@ -136,11 +138,13 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
             System.exit(0);
         }
 
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
             logger.debug("Randomized test case:" + test.toCode());
+        }
 
-        if (tracerEnabled)
+        if (tracerEnabled) {
             ExecutionTracer.enable();
+        }
 
         return test;
     }
