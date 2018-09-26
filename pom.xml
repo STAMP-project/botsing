@@ -198,10 +198,11 @@
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
+                    <failOnViolation>true</failOnViolation>
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>verify</phase>
+                        <phase>validate</phase>
                         <goals>
                             <goal>checkstyle</goal>
                         </goals>
