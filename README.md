@@ -8,5 +8,5 @@ Botsing is a Java framework for crash reproduction, relying on [EvoSuite](http:/
 
 ## Funding
 
-EvoCrash is partially funded by research project STAMP (European Commission - H2020)
+Botsing is partially funded by research project STAMP (European Commission - H2020)
 ![STAMP - European Commission - H2020](https://github.com/STAMP-project/docs-forum/blob/master/docs/images/logo_readme_md.png)
