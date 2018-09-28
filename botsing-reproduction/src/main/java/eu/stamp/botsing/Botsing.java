@@ -39,6 +39,21 @@ public class Botsing {
         try {
             // Parse commands according to the defined options
             CommandLine commands = parser.parse(options, args);
+            java.util.Properties properties = commands.getOptionProperties("D");
+
+            for(String property: properties.stringPropertyNames()){
+                if (Properties.hasParameter(property)) {
+                    try {
+                        Properties.getInstance().setValue(property, properties.getProperty(property));
+                    } catch (Properties.NoSuchParameterException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+
 
             // Setup given stack trace
             crashProperties.setupStackTrace(commands);
