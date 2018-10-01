@@ -31,16 +31,17 @@ import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFactory;
 import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testcase.factories.AllMethodsTestChromosomeFactory;
-import org.evosuite.utils.LoggingUtils;
 import org.evosuite.utils.Randomness;
 import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFactory {
-
+    private static final Logger LOG = LoggerFactory.getLogger(RootMethodTestChromosomeFactory.class);
     private static Set<GenericAccessibleObject<?>> publicParentCalls = new HashSet<GenericAccessibleObject<?>>();
     private static Set<GenericAccessibleObject<?>> attemptedPublicParents = new HashSet<GenericAccessibleObject<?>>();
 
@@ -95,8 +96,9 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
                     reset();
                 }
 
-                GenericAccessibleObject<?> call;
+                GenericAccessibleObject<?> call = null;
                 boolean injecting = false;
+                while(call == null){
                 if (Randomness.nextDouble() <= prob) {
                     call = Randomness.choice(publicParentCalls);
                     publicParentCalls.remove(call);
@@ -105,7 +107,7 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
                 }else {
                     call = Randomness.choice(allMethods);
                 }
-
+                }
                 try {
                     TestFactory testFactory = TestFactory.getInstance();
                     if (call.isMethod()) {
@@ -134,7 +136,7 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
         } // a test case is created which has at least 1 target call.
 
         if (target_counter < 1 && max_rounds >= CrashProperties.max_target_injection_tries){
-            LoggingUtils.getEvoLogger().error("Guided initialization failed. Please revise the target class and method!");
+            LOG.error("Guided initialization failed. Please revise the target class and method!");
             System.exit(0);
         }
 

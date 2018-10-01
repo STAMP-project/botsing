@@ -32,7 +32,6 @@ import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.statements.ConstructorStatement;
 import org.evosuite.testcase.statements.MethodStatement;
 import org.evosuite.testcase.statements.Statement;
-import org.evosuite.utils.LoggingUtils;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -287,7 +286,7 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
 
             // logger.error(c + " "+ c.getCurrentValue());
             if (c.isFinished()){
-                LoggingUtils.getEvoLogger().info(c.toString());
+                LOG.info(c.toString());
                 return true;
             }
         }
@@ -346,7 +345,7 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
             // Mutation
             try{
                 offspring.mutate();
-            }catch(Exception e){
+            }catch(Exception | AssertionError e){
                 LOG.error("Mutation failed!");
             }
             if (offspring.isChanged()) {

@@ -30,14 +30,15 @@ import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
 import org.evosuite.testcase.execution.ExecutionResult;
-import org.evosuite.utils.LoggingUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class CrashCoverageFitnessCalculator {
-
+    private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageFitnessCalculator.class);
     public static double getLineCoverageFitness(ExecutionResult result , int lineNumber) {
         int targetFrameLevel = CrashProperties.getInstance().getStackTrace().getNumberOfFrames();
         StackTraceElement targetFrame = CrashProperties.getInstance().getStackTrace().getFrame(targetFrameLevel);
@@ -176,11 +177,11 @@ public class CrashCoverageFitnessCalculator {
                         return bytecodeMethodName;
                     }
                 } else {
-                    LoggingUtils.getEvoLogger().error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this line number " + lineNumber+" was null!");
+                    LOG.error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this line number " + lineNumber+" was null!");
                 }
             }
         } else {
-            LoggingUtils.getEvoLogger().error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this class " + className +" was null!");
+            LOG.error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this class " + className +" was null!");
         }
         return null;
     }

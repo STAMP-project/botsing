@@ -26,14 +26,15 @@ import org.evosuite.Properties;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.junit.writer.TestSuiteWriterUtils;
-import org.evosuite.utils.LoggingUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 
 
 public class Botsing {
-
+    private static final Logger LOG = LoggerFactory.getLogger(Botsing.class);
     public Object parseCommandLine(String[] args) {
         CommandLineParser parser = new GnuParser();
         // get permitted options
@@ -80,7 +81,7 @@ public class Botsing {
                 try {
                     ClassPathHacker.addFile(entry);
                 } catch (IOException e) {
-                    LoggingUtils.getEvoLogger().info("* Error while adding classpath entry: " + entry);
+                    LOG.info("* Error while adding classpath entry: " + entry);
                 }
             }
 
