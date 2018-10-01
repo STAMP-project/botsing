@@ -26,6 +26,10 @@ import org.evosuite.Properties;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.junit.writer.TestSuiteWriterUtils;
+import org.evosuite.utils.LoggingUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 
 public class Botsing {
@@ -69,6 +73,16 @@ public class Botsing {
                 ClassPathHacker.initializeToolJar();
             }
 
+
+            // Adding the target project classpath entries.
+
+            for (String entry : ClassPathHandler.getInstance().getTargetProjectClasspath().split(File.pathSeparator)){
+                try {
+                    ClassPathHacker.addFile(entry);
+                } catch (IOException e) {
+                    LoggingUtils.getEvoLogger().info("* Error while adding classpath entry: " + entry);
+                }
+            }
 
 
         } catch (ParseException e) {
