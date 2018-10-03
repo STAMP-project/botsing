@@ -246,6 +246,7 @@
     <modules>
         <module>botsing-reproduction</module>
         <module>botsing-maven</module>
+        <module>botsing-preprocessing</module>
     </modules>
 
 </project>
