@@ -3,12 +3,10 @@ language: java
 jdk:
   - oraclejdk8
 
-install: true
-
 script: mvn package checkstyle:check
 
 before_script:
   - mvn clean
 
 after_success:
-  - mvn jacoco:report coveralls:report
+  - mvn test jacoco:report coveralls:report
