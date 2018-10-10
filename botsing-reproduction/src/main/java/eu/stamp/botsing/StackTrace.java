@@ -61,10 +61,11 @@ public class StackTrace {
             LOG.info("Exception type is detected: "+exceptionType);
 
             // clear the frames in this.frames (if any)
-            if (frames == null)
-                frames =  new ArrayList<StackTraceElement>();
-            else
+            if (frames == null) {
+                frames = new ArrayList<StackTraceElement>();
+            } else {
                 frames.clear();
+            }
 
             // Parse frames
             for(int counter=0;counter<frame_level;counter++){
