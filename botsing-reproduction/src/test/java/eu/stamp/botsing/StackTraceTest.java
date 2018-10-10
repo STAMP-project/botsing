@@ -2,10 +2,8 @@ package eu.stamp.botsing;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -14,33 +12,34 @@ import java.io.StringReader;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ StackTrace.class })
+@RunWith(MockitoJUnitRunner.class)
 public class StackTraceTest {
 
     @Test
     public void testLogParsing() throws Exception {
-        // this is the content of our (mocked) log file
         BufferedReader obj = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
                 "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
 
-        // of creating a new one from file
-        PowerMockito.spy(StackTrace.class);
-        PowerMockito.doReturn(obj).when(StackTrace.class, "readFromFile", ArgumentMatchers.anyString());
+        StackTrace trace =  Mockito.mock(StackTrace.class);
+        Mockito.when(trace.readFromFile(anyString())).thenReturn(obj);
+        Mockito.doCallRealMethod().when(trace).setup(anyString(),anyInt());
+        Mockito.doCallRealMethod().when(trace).getExceptionType();
+        Mockito.doCallRealMethod().when(trace).getTargetClass();
+        Mockito.doCallRealMethod().when(trace).getTargetMethod();
+        Mockito.doCallRealMethod().when(trace).getTarget_frame_level();
+        Mockito.doCallRealMethod().when(trace).getTargetLine();
 
-        StackTrace trace = StackTrace.getInstance();
-        trace.setup("mockedFile",2);
-
+        trace.setup("",2);
         assertEquals("java.lang.IllegalArgumentException", trace.getExceptionType());
         assertEquals("eu.stamp.ClassB", trace.getTargetClass());
         assertEquals("method1", trace.getTargetMethod());
         assertEquals(2, trace.getTarget_frame_level());
         assertEquals(20, trace.getTargetLine());
     }
-
-
 
     @Test
     public void testFrame() throws Exception {
@@ -49,13 +48,12 @@ public class StackTraceTest {
                 "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
 
-        // of creating a new one from file
-        PowerMockito.spy(StackTrace.class);
-        PowerMockito.doReturn(obj).when(StackTrace.class, "readFromFile", ArgumentMatchers.anyString());
+        StackTrace trace =  Mockito.mock(StackTrace.class);
+        Mockito.when(trace.readFromFile(anyString())).thenReturn(obj);
+        Mockito.doCallRealMethod().when(trace).setup(anyString(),anyInt());
+        Mockito.doCallRealMethod().when(trace).getFrame(anyInt());
 
-        StackTrace trace = StackTrace.getInstance();
         trace.setup("mockedFile",2);
-
         StackTraceElement frame = trace.getFrame(1);
         assertEquals("eu.stamp.ClassA", frame.getClassName());
         assertEquals("method2", frame.getMethodName());
@@ -69,13 +67,13 @@ public class StackTraceTest {
                 "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
 
-        // of creating a new one from file
-        PowerMockito.spy(StackTrace.class);
-        PowerMockito.doReturn(obj).when(StackTrace.class, "readFromFile", ArgumentMatchers.anyString());
+        StackTrace trace =  Mockito.mock(StackTrace.class);
+        Mockito.when(trace.readFromFile(anyString())).thenReturn(obj);
+        Mockito.doCallRealMethod().when(trace).setup(anyString(),anyInt());
+        Mockito.doCallRealMethod().when(trace).getFrames();
+        Mockito.doCallRealMethod().when(trace).getNumberOfFrames();
 
-        StackTrace trace = StackTrace.getInstance();
         trace.setup("mockedFile",2);
-
         ArrayList<StackTraceElement> list = trace.getFrames();
         assertEquals("eu.stamp.ClassA", list.get(0).getClassName());
         assertEquals("method2", list.get(0).getMethodName());
@@ -94,11 +92,17 @@ public class StackTraceTest {
                 "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
 
-        // of creating a new one from file
-        PowerMockito.spy(StackTrace.class);
-        PowerMockito.doReturn(obj).when(StackTrace.class, "readFromFile", ArgumentMatchers.anyString());
+        StackTrace trace =  Mockito.mock(StackTrace.class);
+        Mockito.when(trace.readFromFile(anyString())).thenReturn(obj);
+        Mockito.doCallRealMethod().when(trace).setup(anyString(),anyInt());
 
-        StackTrace trace = StackTrace.getInstance();
         trace.setup("mockedFile",4);
     }
+
+    @Test(expected = FileNotFoundException.class)
+    public void missingFile() throws FileNotFoundException {
+        StackTrace trace = StackTrace.getInstance();
+        trace.readFromFile("");
+    }
+
 }

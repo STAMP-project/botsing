@@ -32,7 +32,7 @@ public class StackTrace {
 
     private static final Logger LOG = LoggerFactory.getLogger(StackTrace.class);
     private String exceptionType;
-    private ArrayList<StackTraceElement> frames =  new ArrayList<StackTraceElement>();
+    private ArrayList<StackTraceElement> frames;
     private int target_frame_level;
     private String targetClass;
 
@@ -61,7 +61,10 @@ public class StackTrace {
             LOG.info("Exception type is detected: "+exceptionType);
 
             // clear the frames in this.frames (if any)
-            frames.clear();
+            if (frames == null)
+                frames =  new ArrayList<StackTraceElement>();
+            else
+                frames.clear();
 
             // Parse frames
             for(int counter=0;counter<frame_level;counter++){
@@ -139,7 +142,7 @@ public class StackTrace {
         return frames;
     }
 
-    private static BufferedReader readFromFile(String filePath) throws FileNotFoundException {
+    protected BufferedReader readFromFile(String filePath) throws FileNotFoundException {
         File file = new File(filePath);
         BufferedReader br = new BufferedReader(new FileReader(file));
         return br;
