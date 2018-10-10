@@ -8,7 +8,7 @@ public class ErrorMessage implements STProcessor {
 	public static ErrorMessage get() {
 		return instance;
 	}
-	
+
 	private ErrorMessage() {
 	}
 

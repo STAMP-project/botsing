@@ -15,7 +15,7 @@ public class StackFlatten implements STProcessor {
 
 	private StackFlatten() {
 	}
-	
+
 	@Override
 	public List<String> preprocess(List<String> lines) {
 		if (lines.size() < 2) {
