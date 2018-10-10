@@ -25,9 +25,7 @@ import org.apache.commons.cli.CommandLine;
 import org.evosuite.Properties;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -77,6 +75,7 @@ public class CrashProperties {
     public static int max_target_injection_tries = 150;
 
     static java.util.Properties configFile = new java.util.Properties();
+
     private CrashProperties(){
         loadConfig();
         for (String property : configFile.stringPropertyNames()){
@@ -97,11 +96,13 @@ public class CrashProperties {
 
     private void loadConfig(){
         try {
-        InputStream inputstream = new FileInputStream(Paths.get(System.getProperty("user.dir"),"src","main","java","eu","stamp","botsing","config.properties").toString());
-        configFile.load(inputstream);
+            InputStream inputstream = new FileInputStream(Paths.get(System.getProperty("user.dir"),"src","main","java","eu","stamp","botsing","config.properties").toString());
+            configFile.load(inputstream);
 
-        }catch(Exception eta){
+        }catch(FileNotFoundException eta){
             eta.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -124,7 +125,7 @@ public class CrashProperties {
 
 
     public static int getIntValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
-            return Properties.getIntegerValue(property);
+        return Properties.getIntegerValue(property);
     }
 
 
@@ -135,11 +136,11 @@ public class CrashProperties {
 
     public static Boolean getBooleanValue(String property){
         try{
-        if (Properties.hasParameter(property)){
-            return Properties.getBooleanValue(property);
-        }else if (configFile.containsKey(property)){
-            return Boolean.valueOf(configFile.getProperty(property));
-        }
+            if (Properties.hasParameter(property)){
+                return Properties.getBooleanValue(property);
+            }else if (configFile.containsKey(property)){
+                return Boolean.valueOf(configFile.getProperty(property));
+            }
         } catch (Properties.NoSuchParameterException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -147,7 +148,6 @@ public class CrashProperties {
         }
         return null;
     }
-
 
     public void setupStackTrace(CommandLine command){
         java.util.Properties properties = command.getOptionProperties("D");
@@ -169,6 +169,7 @@ public class CrashProperties {
     public static Properties.StoppingCondition getStoppingCondition(){
         return Properties.STOPPING_CONDITION;
     }
+
     public static Throwable getTargetException () {
         StackTraceElement [] stackArray = new StackTraceElement [StackTrace.getInstance().getNumberOfFrames()];
         stackArray = StackTrace.getInstance().getFrames().toArray(stackArray);
@@ -180,5 +181,4 @@ public class CrashProperties {
 
 
 
-
-        }
+}
