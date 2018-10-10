@@ -14,8 +14,8 @@
     <inceptionYear>2017</inceptionYear>
 
     <organization>
-        <name>eu.stamp-project</name>
-        <url>http://github.com/STAMP-project</url>
+        <name>Delft University of Technology</name>
+        <url>https://www.tudelft.nl</url>
     </organization>
 
     <licenses>
@@ -198,10 +198,11 @@
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
+                    <failOnViolation>true</failOnViolation>
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>verify</phase>
+                        <phase>validate</phase>
                         <goals>
                             <goal>checkstyle</goal>
                         </goals>
@@ -245,6 +246,7 @@
     <modules>
         <module>botsing-reproduction</module>
         <module>botsing-maven</module>
+        <module>botsing-preprocessing</module>
     </modules>
 
 </project>

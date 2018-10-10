@@ -9,9 +9,9 @@ package eu.stamp.botsing.fitnessfunction.fitnessCalculator;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,14 +30,15 @@ import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
 import org.evosuite.testcase.execution.ExecutionResult;
-import org.evosuite.utils.LoggingUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class CrashCoverageFitnessCalculator {
-
+    private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageFitnessCalculator.class);
     public static double getLineCoverageFitness(ExecutionResult result , int lineNumber) {
         int targetFrameLevel = CrashProperties.getInstance().getStackTrace().getNumberOfFrames();
         StackTraceElement targetFrame = CrashProperties.getInstance().getStackTrace().getFrame(targetFrameLevel);
@@ -65,7 +66,8 @@ public class CrashCoverageFitnessCalculator {
                     temp = normalize(temp);
                 }
                 if (temp < min){
-                    min = temp;}
+                    min = temp;
+                }
 
             }
 
@@ -132,17 +134,20 @@ public class CrashCoverageFitnessCalculator {
             BranchCoverageTestFitness singlefitness = BranchCoverageFactory.createBranchCoverageTestFitness(cd);
             branchCoverages.add(singlefitness);
         }
-        if (goalInstruction.isRootBranchDependent())
+        if (goalInstruction.isRootBranchDependent()) {
             branchCoverages.add(BranchCoverageFactory.createRootBranchTestFitness(goalInstruction));
+        }
 
-        if (deps.isEmpty() && !goalInstruction.isRootBranchDependent())
+        if (deps.isEmpty() && !goalInstruction.isRootBranchDependent()) {
             throw new IllegalStateException(
                     "expect control dependencies to be empty only for root dependent instructions: "
             );
+        }
 
-        if (branchCoverages.isEmpty())
+        if (branchCoverages.isEmpty()){
             throw new IllegalStateException(
                     "an instruction is at least on the root branch of it's method");
+        }
 
         branchCoverages.sort((a,b) -> a.compareTo(b));
 
@@ -172,11 +177,11 @@ public class CrashCoverageFitnessCalculator {
                         return bytecodeMethodName;
                     }
                 } else {
-                    LoggingUtils.getEvoLogger().error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this line number " + lineNumber+" was null!");
+                    LOG.error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this line number " + lineNumber+" was null!");
                 }
             }
         } else {
-            LoggingUtils.getEvoLogger().error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this class " + className +" was null!");
+            LOG.error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this class " + className +" was null!");
         }
         return null;
     }

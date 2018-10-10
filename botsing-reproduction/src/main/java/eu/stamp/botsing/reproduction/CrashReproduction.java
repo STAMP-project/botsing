@@ -9,9 +9,9 @@ package eu.stamp.botsing.reproduction;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,13 +21,11 @@ package eu.stamp.botsing.reproduction;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
-import eu.stamp.botsing.setup.botsingDependencyAnalysor;
+import eu.stamp.botsing.setup.BotsingDependencyAnalysor;
 import org.evosuite.Properties;
 import org.evosuite.TimeController;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.contracts.FailingTestSet;
-import org.evosuite.coverage.FitnessFunctions;
 import org.evosuite.coverage.TestFitnessFactory;
 import org.evosuite.junit.JUnitAnalyzer;
 import org.evosuite.junit.writer.TestSuiteWriter;
@@ -55,7 +53,6 @@ import org.evosuite.testcase.statements.numeric.BooleanPrimitiveStatement;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteMinimizer;
-import org.evosuite.utils.LoggingUtils;
 import org.evosuite.utils.generic.GenericMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,7 +148,7 @@ public class CrashReproduction {
 
             TestSuiteMinimizer minimizer = new TestSuiteMinimizer(getFitnessFactories());
 
-            LoggingUtils.getEvoLogger().info("* Minimizing test suite");
+            LOG.info("* Minimizing test suite");
             minimizer.minimize(testSuite, true);
 
             double after = testSuite.getFitness();
@@ -166,7 +163,7 @@ public class CrashReproduction {
 
     private static List<TestFitnessFactory<? extends TestFitnessFunction>> getFitnessFactories() {
         List<TestFitnessFactory<? extends TestFitnessFunction>> goalsFactory = new ArrayList<TestFitnessFactory<? extends TestFitnessFunction>>();
-        goalsFactory.add(new CrashReproductionFactory());
+        goalsFactory.add(new CrashReproductionGoalFactory());
         return goalsFactory;
     }
 
@@ -199,7 +196,7 @@ public class CrashReproduction {
                 throwable.printStackTrace();
             }
         }
-        botsingDependencyAnalysor.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+        BotsingDependencyAnalysor.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
         LOG.info("Analysing dependencies done!");
     }
     private static ExceptionInInitializerError getInitializerError(ExecutionResult execResult) {
@@ -263,7 +260,7 @@ public class CrashReproduction {
 
 
     private static void compileAndCheckTests(TestSuiteChromosome chromosome) {
-        LoggingUtils.getEvoLogger().info("* Compiling and checking tests");
+        LOG.info("* Compiling and checking tests");
 
         if (!JUnitAnalyzer.isJavaCompilerAvailable()) {
             String msg = "No Java compiler is available. Make sure to run EvoSuite with the JDK and not the JRE."
@@ -365,7 +362,7 @@ public class CrashReproduction {
             String name = Properties.TARGET_CLASS.substring(Properties.TARGET_CLASS.lastIndexOf(".") + 1);
             String testDir = Properties.TEST_DIR;
 
-            LoggingUtils.getEvoLogger().info("* Writing JUnit test case '" + (name + suffix) + "' to " + testDir);
+            LOG.info("* Writing JUnit test case '" + (name + suffix) + "' to " + testDir);
             suiteWriter.writeTestSuite(name + suffix, testDir, testSuite.getLastExecutionResults());
         }
         return TestGenerationResultBuilder.buildSuccessResult();
@@ -373,8 +370,9 @@ public class CrashReproduction {
 
 
     public static void writeJUnitFailingTests() {
-        if (!Properties.CHECK_CONTRACTS)
+        if (!Properties.CHECK_CONTRACTS) {
             return;
+        }
 
         FailingTestSet.sendStatistics();
 
@@ -391,7 +389,7 @@ public class CrashReproduction {
 
             String name = Properties.TARGET_CLASS.substring(Properties.TARGET_CLASS.lastIndexOf(".") + 1);
             String testDir = Properties.TEST_DIR;
-            LoggingUtils.getEvoLogger().info("* Writing failing test cases '" + (name + Properties.JUNIT_SUFFIX) + "' to " + testDir);
+            LOG.info("* Writing failing test cases '" + (name + Properties.JUNIT_SUFFIX) + "' to " + testDir);
             suiteWriter.insertAllTests(suite.getTests());
             FailingTestSet.writeJUnitTestSuite(suiteWriter);
 

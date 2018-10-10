@@ -5,7 +5,9 @@ jdk:
 
 install: true
 
-before_script: 
+script: mvn package checkstyle:check
+
+before_script:
   - mvn clean
 
 after_success:

@@ -9,9 +9,9 @@ package eu.stamp.botsing;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,12 +26,15 @@ import org.evosuite.Properties;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.junit.writer.TestSuiteWriterUtils;
-import org.evosuite.result.TestGenerationResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+
 
 public class Botsing {
-
+    private static final Logger LOG = LoggerFactory.getLogger(Botsing.class);
     public Object parseCommandLine(String[] args) {
         CommandLineParser parser = new GnuParser();
         // get permitted options
@@ -41,6 +44,21 @@ public class Botsing {
         try {
             // Parse commands according to the defined options
             CommandLine commands = parser.parse(options, args);
+            java.util.Properties properties = commands.getOptionProperties("D");
+
+            for(String property: properties.stringPropertyNames()){
+                if (Properties.hasParameter(property)) {
+                    try {
+                        Properties.getInstance().setValue(property, properties.getProperty(property));
+                    } catch (Properties.NoSuchParameterException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+
 
             // Setup given stack trace
             crashProperties.setupStackTrace(commands);
@@ -56,6 +74,16 @@ public class Botsing {
                 ClassPathHacker.initializeToolJar();
             }
 
+
+            // Adding the target project classpath entries.
+
+            for (String entry : ClassPathHandler.getInstance().getTargetProjectClasspath().split(File.pathSeparator)){
+                try {
+                    ClassPathHacker.addFile(entry);
+                } catch (IOException e) {
+                    LOG.info("* Error while adding classpath entry: " + entry);
+                }
+            }
 
 
         } catch (ParseException e) {

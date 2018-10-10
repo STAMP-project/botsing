@@ -1,5 +1,0 @@
-java.lang.ClassCastException: java.base/java.lang.Boolean cannot be cast to java.base/java.lang.String
-	at eu.stamp.uc.atos.poc.evocrash.MyObject.badIdea(MyObject.java:11)
-	at eu.stamp.uc.atos.poc.evocrash.MyObject.callBadIdea(MyObject.java:17)
-	at eu.stamp.uc.atos.poc.evocrash.MyObject.unnecessaryMethod(MyObject.java:21)
-	at eu.stamp.uc.atos.poc.evocrash.DoIt.main(DoIt.java:6)
