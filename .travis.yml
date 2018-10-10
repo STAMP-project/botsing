@@ -9,4 +9,4 @@ before_script:
   - mvn clean
 
 after_success:
-  - mvn jacoco:report coveralls:report
+  - mvn test jacoco:report coveralls:report
