@@ -4,42 +4,62 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class StackFlatten {
+public class StackFlatten implements STProcessor {
 	private static final String MORE = " more";
 	static final String CAUSED_BY_PREFIX = "Caused by: ";
 
-	public static List<String> flattenTrace(List<String> lines) {
+	private static StackFlatten instance = new StackFlatten();
+	public static StackFlatten get() {
+		return instance;
+	}
+
+	private StackFlatten() {
+	}
+	
+	@Override
+	public List<String> preprocess(List<String> lines) {
 		if (lines.size() < 2) {
 			return lines;
 		}
 		List<List<String>> chuncks = splitLines(lines, CAUSED_BY_PREFIX);
-		List<String> newLines = flatten(chuncks);
-		return newLines;
+		return flatten(chuncks);
 	}
 
 	/*
-	 * Divides a list of strings into chunks, based on a prefix. If the first
-	 * line starts with the prefix, the first chunk is empty
+	 * cleans the stack trace chunck removing the caused by prefix and the "...
+	 * X more" line
 	 */
-	static List<List<String>> splitLines(List<String> lines, String prefix) {
-		List<List<String>> subSets = new ArrayList<List<String>>();
-		List<String> chunk = new ArrayList<>();
-		for (String line : lines) {
-			if (line.startsWith(prefix)) {
-				subSets.add(chunk);
-				chunk = new ArrayList<>();
-			}
-			chunk.add(line);
+	List<String> cleanNestedChunk(List<String> chunk) throws IndexOutOfBoundsException {
+		// removes the caused by prefix from the first line
+		int size = chunk.size();
+		chunk.set(0, chunk.get(0).replace(CAUSED_BY_PREFIX, ""));
+		if (chunk.get(size - 1).endsWith(MORE)) {
+			chunk.remove(size - 1);
 		}
-		subSets.add(chunk);
-		return subSets;
+		return chunk;
+	}
+
+	String findCauseMethod(List<String> chunk) throws IndexOutOfBoundsException {
+		String lastFrame = chunk.get(chunk.size() - 1);
+		int splitPoint = lastFrame.indexOf('(');
+		return lastFrame.substring(0, splitPoint);
+	}
+
+	/*
+	 * searches a list and returns the index of the first line starting with a
+	 * given prefix
+	 */
+	int findElementWithPrefix(List<String> lines, String prefix) {
+		String target = lines.stream().filter(l -> l.startsWith(prefix)).findFirst().orElse(null);
+		return target != null ? lines.indexOf(target) : -1;
 	}
 
 	/*
 	 * Takes a stack trace splitted at every chained exception and produces a
 	 * flat stack trace with the root cause at the top
 	 */
-	static List<String> flatten(List<List<String>> splittedTrace) {
+	List<String> flatten(List<List<String>> splittedTrace) {
+		//case of empty trace
 		if (splittedTrace.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -63,31 +83,21 @@ public class StackFlatten {
 	}
 
 	/*
-	 * searches a list and returns the index of the first line starting with a
-	 * given prefix
+	 * Divides a list of strings into chunks, based on a prefix. If the first
+	 * line starts with the prefix, the first chunk is empty
 	 */
-	private static int findElementWithPrefix(List<String> lines, String prefix) {
-		String target = lines.stream().filter(l -> l.startsWith(prefix)).findFirst().orElse(null);
-		return target != null ? lines.indexOf(target) : -1;
-	}
-
-	/*
-	 * cleans the stack trace chunck removing the caused by prefix and the "...
-	 * X more" line
-	 */
-	static List<String> cleanNestedChunk(List<String> chunk) throws IndexOutOfBoundsException {
-		// removes the caused by prefix from the first line
-		int size = chunk.size();
-		chunk.set(0, chunk.get(0).replace(CAUSED_BY_PREFIX, ""));
-		if (chunk.get(size - 1).endsWith(MORE)) {
-			chunk.remove(size - 1);
+	List<List<String>> splitLines(List<String> lines, String prefix) {
+		List<List<String>> subSets = new ArrayList<List<String>>();
+		List<String> chunk = new ArrayList<>();
+		for (String line : lines) {
+			if (line.startsWith(prefix)) {
+				subSets.add(chunk);
+				chunk = new ArrayList<>();
+			}
+			chunk.add(line);
 		}
-		return chunk;
+		subSets.add(chunk);
+		return subSets;
 	}
 
-	static String findCauseMethod(List<String> chunk) throws IndexOutOfBoundsException {
-		String lastFrame = chunk.get(chunk.size() - 1);
-		int splitPoint = lastFrame.indexOf('(');
-		return lastFrame.substring(0, splitPoint);
-	}
 }
