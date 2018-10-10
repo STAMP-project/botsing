@@ -41,19 +41,7 @@ public class Main {
 			boolean flatten = cli.hasOption('f');
 			String input = cli.getOptionValue('l');
 			String output = cli.getOptionValue('o');
-			File inputFile = new File(input);
-			File outFile = new File(output);
-			if (outFile.exists()){
-				System.out.println("Output file already exists! Exiting...");
-				System.exit(0);
-			}	
-			List<String> inLines = fileToLines(inputFile);
-			List<String> outLines;
-			if (flatten)
-				outLines = StackFlatten.flattenTrace(inLines);
-			else
-				outLines = inLines;
-			linesToFile(outLines, outFile);
+			preprocess(flatten, false, false, input, output);
 		} catch (ParseException e) {
 			System.out.println("wrong arguments. Available options are:");
 			System.out.println(options.toString());
@@ -62,8 +50,34 @@ public class Main {
 	}
 
 	/**
+	 * Performs the pre-processing on the stack trace based on the options
+	 * @param flatten
+	 * 			if true, a chained stack trace is flattened
+	 * @param input
+	 * 			input file path
+	 * @param output
+	 *          output file path
+	 */
+	public static void preprocess(boolean flatten, boolean annotations, boolean eroror, String input, String output) {
+		File inputFile = new File(input);
+		File outFile = new File(output);
+		if (outFile.exists()) {
+			System.out.println("Output file already exists! Exiting...");
+			System.exit(0);
+		}
+		List<String> inLines = fileToLines(inputFile);
+		List<String> outLines;
+		if (flatten) {
+			outLines = StackFlatten.flattenTrace(inLines);
+		} else {
+			outLines = inLines;
+		}
+		linesToFile(outLines, outFile);
+	}
+
+	/**
 	 * reads a file and returns a list of lines for the content
-	 * 
+	 *
 	 * @param logPath
 	 *            path of the file
 	 * @return List of lines
@@ -82,10 +96,10 @@ public class Main {
 
 	/**
 	 * reads a list of lines and saves them to a file
-	 * 
-	 * * @param lines List of lines
-	 * 
-	 * @param outPath
+	 *
+	 * @param lines
+	 * 	List of lines
+	 * @param out
 	 *            path of the file
 	 */
 	static File linesToFile(List<String> lines, File out) {
@@ -96,7 +110,7 @@ public class Main {
 					writer.newLine();
 				} catch (IOException e) {
 					e.printStackTrace();
-				}		
+				}
 			});
 			writer.close();
 		} catch (IOException e) {

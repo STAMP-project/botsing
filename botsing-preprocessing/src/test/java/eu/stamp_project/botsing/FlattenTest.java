@@ -22,17 +22,9 @@ public class FlattenTest {
 		List<String> lines = Main.fileToLines(log);
 		Assert.assertEquals("File not read correctly", 11, lines.size());
 		List<List<String>> chuncks = StackFlatten.splitLines(lines, StackFlatten.CAUSED_BY_PREFIX);
-		System.out.println("chuncks");
-		for (List<String> list : chuncks) {
-			System.out.println(list);
-		}
 		Assert.assertEquals("Chuncks not created correctly, some missed", 3, chuncks.size());
 		Assert.assertEquals("Chuncks not created correctly", 4, chuncks.get(2).size());
 		List<String> orderedLines = StackFlatten.flatten(chuncks);
-		System.out.println("ordered trace");
-		for (String string : orderedLines) {
-			System.out.println(string);
-		}
 		Assert.assertEquals("Chuncks not reordered correctly", 5, orderedLines.size());	
 	}
 	
@@ -42,17 +34,9 @@ public class FlattenTest {
 		List<String> lines = Main.fileToLines(log);
 		Assert.assertEquals("File not read correctly", 62, lines.size());
 		List<List<String>> chuncks = StackFlatten.splitLines(lines, StackFlatten.CAUSED_BY_PREFIX);
-		System.out.println("chuncks");
-		for (List<String> list : chuncks) {
-			System.out.println(list);
-		}
 		Assert.assertEquals("Chuncks not created correctly, some missed", 4, chuncks.size());
 		Assert.assertEquals("Chuncks not created correctly", 8, chuncks.get(1).size());
 		List<String> orderedLines = StackFlatten.flatten(chuncks);
-		System.out.println("ordered trace");
-		for (String string : orderedLines) {
-			System.out.println(string);
-		}
 		Assert.assertEquals("Chuncks not reordered correctly", 51, orderedLines.size());	
 	}
 	
