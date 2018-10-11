@@ -23,9 +23,7 @@ package eu.stamp.botsing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringTokenizer;
@@ -34,7 +32,7 @@ public class StackTrace {
 
     private static final Logger LOG = LoggerFactory.getLogger(StackTrace.class);
     private String exceptionType;
-    private ArrayList<StackTraceElement> frames =  new ArrayList<StackTraceElement>();
+    private ArrayList<StackTraceElement> frames;
     private int target_frame_level;
     private String targetClass;
 
@@ -55,13 +53,19 @@ public class StackTrace {
     public void setup(String logPath,int frame_level){
         target_frame_level =  frame_level;
         try {
-            File logFile = new File(logPath);
-            BufferedReader reader = new BufferedReader(new FileReader(logFile));
+            BufferedReader reader = readFromFile(logPath);
 
             // Parse type of the exception
             StringTokenizer st = new StringTokenizer(reader.readLine(), ":");
             exceptionType =  st.nextToken();
             LOG.info("Exception type is detected: "+exceptionType);
+
+            // clear the frames in this.frames (if any)
+            if (frames == null) {
+                frames = new ArrayList<StackTraceElement>();
+            } else {
+                frames.clear();
+            }
 
             // Parse frames
             for(int counter=0;counter<frame_level;counter++){
@@ -78,8 +82,10 @@ public class StackTrace {
             org.evosuite.Properties.TARGET_CLASS = targetClass;
             LOG.info("Target Class is set to: "+targetClass);
 
-        } catch (Exception e){
-            LOG.error("Unable to parse the stack trace:");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            //LOG.error("Unable to parse the stack trace:");
             e.printStackTrace();
         }
     }
@@ -135,5 +141,11 @@ public class StackTrace {
 
     public ArrayList<StackTraceElement> getFrames(){
         return frames;
+    }
+
+    protected BufferedReader readFromFile(String filePath) throws FileNotFoundException {
+        File file = new File(filePath);
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        return br;
     }
 }

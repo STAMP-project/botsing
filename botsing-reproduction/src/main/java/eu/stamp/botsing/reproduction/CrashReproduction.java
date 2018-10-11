@@ -177,7 +177,7 @@ public class CrashReproduction {
 
     private static void initializeTargetClass() throws ClassNotFoundException {
         String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
-        LOG.info("The target class path is: "+cp );
+        LOG.debug("The target classpath is: "+cp );
         DefaultTestCase test = generateTestForLoadingClass(CrashProperties.getInstance().getStackTrace().getTargetClass());
 
         // execute the test contains the target class
