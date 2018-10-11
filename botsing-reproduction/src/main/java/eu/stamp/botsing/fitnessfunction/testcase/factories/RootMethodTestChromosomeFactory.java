@@ -58,7 +58,7 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
     public TestChromosome getChromosome() {
         TestChromosome c = new TestChromosome();
         try {
-            c.setTestCase(getRandomTestCase(CrashProperties.getIntValue("chromosome_length")));
+            c.setTestCase(getRandomTestCase(CrashProperties.getInstance().getIntValue("chromosome_length")));
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (Properties.NoSuchParameterException e) {

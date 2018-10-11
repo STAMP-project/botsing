@@ -188,7 +188,7 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
 
     private boolean isPopulationFull(List<T> newGeneration) {
         try {
-            if(newGeneration.size() >= CrashProperties.getIntValue("population")) {
+            if(newGeneration.size() >= CrashProperties.getInstance().getIntValue("population")) {
                 return true;
             }
         } catch (IllegalAccessException e) {
@@ -203,7 +203,7 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
         List<T> elite = new ArrayList<T>();
         LOG.debug("Cloning the best individuals to next generation");
         try {
-            for (int i = 0; i < CrashProperties.getIntValue("elite"); i++) {
+            for (int i = 0; i < CrashProperties.getInstance().getIntValue("elite"); i++) {
                 elite.add(population.get(i));
             }
         }catch (Exception e){
@@ -217,7 +217,7 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
         currentIteration = 0;
         // Generate Initial Population
         try {
-            generatePopulation(CrashProperties.getIntValue("population"));
+            generatePopulation(CrashProperties.getInstance().getIntValue("population"));
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (Properties.NoSuchParameterException e) {

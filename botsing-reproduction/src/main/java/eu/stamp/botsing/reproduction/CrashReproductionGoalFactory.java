@@ -34,7 +34,7 @@ public class CrashReproductionGoalFactory extends AbstractFitnessFactory<Weighte
     private static Map<String, WeightedSum> goals = new LinkedHashMap<>();
 
     public CrashReproductionGoalFactory(){
-        Throwable targetException = CrashProperties.getTargetException();
+        Throwable targetException = CrashProperties.getInstance().getTargetException();
         WeightedSum goal = new WeightedSum(targetException);
         String key = goal.getKey();
         if (!goals.containsKey(key)) {

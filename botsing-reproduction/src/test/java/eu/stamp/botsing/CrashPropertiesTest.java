@@ -21,22 +21,22 @@ public class CrashPropertiesTest {
 
     @Test
     public void testGetStringValue() throws Properties.NoSuchParameterException, IllegalAccessException {
-        String value = CrashProperties.getStringValue("D");
+        String value = CrashProperties.getInstance().getStringValue("D");
         System.out.println(value);
     }
 
     @Test
     public void testProperties() throws Properties.NoSuchParameterException, IllegalAccessException {
-        int popsize = CrashProperties.getIntValue("population");
+        int popsize = CrashProperties.getInstance().getIntValue("population");
         assertEquals(100, popsize);
 
-        long budget = CrashProperties.getLongValue("search_budget");
+        long budget = CrashProperties.getInstance().getLongValue("search_budget");
         assertEquals(1800, budget);
 
-        boolean bool = CrashProperties.getBooleanValue("sandbox");
+        boolean bool = CrashProperties.getInstance().getBooleanValue("sandbox");
         assertEquals(true, bool);
 
-        Properties.StoppingCondition cond = CrashProperties.getStoppingCondition();
+        Properties.StoppingCondition cond = CrashProperties.getInstance().getStoppingCondition();
         assertEquals("MAXTIME",cond.toString());
     }
 
