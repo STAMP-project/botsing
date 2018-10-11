@@ -3,7 +3,6 @@
 
 # Log file
 *.log
-!sample.log
 
 # BlueJ files
 *.ctxt
@@ -13,7 +12,6 @@
 
 # Package Files #
 *.jar
-!atos.jar
 *.war
 *.nar
 *.ear
