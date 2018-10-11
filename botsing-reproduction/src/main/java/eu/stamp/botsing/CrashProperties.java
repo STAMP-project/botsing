@@ -36,7 +36,7 @@ import java.nio.file.Paths;
 public class CrashProperties {
 
     private static CrashProperties instance = null;
-    private StackTrace crash = StackTrace.getInstance();
+    private StackTrace crash = new StackTrace();
     private String[] projectClassPaths;
 
     @Retention(RetentionPolicy.RUNTIME)
@@ -113,7 +113,7 @@ public class CrashProperties {
         return instance;
     }
 
-    public static String getStringValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
+    public String getStringValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
         if (Properties.hasParameter(property)){
             return Properties.getStringValue(property);
         }else if (configFile.containsKey(property)){
@@ -124,17 +124,17 @@ public class CrashProperties {
 
 
 
-    public static int getIntValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
+    public int getIntValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
         return Properties.getIntegerValue(property);
     }
 
 
-    public static long getLongValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
+    public  long getLongValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
         return Properties.getLongValue(property);
     }
 
 
-    public static Boolean getBooleanValue(String property){
+    public Boolean getBooleanValue(String property){
         try{
             if (Properties.hasParameter(property)){
                 return Properties.getBooleanValue(property);
@@ -166,16 +166,15 @@ public class CrashProperties {
         return crash;
     }
 
-    public static Properties.StoppingCondition getStoppingCondition(){
+    public Properties.StoppingCondition getStoppingCondition(){
         return Properties.STOPPING_CONDITION;
     }
 
-    public static Throwable getTargetException () {
-        StackTraceElement [] stackArray = new StackTraceElement [StackTrace.getInstance().getNumberOfFrames()];
-        stackArray = StackTrace.getInstance().getFrames().toArray(stackArray);
+    public Throwable getTargetException () {
+        StackTraceElement [] stackArray = new StackTraceElement [crash.getNumberOfFrames()];
+        stackArray = crash.getFrames().toArray(stackArray);
         Throwable targetException = new Exception();
         targetException.setStackTrace(stackArray);
-
         return targetException;
     }
 

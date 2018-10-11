@@ -36,19 +36,6 @@ public class StackTrace {
     private int target_frame_level;
     private String targetClass;
 
-    private static StackTrace instance;
-
-    public static StackTrace getInstance(){
-        if (instance == null) {
-            instance = new StackTrace();
-        }
-        return instance;
-    }
-
-
-    private StackTrace(){
-    }
-
 
     public void setup(String logPath,int frame_level){
         target_frame_level =  frame_level;

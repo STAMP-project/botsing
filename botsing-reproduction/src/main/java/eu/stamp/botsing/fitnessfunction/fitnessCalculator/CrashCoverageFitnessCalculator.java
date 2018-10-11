@@ -43,7 +43,7 @@ public class CrashCoverageFitnessCalculator {
         int targetFrameLevel = CrashProperties.getInstance().getStackTrace().getNumberOfFrames();
         StackTraceElement targetFrame = CrashProperties.getInstance().getStackTrace().getFrame(targetFrameLevel);
 
-        CrashProperties.getTargetException();
+        CrashProperties.getInstance().getTargetException();
 
         String methodName = derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getMethodName(), targetFrame.getLineNumber());
         List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());

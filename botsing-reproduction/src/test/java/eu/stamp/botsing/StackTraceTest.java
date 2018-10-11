@@ -101,7 +101,7 @@ public class StackTraceTest {
 
     @Test(expected = FileNotFoundException.class)
     public void missingFile() throws FileNotFoundException {
-        StackTrace trace = StackTrace.getInstance();
+        StackTrace trace = new StackTrace();
         trace.readFromFile("");
     }
 

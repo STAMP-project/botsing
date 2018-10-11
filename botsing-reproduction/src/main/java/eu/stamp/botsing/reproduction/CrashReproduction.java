@@ -105,7 +105,7 @@ public class CrashReproduction {
             LOG.error("Error in target initialization:");
             e.printStackTrace();
         }finally {
-            if (CrashProperties.getBooleanValue("reset_static_fields")) {
+            if (CrashProperties.getInstance().getBooleanValue("reset_static_fields")) {
                 configureClassReInitializer();
             }
             LoopCounter.getInstance().setActive(true);
@@ -171,7 +171,7 @@ public class CrashReproduction {
         ExecutionTrace execTrace = ExecutionTracer.getExecutionTracer().getTrace();
         final List<String> initializedClasses = execTrace.getInitializedClasses();
         ClassReInitializer.getInstance().addInitializedClasses(initializedClasses);
-        ClassReInitializer.getInstance().setReInitializeAllClasses(CrashProperties.getBooleanValue("reset_all_classes_during_test_generation"));
+        ClassReInitializer.getInstance().setReInitializeAllClasses(CrashProperties.getInstance().getBooleanValue("reset_all_classes_during_test_generation"));
     }
 
 

@@ -49,7 +49,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         TestSuiteChromosome suite = new TestSuiteChromosome();
         StoppingCondition stoppingCondition = getStoppingCondition();
         try {
-            stoppingCondition.setLimit(CrashProperties.getLongValue("search_budget"));
+            stoppingCondition.setLimit(CrashProperties.getInstance().getLongValue("search_budget"));
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (Properties.NoSuchParameterException e) {
@@ -106,6 +106,6 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     }
 
     private TestFitnessFunction getFF(){
-        return new WeightedSum(CrashProperties.getTargetException());
+        return new WeightedSum(CrashProperties.getInstance().getTargetException());
     }
 }
