@@ -154,6 +154,9 @@ public class CrashProperties {
         crash.setup(properties.getProperty("crash_log"),Integer.parseInt(properties.getProperty("target_frame")));
     }
 
+    public void setupStackTrace(StackTrace crash){
+        this.crash = crash;
+    }
     public void setClasspath(String projectClassPath){
         projectClassPaths = projectClassPath.split(File.pathSeparator);
     }
