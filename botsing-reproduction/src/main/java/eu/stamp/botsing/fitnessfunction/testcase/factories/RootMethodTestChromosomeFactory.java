@@ -21,7 +21,7 @@ package eu.stamp.botsing.fitnessfunction.testcase.factories;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
+import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.Properties;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.runtime.System;
@@ -42,6 +42,7 @@ import java.util.*;
 
 public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFactory {
     private static final Logger LOG = LoggerFactory.getLogger(RootMethodTestChromosomeFactory.class);
+    private static GuidedSearchUtility utility = new GuidedSearchUtility();
     private static Set<GenericAccessibleObject<?>> publicParentCalls = new HashSet<GenericAccessibleObject<?>>();
     private static Set<GenericAccessibleObject<?>> attemptedPublicParents = new HashSet<GenericAccessibleObject<?>>();
 
@@ -156,7 +157,7 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
     }
 
     private void fillPublicCalls(){
-        Iterator<String> iterateParents = WeightedSum.publicCalls.iterator();
+        Iterator<String> iterateParents = utility.getPublicCalls().iterator();
 
         // Fill up the set of parent calls by assessing the method names
         while (iterateParents.hasNext()) {

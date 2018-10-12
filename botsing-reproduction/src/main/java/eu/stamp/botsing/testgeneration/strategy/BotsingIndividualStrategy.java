@@ -23,7 +23,7 @@ package eu.stamp.botsing.testgeneration.strategy;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.WeightedSum;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.RootMethodTestChromosomeFactory;
-import eu.stamp.botsing.ga.strategy.SingleObjectiveGGA;
+import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
 import org.evosuite.Properties;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -95,9 +95,9 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     private GeneticAlgorithm getGA(){
         switch (CrashProperties.searchAlgorithm){
             case Single_Objective_GGA:
-                return new SingleObjectiveGGA(getChromosomeFactory());
+                return new GuidedGeneticAlgorithm(getChromosomeFactory());
             default:
-                return new SingleObjectiveGGA(getChromosomeFactory());
+                return new GuidedGeneticAlgorithm(getChromosomeFactory());
         }
     }
 
