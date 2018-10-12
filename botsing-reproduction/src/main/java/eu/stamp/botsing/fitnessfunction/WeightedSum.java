@@ -24,20 +24,13 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.fitnessfunction.fitnessCalculator.CrashCoverageFitnessCalculator;
 import eu.stamp.botsing.testgeneration.strategy.BotsingIndividualStrategy;
-import org.evosuite.TestGenerationContext;
 import org.evosuite.coverage.exception.ExceptionCoverageHelper;
 
-import org.evosuite.graphs.cfg.ActualControlFlowGraph;
-import org.evosuite.graphs.cfg.BytecodeInstruction;
-import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
-import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 
 public class WeightedSum extends TestFitnessFunction {

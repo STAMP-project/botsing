@@ -175,8 +175,9 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
     protected List<T>  elitism() {
         List<T> elite = new ArrayList<T>();
         LOG.debug("Cloning the best individuals to next generation");
-        for (int i = 0; i < this.eliteSize; i++)
+        for (int i = 0; i < this.eliteSize; i++) {
             elite.add(population.get(i));
+        }
         return elite;
     }
 
