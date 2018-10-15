@@ -31,11 +31,20 @@ import org.evosuite.testcase.execution.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Resource;
+
 
 public class WeightedSum extends TestFitnessFunction {
 
     private static final Logger LOG = LoggerFactory.getLogger(BotsingIndividualStrategy.class);
 
+    @Resource
+    CrashCoverageFitnessCalculator fitnessCalculator;
+//    private static CrashCoverageFitnessCalculator fitnessCalculator = new CrashCoverageFitnessCalculator();
+
+    public WeightedSum(){
+        fitnessCalculator =  new CrashCoverageFitnessCalculator();
+    }
 
 
     @Override
@@ -44,7 +53,7 @@ public class WeightedSum extends TestFitnessFunction {
         double exceptionCoverage = 1.0;
         double frameSimilarity = 1.0;
         // Priority 1) Line coverage
-        double LineCoverageFitness = CrashCoverageFitnessCalculator.getLineCoverageFitness( executionResult, CrashProperties.getInstance().getStackTrace().getTargetLine());
+        double LineCoverageFitness = fitnessCalculator.getLineCoverageFitness( executionResult, CrashProperties.getInstance().getStackTrace().getTargetLine());
 
         if(LineCoverageFitness == 0.0){
             //Priority 2) Exception coverage
@@ -55,7 +64,7 @@ public class WeightedSum extends TestFitnessFunction {
                 if (thrownException.equals(CrashProperties.getInstance().getStackTrace().getExceptionType())){
                     exceptionCoverage = 0.0;
                     // Priority 3) Frame similarity
-                    double tempFitness = CrashCoverageFitnessCalculator.calculateFrameSimilarity(executionResult.getExceptionThrownAtPosition(ExceptionLocator).getStackTrace());
+                    double tempFitness = fitnessCalculator.calculateFrameSimilarity(executionResult.getExceptionThrownAtPosition(ExceptionLocator).getStackTrace());
                     if (tempFitness == 0.0){
                         frameSimilarity = 0.0;
                         break;
@@ -88,11 +97,11 @@ public class WeightedSum extends TestFitnessFunction {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
         if (obj == null) {
             return false;
+        }
+        if (this == obj) {
+            return true;
         }
         if (getClass() != obj.getClass()) {
             return false;

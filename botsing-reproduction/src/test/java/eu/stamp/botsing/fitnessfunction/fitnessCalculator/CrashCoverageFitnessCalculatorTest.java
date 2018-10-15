@@ -23,7 +23,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 
 public class CrashCoverageFitnessCalculatorTest {
-
+    CrashCoverageFitnessCalculator calculator = new CrashCoverageFitnessCalculator();
 
     @Test
     public void testCalculateFrameSimilarity_zeroDistance() throws IOException {
@@ -40,7 +40,7 @@ public class CrashCoverageFitnessCalculatorTest {
         trace[1] = new StackTraceElement("eu.stamp.ClassB", "method1","ClassB", 20);
 
 
-        double distance = CrashCoverageFitnessCalculator.calculateFrameSimilarity(trace, target);
+        double distance = calculator.calculateFrameSimilarity(trace, target);
         assertEquals(0, distance, 0.000001);
     }
 
@@ -58,7 +58,7 @@ public class CrashCoverageFitnessCalculatorTest {
         trace[0] = new StackTraceElement("eu.stamp.ClassA", "method2","ClassA", 10);
         trace[1] = new StackTraceElement("eu.stamp.ClassB", "method1","ClassB", 21);
 
-        double distance = CrashCoverageFitnessCalculator.calculateFrameSimilarity(trace, target);
+        double distance = calculator.calculateFrameSimilarity(trace, target);
         assertEquals(1.0/3.0, distance, 0.000001);
     }
 
@@ -79,7 +79,7 @@ public class CrashCoverageFitnessCalculatorTest {
         trace[0] = new StackTraceElement("eu.stamp.ClassA", "method2","ClassA", 10);
         trace[1] = new StackTraceElement("eu.stamp.ClassB", "method1","ClassB", 20);
 
-        double distance = CrashCoverageFitnessCalculator.calculateFrameSimilarity(trace, target);
+        double distance = calculator.calculateFrameSimilarity(trace, target);
         assertEquals(0.0, distance, 0.000001);
     }
 
@@ -88,7 +88,7 @@ public class CrashCoverageFitnessCalculatorTest {
         StackTraceElement generated = new StackTraceElement("eu.stamp.ClassA", "method2","ClassA", 10);
         StackTraceElement target = new StackTraceElement("eu.stamp.ClassA", "method2","ClassA", 10);
 
-        double distance = CrashCoverageFitnessCalculator.getFrameDistance(generated,target);
+        double distance = calculator.getFrameDistance(generated,target);
         assertEquals(0.0, distance, 0.000001);
     }
 
@@ -97,7 +97,7 @@ public class CrashCoverageFitnessCalculatorTest {
         StackTraceElement generated = new StackTraceElement("eu.stamp.ClassA", "method2","ClassA", 10);
         StackTraceElement target = new StackTraceElement("eu.stamp.ClassB", "method2","ClassA", 10);
 
-        double distance = CrashCoverageFitnessCalculator.getFrameDistance(generated,target);
+        double distance = calculator.getFrameDistance(generated,target);
         assertEquals(3.0, distance, 0.000001);
     }
 
@@ -106,7 +106,7 @@ public class CrashCoverageFitnessCalculatorTest {
         StackTraceElement generated = new StackTraceElement("eu.stamp.ClassA", "method2","ClassA", 10);
         StackTraceElement target = new StackTraceElement("eu.stamp.ClassA", "method1","ClassA", 10);
 
-        double distance = CrashCoverageFitnessCalculator.getFrameDistance(generated,target);
+        double distance = calculator.getFrameDistance(generated,target);
         assertEquals(2.0, distance, 0.000001);
     }
 
@@ -115,7 +115,7 @@ public class CrashCoverageFitnessCalculatorTest {
         StackTraceElement generated = new StackTraceElement("eu.stamp.ClassA", "method2","ClassA", Integer.MAX_VALUE);
         StackTraceElement target = new StackTraceElement("eu.stamp.ClassA", "method2","ClassA", -1);
 
-        double distance = CrashCoverageFitnessCalculator.getFrameDistance(generated,target);
+        double distance = calculator.getFrameDistance(generated,target);
         assertEquals(1.0/2.0, distance, 0.000001);
     }
 
@@ -145,7 +145,7 @@ public class CrashCoverageFitnessCalculatorTest {
         result.setTrace(executionTrace);
 
         // compute fitness function
-        double fitness = CrashCoverageFitnessCalculator.getLineCoverageFitness(result, target,  10);
+        double fitness = calculator.getLineCoverageFitness(result, target,  10);
         assertEquals(0, fitness,0.0001);
     }
 
@@ -175,7 +175,7 @@ public class CrashCoverageFitnessCalculatorTest {
         result.setTrace(executionTrace);
 
         // compute fitness function
-        double fitness = CrashCoverageFitnessCalculator.getLineCoverageFitness(result, target,  11);
+        double fitness = calculator.getLineCoverageFitness(result, target,  11);
         assertEquals(Double.MAX_VALUE, fitness,0.0001);
     }
 
@@ -203,7 +203,7 @@ public class CrashCoverageFitnessCalculatorTest {
         Mockito.doReturn(distance).when(goal).getDistance(any(ExecutionResult.class));
         BranchCoverageTestFitness fitness = new BranchCoverageTestFitness(goal);
 
-        double fitnessValue = CrashCoverageFitnessCalculator.computeBranchDistance(fitness, result);
+        double fitnessValue = calculator.computeBranchDistance(fitness, result);
         assertEquals(1d/3d, fitnessValue,0.0001);
     }
 
@@ -231,7 +231,7 @@ public class CrashCoverageFitnessCalculatorTest {
         Mockito.doReturn(distance).when(goal).getDistance(any(ExecutionResult.class));
         BranchCoverageTestFitness fitness = new BranchCoverageTestFitness(goal);
 
-        double fitnessValue = CrashCoverageFitnessCalculator.computeBranchDistance(fitness, result);
+        double fitnessValue = calculator.computeBranchDistance(fitness, result);
         assertEquals(1.0, fitnessValue,0.0001);
     }
 }

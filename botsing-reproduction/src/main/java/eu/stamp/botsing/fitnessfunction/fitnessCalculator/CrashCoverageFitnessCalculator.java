@@ -41,12 +41,12 @@ public class CrashCoverageFitnessCalculator {
 
     private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageFitnessCalculator.class);
 
-    public static double getLineCoverageFitness(ExecutionResult result , int lineNumber) {
+    public double getLineCoverageFitness(ExecutionResult result , int lineNumber) {
         StackTrace trace = CrashProperties.getInstance().getStackTrace();
         return getLineCoverageFitness(result, trace, lineNumber);
     }
 
-    protected static double getLineCoverageFitness(ExecutionResult result, StackTrace trace, int lineNumber) {
+    protected double getLineCoverageFitness(ExecutionResult result, StackTrace trace, int lineNumber) {
         int targetFrameLevel = trace.getNumberOfFrames();
         StackTraceElement targetFrame = trace.getFrame(targetFrameLevel);
 
@@ -68,7 +68,7 @@ public class CrashCoverageFitnessCalculator {
         return lineCoverageFitness;
     }
 
-    protected static double computeBranchDistance(BranchCoverageTestFitness branchFitness, ExecutionResult result){
+    protected double computeBranchDistance(BranchCoverageTestFitness branchFitness, ExecutionResult result){
         ControlFlowDistance distance = branchFitness.getBranchGoal().getDistance(result);
         double value = distance.getResultingBranchFitness();
 
@@ -83,12 +83,12 @@ public class CrashCoverageFitnessCalculator {
     }
 
 
-    public static double calculateFrameSimilarity(StackTraceElement[] trace) {
+    public double calculateFrameSimilarity(StackTraceElement[] trace) {
         StackTrace targetTrace = CrashProperties.getInstance().getStackTrace();
         return calculateFrameSimilarity(trace, targetTrace);
     }
 
-    protected static double calculateFrameSimilarity(StackTraceElement[] trace, StackTrace targetTrace) {
+    protected double calculateFrameSimilarity(StackTraceElement[] trace, StackTrace targetTrace) {
         int startPoint = 0;
         double result = 0.0;
         //iterating on the target stack trace
@@ -115,7 +115,7 @@ public class CrashCoverageFitnessCalculator {
         return normalize(result);
     }
 
-    public static double getFrameDistance(StackTraceElement targetFrame, StackTraceElement generatedFrame){
+    public double getFrameDistance(StackTraceElement targetFrame, StackTraceElement generatedFrame){
 
         if (!targetFrame.getClassName().equals(generatedFrame.getClassName())){
             return 3.0;
@@ -130,7 +130,7 @@ public class CrashCoverageFitnessCalculator {
 
 
 
-    private static List<BranchCoverageTestFitness> setupDependencies(String className , String methodName, int lineNumber ) {
+    private List<BranchCoverageTestFitness> setupDependencies(String className , String methodName, int lineNumber ) {
         BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
         List<BranchCoverageTestFitness> branchCoverages = new ArrayList<>();
         if(goalInstruction == null){
@@ -164,7 +164,7 @@ public class CrashCoverageFitnessCalculator {
     }
 
 
-    private static double normalize(double value) throws IllegalArgumentException {
+    private double normalize(double value) throws IllegalArgumentException {
         if (value < 0d) {
             throw new IllegalArgumentException("Values to normalize cannot be negative");
         }
@@ -175,7 +175,7 @@ public class CrashCoverageFitnessCalculator {
     }
 
 
-    private static  String derivingMethodFromBytecode(String className, String methodName, int lineNumber){
+    private  String derivingMethodFromBytecode(String className, String methodName, int lineNumber){
         List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(className);
         if (instructions != null) {
             for (BytecodeInstruction ins : instructions) {
