@@ -13,11 +13,15 @@ public class GuidedMutation<T extends Chromosome> {
     private static GuidedSearchUtility utility =  new GuidedSearchUtility();
 
     public void mutateOffspring (T offspring) {
+        boolean isValid = false;
         // let's try one single mutation
+        try {
         offspring.mutate();
-
         // if the chromosome has no public call, we insert new random statements
-        boolean isValid = utility.includesPublicCall(offspring);
+        isValid= utility.includesPublicCall(offspring);
+        }catch (AssertionError e){
+            LOG.warn("First try for insertion mutation was unsuccessful.");
+        }
         int nTrials = 0; // we try maximum 50 insertion mutations (to avoid infinite loop)
         while (!isValid && nTrials<50){
             try {
