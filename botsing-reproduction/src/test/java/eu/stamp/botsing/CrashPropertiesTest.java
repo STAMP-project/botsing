@@ -18,7 +18,7 @@ public class CrashPropertiesTest {
     public void testSetupStackTrace() throws ParseException {
         CrashProperties properties = CrashProperties.getInstance();
         //assertNull(properties.getProjectClassPaths());
-
+        properties.resetStackTrace();
         StackTrace crash = properties.getStackTrace();
         assertNull(crash.getExceptionType());
         assertNull(crash.getFrames());
