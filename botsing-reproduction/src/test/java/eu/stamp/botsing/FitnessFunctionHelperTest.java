@@ -11,20 +11,21 @@ import static org.junit.Assert.assertTrue;
 
 public class FitnessFunctionHelperTest {
 
+    FitnessFunctionHelper fitnessFunctionHelper =  new FitnessFunctionHelper();
     @Test
     public void testIsConstructor(){
         BytecodeInstruction bi = Mockito.mock(BytecodeInstruction.class);
         Mockito.when(bi.getMethodName()).thenReturn("methodA()");
         Mockito.when(bi.getClassName()).thenReturn("eu.stamp.ClassA");
-        assertFalse(FitnessFunctionHelper.isConstructor(bi));
+        assertFalse(fitnessFunctionHelper.isConstructor(bi));
 
         Mockito.when(bi.getMethodName()).thenReturn("ClassA()");
         Mockito.when(bi.getClassName()).thenReturn("eu.stamp.ClassA");
-        assertTrue(FitnessFunctionHelper.isConstructor(bi));
+        assertTrue(fitnessFunctionHelper.isConstructor(bi));
 
 
         Mockito.when(bi.getMethodName()).thenReturn("methodA()");
         Mockito.when(bi.getClassName()).thenReturn("");
-        assertFalse(FitnessFunctionHelper.isConstructor(bi));
+        assertFalse(fitnessFunctionHelper.isConstructor(bi));
     }
 }
