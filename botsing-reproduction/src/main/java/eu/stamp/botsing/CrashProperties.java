@@ -49,10 +49,16 @@ public class CrashProperties {
         String description();
     }
     public static enum TestGenerationStrategy {
-        Single_GA;
-
+        Single_GA,
+        Multi_GA;
         private TestGenerationStrategy() {
         }
+    }
+
+    public static enum FitnessFunction{
+        WeightedSum,
+        SimpleSum;
+        private FitnessFunction(){}
     }
 
     public static enum SearchAlgorithm{
@@ -68,6 +74,10 @@ public class CrashProperties {
 
     @Properties.Parameter(key = "SearchAlgorithm", group = "Crash reproduction", description = "Which search algorithm to use for crash reproduction")
     public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.Single_Objective_GGA;
+
+
+    @Properties.Parameter(key = "FitnessFunctions", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
+    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.WeightedSum};
 
 
     /** The target frame in the crash stack trace */
@@ -179,6 +189,11 @@ public class CrashProperties {
         Throwable targetException = new Exception();
         targetException.setStackTrace(stackArray);
         return targetException;
+    }
+
+
+    public void resetStackTrace(){
+        crash = new StackTrace();
     }
 
 

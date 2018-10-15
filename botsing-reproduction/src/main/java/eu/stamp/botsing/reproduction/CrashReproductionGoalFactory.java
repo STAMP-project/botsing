@@ -21,7 +21,8 @@ package eu.stamp.botsing.reproduction;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testsuite.AbstractFitnessFactory;
 
 import java.util.ArrayList;
@@ -29,21 +30,36 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CrashReproductionGoalFactory extends AbstractFitnessFactory<WeightedSum> {
+public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFitnessFunction> {
 
-    private static Map<String, WeightedSum> goals = new LinkedHashMap<>();
+    private static Map<String, TestFitnessFunction> goals = new LinkedHashMap<>();
 
     public CrashReproductionGoalFactory(){
-        Throwable targetException = CrashProperties.getInstance().getTargetException();
-        WeightedSum goal = new WeightedSum(targetException);
-        String key = goal.getKey();
-        if (!goals.containsKey(key)) {
-            goals.put(key, goal);
+        if(CrashProperties.testGenerationStrategy == CrashProperties.TestGenerationStrategy.Single_GA){
+            TestFitnessFunction goal = FitnessFunctionHelper.getSingleObjective(0);
+            String key = getKey(goal);
+            if (!goals.containsKey(key)) {
+                goals.put(key, goal);
+            }
+        }else{
+            TestFitnessFunction[] rawGoals = FitnessFunctionHelper.getMultiObjectives();
+            for (TestFitnessFunction goal: rawGoals){
+                String key = getKey(goal);
+                if (!goals.containsKey(key)) {
+                    goals.put(key, goal);
+                }
+            }
         }
     }
 
     @Override
-    public List<WeightedSum> getCoverageGoals() {
-        return  new ArrayList<WeightedSum>(goals.values());
+    public List<TestFitnessFunction> getCoverageGoals() {
+        return  new ArrayList<TestFitnessFunction>(goals.values());
+    }
+
+
+    public String getKey(TestFitnessFunction goal){
+        return goal.getTargetClass()+"_"+goal.getTargetMethod();
+
     }
 }

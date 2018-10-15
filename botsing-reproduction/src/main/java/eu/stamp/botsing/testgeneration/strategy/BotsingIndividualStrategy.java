@@ -21,7 +21,7 @@ package eu.stamp.botsing.testgeneration.strategy;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.RootMethodTestChromosomeFactory;
 import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
 import org.evosuite.Properties;
@@ -106,6 +106,6 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     }
 
     private TestFitnessFunction getFF(){
-        return new WeightedSum(CrashProperties.getInstance().getTargetException());
+        return FitnessFunctionHelper.getSingleObjective(0);
     }
 }
