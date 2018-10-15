@@ -21,7 +21,6 @@ package eu.stamp.botsing.fitnessfunction;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.fitnessfunction.fitnessCalculator.CrashCoverageFitnessCalculator;
 import eu.stamp.botsing.testgeneration.strategy.BotsingIndividualStrategy;
 import org.evosuite.coverage.exception.ExceptionCoverageHelper;
@@ -38,7 +37,6 @@ public class WeightedSum extends TestFitnessFunction {
     private static final Logger LOG = LoggerFactory.getLogger(BotsingIndividualStrategy.class);
 
 
-    public WeightedSum (Throwable targetException){ }
 
     @Override
     public double getFitness(TestChromosome testChromosome, ExecutionResult executionResult) {
@@ -112,10 +110,5 @@ public class WeightedSum extends TestFitnessFunction {
         return CrashProperties.getInstance().getStackTrace().getTargetMethod();
     }
 
-    public String getKey(){
-        StackTrace st = CrashProperties.getInstance().getStackTrace();
-        //Using the CUT name and top method caller!
-        return st.getTargetClass()+"_"+st.getTargetMethod();
-    }
 
 }
