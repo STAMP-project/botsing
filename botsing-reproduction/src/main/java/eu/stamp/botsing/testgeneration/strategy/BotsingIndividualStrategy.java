@@ -38,9 +38,15 @@ import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Resource;
+
 // This strategy selects one coverage goal. In the current version, this single goal is crash coverage
 public class BotsingIndividualStrategy extends TestGenerationStrategy {
     private static final Logger LOG = LoggerFactory.getLogger(BotsingIndividualStrategy.class);
+
+    @Resource
+    FitnessFunctionHelper fitnessFunctionHelper;
 
     @Override
     public TestSuiteChromosome generateTests() {
@@ -106,6 +112,6 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     }
 
     private TestFitnessFunction getFF(){
-        return FitnessFunctionHelper.getSingleObjective(0);
+        return fitnessFunctionHelper.getSingleObjective(0);
     }
 }

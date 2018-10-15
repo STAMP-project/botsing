@@ -25,6 +25,7 @@ import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testsuite.AbstractFitnessFactory;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,17 +33,21 @@ import java.util.Map;
 
 public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFitnessFunction> {
 
+    @Resource
+    FitnessFunctionHelper fitnessFunctionHelper;
+
     private static Map<String, TestFitnessFunction> goals = new LinkedHashMap<>();
 
     public CrashReproductionGoalFactory(){
+        fitnessFunctionHelper = new FitnessFunctionHelper();
         if(CrashProperties.testGenerationStrategy == CrashProperties.TestGenerationStrategy.Single_GA){
-            TestFitnessFunction goal = FitnessFunctionHelper.getSingleObjective(0);
+            TestFitnessFunction goal = fitnessFunctionHelper.getSingleObjective(0);
             String key = getKey(goal);
             if (!goals.containsKey(key)) {
                 goals.put(key, goal);
             }
         }else{
-            TestFitnessFunction[] rawGoals = FitnessFunctionHelper.getMultiObjectives();
+            TestFitnessFunction[] rawGoals = fitnessFunctionHelper.getMultiObjectives();
             for (TestFitnessFunction goal: rawGoals){
                 String key = getKey(goal);
                 if (!goals.containsKey(key)) {

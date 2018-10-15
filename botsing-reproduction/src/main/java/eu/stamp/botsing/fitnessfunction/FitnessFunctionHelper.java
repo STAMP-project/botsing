@@ -27,7 +27,7 @@ import org.evosuite.testcase.TestFitnessFunction;
 
 public class FitnessFunctionHelper {
 
-    public static boolean isConstructor(BytecodeInstruction targetInstruction){
+    public boolean isConstructor(BytecodeInstruction targetInstruction){
         String methodName = targetInstruction.getMethodName();
         methodName = methodName.substring(0, methodName.indexOf('('));
         String classPath = targetInstruction.getClassName();
@@ -45,7 +45,7 @@ public class FitnessFunctionHelper {
 
     }
 
-    public static TestFitnessFunction getSingleObjective(int index){
+    public TestFitnessFunction getSingleObjective(int index){
         if(CrashProperties.fitnessFunctions.length < index){
             return null;
         }
@@ -56,7 +56,7 @@ public class FitnessFunctionHelper {
                 return new WeightedSum();
         }
     }
-    public static TestFitnessFunction[] getMultiObjectives(){
+    public TestFitnessFunction[] getMultiObjectives(){
         TestFitnessFunction[] result =  new TestFitnessFunction[CrashProperties.fitnessFunctions.length];
         for (int i = 0; i<CrashProperties.fitnessFunctions.length;i++){
             result[i]= getSingleObjective(i);

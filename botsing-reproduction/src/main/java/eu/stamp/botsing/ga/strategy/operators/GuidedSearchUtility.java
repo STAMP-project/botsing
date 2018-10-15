@@ -17,9 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.evosuite.ga.Chromosome;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 public class GuidedSearchUtility<T extends Chromosome> {
+
+    @Resource
+    FitnessFunctionHelper fitnessFunctionHelper;
 
     private static final Logger LOG = LoggerFactory.getLogger(GuidedSearchUtility.class);
 
@@ -63,7 +67,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
                 isProtectedMethod(targetInstruction.getActualCFG())){
             LOG.info("The target method is public!");
 
-            if(FitnessFunctionHelper.isConstructor(targetInstruction)){
+            if(fitnessFunctionHelper.isConstructor(targetInstruction)){
                 LOG.info("The target is a constructor!");
                 publicCalls.add(targetClass);
             } else {
@@ -99,7 +103,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
     }
 
 
-    private static void searchForNonPrivateMethods(BytecodeInstruction targetInstruction, String targetClass){
+    private void searchForNonPrivateMethods(BytecodeInstruction targetInstruction, String targetClass){
         List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
 
         LinkedList<String> callers =  new LinkedList<String>(); // all of the callers will be stored here
@@ -133,7 +137,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
                         // Checking the caller to see if it is private or not.
                         if(key.getActualCFG().isPublicMethod() || isProtectedMethod(key.getActualCFG())){
                             // this caller is public or protected.
-                            if(FitnessFunctionHelper.isConstructor(key)){
+                            if(fitnessFunctionHelper.isConstructor(key)){
                                 LOG.info("One target constructor is added");
                                 publicCalls.add(key.getMethodName());
                             } else {
