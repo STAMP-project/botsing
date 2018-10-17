@@ -22,16 +22,12 @@ package eu.stamp.botsing.ga.strategy;
 
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
+import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
+import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
 import org.evosuite.Properties;
 import org.evosuite.ga.*;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
-import org.evosuite.testcase.TestCase;
-import org.evosuite.testcase.TestChromosome;
-import org.evosuite.testcase.statements.ConstructorStatement;
-import org.evosuite.testcase.statements.MethodStatement;
-import org.evosuite.testcase.statements.Statement;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,25 +38,42 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm<T> {
-    private static final Logger LOG = LoggerFactory.getLogger(SingleObjectiveGGA.class);
+public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorithm<T> {
 
-    public SingleObjectiveGGA(ChromosomeFactory factory) {
-        super(factory);
-    }
+    private static final Logger LOG = LoggerFactory.getLogger(GuidedGeneticAlgorithm.class);
+
     protected ReplacementFunction replacementFunction = new FitnessReplacementFunction();
+
+    private GuidedMutation mutation;
+
+    private int populationSize;
+
+    private int eliteSize;
+
+    public GuidedGeneticAlgorithm(ChromosomeFactory factory) {
+        super(factory);
+        this.crossoverFunction = new GuidedSinglePointCrossover();
+        this.mutation = new GuidedMutation();
+        try {
+            this.populationSize =  CrashProperties.getInstance().getIntValue("population");
+            this.eliteSize = CrashProperties.getInstance().getIntValue("elite");
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (Properties.NoSuchParameterException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void setFitnessFunction(){
 
     }
 
-
     @Override
     public void generateSolution() {
+        currentIteration = 0;
+
         // generate solution
-        if (population.isEmpty()) {
-            initializePopulation();
-            assert!population.isEmpty() : "Could not create any test";
-        }
+        initializePopulation();
 
         LOG.debug("Starting evolution");
         int starvationCounter = 0;
@@ -82,7 +95,6 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
                 LOG.info("reset starvationCounter after " + starvationCounter + " iterations");
                 starvationCounter = 0;
                 lastBestFitness = bestFitness;
-
             }
 
             updateSecondaryCriterion(starvationCounter);
@@ -99,9 +111,9 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
         // Elitism
         LOG.debug("Selection");
 
-            newGeneration.addAll(elitism());
+        newGeneration.addAll(elitism());
 
-        while (!isPopulationFull(newGeneration) && !isFinished()) {
+        while (newGeneration.size() < this.populationSize && !isFinished()) {
             LOG.debug("Generating offspring");
             T parent1 = selectionFunction.select(population);
             T parent2 = selectionFunction.select(population);
@@ -109,38 +121,20 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
             T offspring2 = (T) parent2.clone();
             // Crossover
             if (Randomness.nextDouble() <= Properties.CROSSOVER_RATE) {
-                try{
-                    crossoverFunction.crossOver(offspring1, offspring2);
-                }catch (ConstructionFailedException e){
-					LOG.error("construction failed when doing crossover!");
-                    continue;
-                }catch (Exception e) {
-					LOG.error("Exception during the crossover!");
-                }
-
-            }
-            // Check if offsprings contain the target method call
-            if (!includesPublicCall(offspring1)) {
-                offspring1 = (T) parent1.clone();
-            } else if(!includesPublicCall(offspring2)) {
-                offspring2 = (T) parent2.clone();
+                ((GuidedSinglePointCrossover) crossoverFunction).crossOver(offspring1, offspring2);
             }
 
             // Mutation
-            try {
-                mutateOffspring(offspring1);
-                mutateOffspring(offspring2);
-            }catch (Exception e) {
-                LOG.error("Mutation is unsuccessful");
-                e.printStackTrace();
-            }
-            // If and only if one of the offsprings is not worse than the best parent, we replace parents by offsprings.
-            FitnessFunction fitnessFunction = fitnessFunctions.get(0);
-            fitnessFunction.getFitness(offspring1);
-            notifyEvaluation(offspring1);
-            fitnessFunction.getFitness(offspring2);
-            notifyEvaluation(offspring2);
+            this.mutation.mutateOffspring(offspring1);
+            notifyMutation(offspring1);
+            this.mutation.mutateOffspring(offspring2);
+            notifyMutation(offspring2);
 
+            //calculate fitness
+            calculateFitness(offspring1);
+            calculateFitness(offspring2);
+
+            // If and only if one of the offsprings is not worse than the best parent, we replace parents by offsprings.
             if (keepOffspring(parent1, parent2, offspring1, offspring2)) {
                 LOG.debug("Replace parents");
 
@@ -149,18 +143,12 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
                 if (isTooLong(offspring1) || offspring1.size() == 0) {
                     rejected++;
                 } else {
-                    // if(Properties.ADAPTIVE_LOCAL_SEARCH ==
-                    // AdaptiveLocalSearchTarget.ALL)
-                    // applyAdaptiveLocalSearch(offspring1);
                     newGeneration.add(offspring1);
                 }
 
                 if (isTooLong(offspring2) || offspring2.size() == 0) {
                     rejected++;
                 } else {
-                    // if(Properties.ADAPTIVE_LOCAL_SEARCH ==
-                    // AdaptiveLocalSearchTarget.ALL)
-                    // applyAdaptiveLocalSearch(offspring2);
                     newGeneration.add(offspring2);
                 }
 
@@ -177,64 +165,41 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
             }
         }
 
-
         population = newGeneration;
         // archive
         updateFitnessFunctionsAndValues();
 
         currentIteration++;
-
-    }
-
-    private boolean isPopulationFull(List<T> newGeneration) {
-        try {
-            if(newGeneration.size() >= CrashProperties.getInstance().getIntValue("population")) {
-                return true;
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (Properties.NoSuchParameterException e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
     protected List<T>  elitism() {
         List<T> elite = new ArrayList<T>();
         LOG.debug("Cloning the best individuals to next generation");
-        try {
-            for (int i = 0; i < CrashProperties.getInstance().getIntValue("elite"); i++) {
-                elite.add(population.get(i));
-            }
-        }catch (Exception e){
-            e.printStackTrace();
+        for (int i = 0; i < this.eliteSize; i++) {
+            elite.add(population.get(i));
         }
         return elite;
     }
 
     @Override
     public void initializePopulation() {
-        currentIteration = 0;
-        // Generate Initial Population
-        try {
-            generatePopulation(CrashProperties.getInstance().getIntValue("population"));
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (Properties.NoSuchParameterException e) {
-            e.printStackTrace();
+        if (!population.isEmpty()) {
+            return;
         }
+
+        // Generate Initial Population
+        generatePopulation(this.populationSize);
 
         LOG.debug("Initializing the population.");
         // Calculate fitness functions
-        calculateFitnessOfPopulation();
+        calculateFitness();
         // Sort individuals
         sortPopulation();
+        assert!population.isEmpty() : "Could not create any test";
     }
 
     protected void sortPopulation() {
         LOG.debug("Sort current population.");
-
-
         if (fitnessFunctions.get(0).isMaximizationFunction()) {
             Collections.sort(population, Collections.reverseOrder());
         } else {
@@ -242,7 +207,7 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
         }
     }
 
-    private void calculateFitnessOfPopulation() {
+    private void calculateFitness() {
         LOG.debug("Calculating fitness for " + population.size() + " individuals");
         Iterator<T> iterator = population.iterator();
         while (iterator.hasNext()) {
@@ -252,15 +217,17 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
                     iterator.remove();
                 }
             } else {
-                for (FitnessFunction<T> fitnessFunction : fitnessFunctions) {
-                    notifyEvaluation(c);
-                    fitnessFunction.getFitness(c);
-                }
+                calculateFitness(c);
             }
         }
     }
 
-
+    private void calculateFitness(T chromosome){
+        for (FitnessFunction<T> fitnessFunction : fitnessFunctions) {
+            notifyEvaluation(chromosome);
+            double value = fitnessFunction.getFitness(chromosome);
+        }
+    }
 
     private void generatePopulation(int populationSize) {
         LOG.debug("Creating random population");
@@ -278,7 +245,6 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
             }
         }
     }
-
 
     public boolean isFinished() {
         for (StoppingCondition c : stoppingConditions) {
@@ -302,61 +268,12 @@ public class SingleObjectiveGGA  <T extends Chromosome> extends GeneticAlgorithm
     }
 
     public T getBestIndividual() {
-
         if (population.isEmpty()) {
             return this.chromosomeFactory.getChromosome();
         }
 
         // Assume population is sorted
         return population.get(0);
-    }
-
-    private boolean includesPublicCall (T individual) {
-
-        Iterator <String> publicCallsIterator = WeightedSum.publicCalls.iterator();
-        TestChromosome candidateChrom = (TestChromosome) individual;
-        TestCase candidate = candidateChrom.getTestCase();
-        if (candidate.size() == 0){
-            return false;
-        }
-        while (publicCallsIterator.hasNext()){
-            String callName = publicCallsIterator.next();
-            for ( int index= 0 ; index < candidate.size() ;index++) {
-                Statement currentStatement = candidate.getStatement(index);
-                if (!callName.contains(".") && currentStatement instanceof MethodStatement) {
-                    MethodStatement candidateMethod = (MethodStatement) candidate.getStatement(index);
-                    if (candidateMethod.getMethodName().equalsIgnoreCase(callName)) {
-                        return true;
-                    }
-                } else if (callName.contains(".") && currentStatement instanceof ConstructorStatement){
-                    if (callName.equals(((ConstructorStatement) currentStatement).getDeclaringClassName())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-
-    private void mutateOffspring (T offspring) {
-        boolean permission = false;
-        while (!permission) {
-            // Mutation
-            try{
-                offspring.mutate();
-            }catch(Exception | AssertionError e){
-                LOG.error("Mutation failed!");
-            }
-            if (offspring.isChanged()) {
-                offspring.updateAge(currentIteration);
-            }
-            try {
-                permission = includesPublicCall(offspring);
-            }catch(Exception e){
-                LOG.error("Something went wrong when checking the target call after mutation! \n ");
-            }
-        }
     }
 
     protected boolean keepOffspring(Chromosome parent1, Chromosome parent2, Chromosome offspring1,

@@ -21,25 +21,44 @@ package eu.stamp.botsing;
  */
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 
 public class CommandLineParameters {
 
+    public static final String D_OPT = "D";
+    public static final String PROJECT_CP_OPT = "projectCP";
+    public static final String TARGET_FRAME_OPT = "target_frame";
+    public static final String CRASH_LOG_OPT = "crash_log";
+    public static final String HELP_OPT = "help";
+
     public static Options getCommandLineOptions() {
         Options options = new Options();
-        // define options
-        @SuppressWarnings("static-access")
-        Option property = OptionBuilder.withArgName("property=value").hasArgs(2).withValueSeparator().withDescription("use value for given property").create("D");
-        Option projectCP = new Option("projectCP", true,
-                "classpath of the project under test and all its dependencies");
-        Option target_frame = new Option("target_frame",true, "Level of the target frame");
-        Option crash_log = new Option("crash_log",true, "Directory of the given stack trace");
-
-        options.addOption(property);
-        options.addOption(projectCP);
-        options.addOption(target_frame);
-        options.addOption(crash_log);
+        // Properties
+        options.addOption(Option.builder(D_OPT)
+                .numberOfArgs(2)
+                .argName("property=value")
+                .valueSeparator()
+                .desc("use value for given property")
+                .build());
+        // Classpath
+        options.addOption(Option.builder(PROJECT_CP_OPT)
+                .hasArg()
+                .desc("classpath of the project under test and all its dependencies")
+                .build());
+        // Target frame
+        options.addOption(Option.builder(TARGET_FRAME_OPT)
+                .hasArg()
+                .desc("Level of the target frame")
+                .build());
+        // Stack trace file
+        options.addOption(Option.builder(CRASH_LOG_OPT)
+                .hasArg()
+                .desc("File with the stack trace")
+                .build());
+        // Help message
+        options.addOption(Option.builder(HELP_OPT)
+                .desc("Prints this help message.")
+                .build());
 
         return options;
     }

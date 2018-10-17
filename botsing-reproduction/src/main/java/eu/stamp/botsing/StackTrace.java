@@ -36,12 +36,10 @@ public class StackTrace {
     private int target_frame_level;
     private String targetClass;
 
-
     public void setup(String logPath,int frame_level){
         target_frame_level =  frame_level;
         try {
             BufferedReader reader = readFromFile(logPath);
-
             // Parse type of the exception
             StringTokenizer st = new StringTokenizer(reader.readLine(), ":");
             exceptionType =  st.nextToken();
@@ -68,7 +66,6 @@ public class StackTrace {
             targetClass = frames.get(frame_level-1).getClassName();
             org.evosuite.Properties.TARGET_CLASS = targetClass;
             LOG.info("Target Class is set to: "+targetClass);
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -130,7 +127,7 @@ public class StackTrace {
         return frames;
     }
 
-    protected BufferedReader readFromFile(String filePath) throws FileNotFoundException {
+    public BufferedReader readFromFile(String filePath) throws FileNotFoundException {
         File file = new File(filePath);
         BufferedReader br = new BufferedReader(new FileReader(file));
         return br;

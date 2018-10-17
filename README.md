@@ -6,6 +6,38 @@
 Botsing is a Java framework for crash reproduction. It relies on [EvoSuite](http://www.evosuite.org) for code instrumentation.
 
 
+## Usage
+
+### Command line interface
+
+Botsing has three mandatory parameters:
+ - `-crash_log` the file with the stacktrace. The stacktrace should be clean and cannot contain any nested exceptions.
+ - `-target_frame` the target frame to reproduce. This number should be between 1 and the number of frames in the stacktrace.
+ - `-projectCP` the classpath of the project and all its dependencies. The classpath can be a folder containing all the required `.jar` files.
+ 
+By default, Botsing uses a budget of 30 min. to try to reproduce a crash. This value can be modified by specifying an additional parameter in format `-Dsearch_budget=60` (here, for 60 seconds). Similarly, the default population is set to 100 individuals, this value may be modified using `-Dpopulation=10` (here, for 10 individuals).
+
+To check the list of options, use:
+
+```sh
+$ java -jar botsing-reproduction.jar -help
+usage: java -jar botsing-reproduction.jar -crash_log stacktrace.log -target_frame 2
+            -projectCP dep1.jar;dep2.jar  )
+ -crash_log <arg>      File with the stack trace
+ -D <property=value>   use value for given property
+ -help                 Prints this help message.
+ -projectCP <arg>      classpath of the project under test and all its
+                       dependencies
+ -target_frame <arg>   Level of the target frame
+```
+
+#### Example
+
+```
+java -jar botsing-reproduction.jar -crash_log LANG-1b.log -target_frame 2 -projectCP ~/bin
+```
+
+
 ## Contributing
 
 Botsing is licensed under Apache-2.0, pull request as are welcome.

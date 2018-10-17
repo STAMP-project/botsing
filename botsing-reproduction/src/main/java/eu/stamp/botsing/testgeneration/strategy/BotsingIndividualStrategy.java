@@ -21,9 +21,9 @@ package eu.stamp.botsing.testgeneration.strategy;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.RootMethodTestChromosomeFactory;
-import eu.stamp.botsing.ga.strategy.SingleObjectiveGGA;
+import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
 import org.evosuite.Properties;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -38,9 +38,15 @@ import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Resource;
+
 // This strategy selects one coverage goal. In the current version, this single goal is crash coverage
 public class BotsingIndividualStrategy extends TestGenerationStrategy {
     private static final Logger LOG = LoggerFactory.getLogger(BotsingIndividualStrategy.class);
+
+    @Resource
+    FitnessFunctionHelper fitnessFunctionHelper =  new FitnessFunctionHelper();
 
     @Override
     public TestSuiteChromosome generateTests() {
@@ -95,9 +101,9 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     private GeneticAlgorithm getGA(){
         switch (CrashProperties.searchAlgorithm){
             case Single_Objective_GGA:
-                return new SingleObjectiveGGA(getChromosomeFactory());
+                return new GuidedGeneticAlgorithm(getChromosomeFactory());
             default:
-                return new SingleObjectiveGGA(getChromosomeFactory());
+                return new GuidedGeneticAlgorithm(getChromosomeFactory());
         }
     }
 
@@ -106,6 +112,6 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     }
 
     private TestFitnessFunction getFF(){
-        return new WeightedSum(CrashProperties.getInstance().getTargetException());
+        return fitnessFunctionHelper.getSingleObjective(0);
     }
 }

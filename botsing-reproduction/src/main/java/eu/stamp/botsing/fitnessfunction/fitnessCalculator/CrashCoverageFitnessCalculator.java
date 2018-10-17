@@ -38,51 +38,61 @@ import java.util.List;
 import java.util.Set;
 
 public class CrashCoverageFitnessCalculator {
-    private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageFitnessCalculator.class);
-    public static double getLineCoverageFitness(ExecutionResult result , int lineNumber) {
-        int targetFrameLevel = CrashProperties.getInstance().getStackTrace().getNumberOfFrames();
-        StackTraceElement targetFrame = CrashProperties.getInstance().getStackTrace().getFrame(targetFrameLevel);
 
-        CrashProperties.getInstance().getTargetException();
+    private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageFitnessCalculator.class);
+
+    public double getLineCoverageFitness(ExecutionResult result , int lineNumber) {
+        StackTrace trace = CrashProperties.getInstance().getStackTrace();
+        return getLineCoverageFitness(result, trace, lineNumber);
+    }
+
+    protected double getLineCoverageFitness(ExecutionResult result, StackTrace trace, int lineNumber) {
+        int targetFrameLevel = trace.getNumberOfFrames();
+        StackTraceElement targetFrame = trace.getFrame(targetFrameLevel);
 
         String methodName = derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getMethodName(), targetFrame.getLineNumber());
         List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
         double lineCoverageFitness = 1.0;
+        Set<Integer> list = result.getTrace().getCoveredLines();
         if (result.getTrace().getCoveredLines().contains(lineNumber)) {
             lineCoverageFitness = 0.0;
         } else {
-            double min = Double.MAX_VALUE;
+            lineCoverageFitness = Double.MAX_VALUE;
             // Indicate minimum distance
             for (BranchCoverageTestFitness branchFitness : branchFitnesses) {
                 // let's calculate the branch distance
-                ControlFlowDistance distance = branchFitness.getBranchGoal().getDistance(result);
-                double temp = distance.getResultingBranchFitness();
-
-                if (temp == 0.0) {
-                    // If the control dependency was covered, then likely
-                    // an exception happened before the line was reached
-                    temp = 1.0;
-                } else {
-                    temp = normalize(temp);
-                }
-                if (temp < min){
-                    min = temp;
-                }
-
+                double distance = computeBranchDistance(branchFitness, result);
+                lineCoverageFitness = Math.min(lineCoverageFitness, distance);
             }
-
-            lineCoverageFitness = min;
-
         }
         return lineCoverageFitness;
     }
 
+    protected double computeBranchDistance(BranchCoverageTestFitness branchFitness, ExecutionResult result){
+        ControlFlowDistance distance = branchFitness.getBranchGoal().getDistance(result);
+        double value = distance.getResultingBranchFitness();
 
-    public static double calculateFrameSimilarity(StackTraceElement[] trace) {
+        if (value == 0.0) {
+            // If the control dependency was covered, then likely
+            // an exception happened before the line was reached
+            value = 1.0;
+        } else {
+            value = normalize(value);
+        }
+        return value;
+    }
+
+
+    public double calculateFrameSimilarity(StackTraceElement[] trace) {
+        StackTrace targetTrace = CrashProperties.getInstance().getStackTrace();
+        return calculateFrameSimilarity(trace, targetTrace);
+    }
+
+    protected double calculateFrameSimilarity(StackTraceElement[] trace, StackTrace targetTrace) {
         int startPoint = 0;
         double result = 0.0;
         //iterating on the target stack trace
-        StackTrace targetTrace = CrashProperties.getInstance().getStackTrace();
+
         int numberOfFrames = targetTrace.getNumberOfFrames();
         for (int frame_level=1;frame_level<=numberOfFrames;frame_level++){
             if (!targetTrace.getFrame(frame_level).getClassName().contains("reflect") || !targetTrace.getFrame(frame_level).getClassName().contains("invoke")){
@@ -105,8 +115,7 @@ public class CrashCoverageFitnessCalculator {
         return normalize(result);
     }
 
-    public static double getFrameDistance(StackTraceElement targetFrame, StackTraceElement generatedFrame){
-
+    public double getFrameDistance(StackTraceElement targetFrame, StackTraceElement generatedFrame){
 
         if (!targetFrame.getClassName().equals(generatedFrame.getClassName())){
             return 3.0;
@@ -121,7 +130,7 @@ public class CrashCoverageFitnessCalculator {
 
 
 
-    private static List<BranchCoverageTestFitness> setupDependencies(String className , String methodName, int lineNumber ) {
+    private List<BranchCoverageTestFitness> setupDependencies(String className , String methodName, int lineNumber ) {
         BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
         List<BranchCoverageTestFitness> branchCoverages = new ArrayList<>();
         if(goalInstruction == null){
@@ -155,7 +164,7 @@ public class CrashCoverageFitnessCalculator {
     }
 
 
-    private static double normalize(double value) throws IllegalArgumentException {
+    private double normalize(double value) throws IllegalArgumentException {
         if (value < 0d) {
             throw new IllegalArgumentException("Values to normalize cannot be negative");
         }
@@ -166,7 +175,7 @@ public class CrashCoverageFitnessCalculator {
     }
 
 
-    private static  String derivingMethodFromBytecode(String className, String methodName, int lineNumber){
+    private  String derivingMethodFromBytecode(String className, String methodName, int lineNumber){
         List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(className);
         if (instructions != null) {
             for (BytecodeInstruction ins : instructions) {

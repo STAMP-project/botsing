@@ -21,6 +21,9 @@ package eu.stamp.botsing;
  */
 
 import eu.stamp.botsing.reproduction.CrashReproduction;
+
+import static eu.stamp.botsing.CommandLineParameters.*;
+
 import org.apache.commons.cli.*;
 import org.evosuite.Properties;
 import org.evosuite.classpath.ClassPathHacker;
@@ -34,19 +37,35 @@ import java.io.IOException;
 
 
 public class Botsing {
+
     private static final Logger LOG = LoggerFactory.getLogger(Botsing.class);
+
     public Object parseCommandLine(String[] args) {
-        CommandLineParser parser = new GnuParser();
-        // get permitted options
+        // Get default properties
         CrashProperties crashProperties = CrashProperties.getInstance();
-        Options options =  CommandLineParameters.getCommandLineOptions();
 
+        // Parse commands according to the defined options
+        CommandLineParser parser = new DefaultParser();
+        Options options = CommandLineParameters.getCommandLineOptions();
+        CommandLine commands = null;
         try {
-            // Parse commands according to the defined options
-            CommandLine commands = parser.parse(options, args);
-            java.util.Properties properties = commands.getOptionProperties("D");
+            commands = parser.parse(options, args);
+        } catch (ParseException e) {
+            LOG.error("Could not parse command line!", e);
+            printHelpMessage(options);
+            return null;
+        }
 
-            for(String property: properties.stringPropertyNames()){
+        // If help option is provided
+        if (commands.hasOption(HELP_OPT)) {
+            printHelpMessage(options);
+        } else if(!(commands.hasOption(PROJECT_CP_OPT) && commands.hasOption(CRASH_LOG_OPT) && commands.hasOption(TARGET_FRAME_OPT))) { // Check the required options are there
+            LOG.error("A mandatory options -{} -{} -{} is missing!", PROJECT_CP_OPT, CRASH_LOG_OPT, TARGET_FRAME_OPT);
+            printHelpMessage(options);
+        } else {// Otherwise, proceed to crash reproduction
+            java.util.Properties properties = commands.getOptionProperties(D_OPT);
+            // Update default properties with values from command line
+            for (String property : properties.stringPropertyNames()) {
                 if (Properties.hasParameter(property)) {
                     try {
                         Properties.getInstance().setValue(property, properties.getProperty(property));
@@ -58,26 +77,33 @@ public class Botsing {
                 }
             }
 
-
-
             // Setup given stack trace
-            crashProperties.setupStackTrace(commands);
+            crashProperties.setupStackTrace(commands.getOptionValue(CRASH_LOG_OPT),
+                    Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
 
             // Setup Project's class path
-            if (commands.hasOption("projectCP")) {
-                crashProperties.setClasspath(commands.getOptionValue("projectCP"));
-                ClassPathHandler.getInstance().changeTargetClassPath(crashProperties.getProjectClassPaths());
+            String cp = commands.getOptionValue(PROJECT_CP_OPT);
+            File file = new File(cp);
+            // If the file is a directory, get all the jar files in that directory.
+            if(file.isDirectory()){
+                File[] jarsFiles = file.listFiles((File f) -> f.isFile() && f.getName().endsWith(".jar"));
+                String[] jarsCp = new String[jarsFiles.length];
+                for(int i = 0 ; i < jarsCp.length ; i++){
+                    jarsCp[i] = jarsFiles[i].getAbsolutePath();
+                }
+                crashProperties.setClasspath(jarsCp);
+            } else {
+                crashProperties.setClasspath(cp);
             }
+            ClassPathHandler.getInstance().changeTargetClassPath(crashProperties.getProjectClassPaths());
 
             // locate Tool jar
             if (TestSuiteWriterUtils.needToUseAgent() && Properties.JUNIT_CHECK) {
                 ClassPathHacker.initializeToolJar();
             }
 
-
             // Adding the target project classpath entries.
-
-            for (String entry : ClassPathHandler.getInstance().getTargetProjectClasspath().split(File.pathSeparator)){
+            for (String entry : ClassPathHandler.getInstance().getTargetProjectClasspath().split(File.pathSeparator)) {
                 try {
                     ClassPathHacker.addFile(entry);
                 } catch (IOException e) {
@@ -85,15 +111,19 @@ public class Botsing {
                 }
             }
 
-
-        } catch (ParseException e) {
-            e.printStackTrace();
+            return CrashReproduction.execute();
         }
+        return null;
 
+    }
 
+    private void printHelpMessage(Options options) {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("java -jar botsing.jar -crash_log stacktrace.log -target_frame 2 -projectCP dep1.jar;dep2.jar  )", options);
+    }
 
-
-        return CrashReproduction.execute();
-
+    public static void main(String[] args) {
+        Botsing bot = new Botsing();
+        bot.parseCommandLine(args);
     }
 }

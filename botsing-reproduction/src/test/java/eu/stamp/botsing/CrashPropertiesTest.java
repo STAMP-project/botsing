@@ -4,7 +4,13 @@ import org.apache.commons.cli.*;
 import org.evosuite.Properties;
 import org.junit.Test;
 
+import org.mockito.Mockito;
+
+import java.util.ArrayList;
+
+
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyString;
 
 public class CrashPropertiesTest {
 
@@ -12,7 +18,7 @@ public class CrashPropertiesTest {
     public void testSetupStackTrace() throws ParseException {
         CrashProperties properties = CrashProperties.getInstance();
         //assertNull(properties.getProjectClassPaths());
-
+        properties.resetStackTrace();
         StackTrace crash = properties.getStackTrace();
         assertNull(crash.getExceptionType());
         assertNull(crash.getFrames());
@@ -21,7 +27,7 @@ public class CrashPropertiesTest {
 
     @Test
     public void testGetStringValue() throws Properties.NoSuchParameterException, IllegalAccessException {
-        String value = CrashProperties.getInstance().getStringValue("D");
+        String value = CrashProperties.getInstance().getStringValue("D_OPT");
         System.out.println(value);
     }
 
@@ -49,5 +55,23 @@ public class CrashPropertiesTest {
         assertEquals("jar1", jars[0]);
         assertEquals("jar2", jars[1]);
     }
+
+    @ Test
+    public void testGetTargetException() throws Exception{
+
+        ArrayList<StackTraceElement> stackTrace = new ArrayList<StackTraceElement>();
+        stackTrace.add(new StackTraceElement("eu.stamp.ClassA", "method2", "ClassA", 10));
+        stackTrace.add(new StackTraceElement("eu.stamp.ClassB", "method1", "ClassB", 20));
+
+        StackTrace trace =  Mockito.mock(StackTrace.class);
+        Mockito.when(trace.getNumberOfFrames()).thenReturn(2);
+        Mockito.when(trace.getFrames()).thenReturn(stackTrace);
+
+        CrashProperties.getInstance().setupStackTrace(trace);
+        Throwable target = CrashProperties.getInstance().getTargetException();
+        assertArrayEquals(target.getStackTrace(),stackTrace.toArray());
+    }
+
+
 
 }
