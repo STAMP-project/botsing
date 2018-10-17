@@ -23,11 +23,11 @@ import java.util.*;
 public class GuidedSearchUtility<T extends Chromosome> {
 
     @Resource
-    FitnessFunctionHelper fitnessFunctionHelper;
+    FitnessFunctionHelper fitnessFunctionHelper = new FitnessFunctionHelper();
 
     private static final Logger LOG = LoggerFactory.getLogger(GuidedSearchUtility.class);
 
-    public static Set<String> publicCalls = new HashSet<String>();
+    public Set<String> publicCalls = new HashSet<String>();
 
     public boolean includesPublicCall (T individual) {
         Iterator<String> publicCallsIterator = publicCalls.iterator();
@@ -40,27 +40,40 @@ public class GuidedSearchUtility<T extends Chromosome> {
             String callName = publicCallsIterator.next();
             for (int index= 0 ; index < candidate.size() ;index++) {
                 Statement currentStatement = candidate.getStatement(index);
-                if (!callName.contains(".") && currentStatement instanceof MethodStatement) {
-                    MethodStatement candidateMethod = (MethodStatement) candidate.getStatement(index);
-                    if (candidateMethod.getMethodName().equalsIgnoreCase(callName)) {
-                        return true;
-                    }
-                } else if (callName.contains(".") && currentStatement instanceof ConstructorStatement){
-                    if (callName.equals(((ConstructorStatement) currentStatement).getDeclaringClassName())) {
-                        return true;
-                    }
+                if (isCall2Method(callName, currentStatement)) {
+                    return true;
+                }
+                if (isCall2Constructor(callName, currentStatement)) {
+                    return true;
                 }
             }
         }
         return false;
     }
 
-    public Set<String> getPublicCalls() {
-        StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
-        String targetClass = givenStackTrace.getTargetClass();
+    protected boolean isCall2Method(String callName, Statement currentStatement){
+        if (!callName.contains(".") && currentStatement instanceof MethodStatement) {
+            MethodStatement candidateMethod = (MethodStatement) currentStatement;
+            if (candidateMethod.getMethodName().equalsIgnoreCase(callName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-        int targetLine = givenStackTrace.getTargetLine();
-        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+    protected boolean isCall2Constructor(String callName, Statement currentStatement){
+        if (callName.contains(".") && currentStatement instanceof ConstructorStatement) {
+            if (callName.equals(((ConstructorStatement) currentStatement).getDeclaringClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected Set<String> getPublicCalls(StackTrace trace, List<BytecodeInstruction> instructions){
+        int targetLine = trace.getTargetLine();
+        String targetClass = trace.getTargetClass();
+
         BytecodeInstruction targetInstruction = getTargetInstruction(instructions, targetLine);
 
         if (targetInstruction.getActualCFG().isPublicMethod() ||
@@ -93,6 +106,14 @@ public class GuidedSearchUtility<T extends Chromosome> {
         return publicCalls;
     }
 
+
+    public Set<String> getPublicCalls() {
+        StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
+        String targetClass = givenStackTrace.getTargetClass();
+        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+        return getPublicCalls(givenStackTrace, instructions);
+    }
+
     private static boolean isProtectedMethod(ActualControlFlowGraph acfg){
         return (acfg.getMethodAccess() & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED;
     }
@@ -102,10 +123,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
         return newMethodName;
     }
 
-
-    private void searchForNonPrivateMethods(BytecodeInstruction targetInstruction, String targetClass){
-        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
-
+    protected void searchForNonPrivateMethods(List<BytecodeInstruction> instructions, BytecodeInstruction targetInstruction){
         LinkedList<String> callers =  new LinkedList<String>(); // all of the callers will be stored here
         Set<String> visitedMethods = new HashSet<String>();    // list of visited methods
         HashMap<BytecodeInstruction, ArrayList<String>> CUTMethods = new HashMap<>(); // all of the methods in Class Under Test!
@@ -152,8 +170,17 @@ public class GuidedSearchUtility<T extends Chromosome> {
                     }
                 }
             }
-
         }
+    }
+
+    /**
+     * This method retrieves all public/protected methods that call the method containing the target bytecode instruction
+     * @param targetInstruction target bytecode instruction (corresponding to the line of code in the target stack trace)
+     * @param targetClass the class under test
+     */
+    protected void searchForNonPrivateMethods(BytecodeInstruction targetInstruction, String targetClass){
+        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+        searchForNonPrivateMethods(instructions, targetInstruction);
     }
 
     private static BytecodeInstruction getTargetInstruction (List<BytecodeInstruction> instructions , int targetLine) {
