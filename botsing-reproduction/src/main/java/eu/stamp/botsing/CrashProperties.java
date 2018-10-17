@@ -30,7 +30,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.nio.file.Paths;
 
 
 public class CrashProperties {
@@ -48,24 +47,29 @@ public class CrashProperties {
 
         String description();
     }
+
     public static enum TestGenerationStrategy {
         Single_GA,
         Multi_GA;
+
         private TestGenerationStrategy() {
         }
     }
 
-    public static enum FitnessFunction{
+    public static enum FitnessFunction {
         WeightedSum,
         SimpleSum;
-        private FitnessFunction(){}
+
+        private FitnessFunction() {
+        }
     }
 
-    public static enum SearchAlgorithm{
+    public static enum SearchAlgorithm {
         Single_Objective_GGA;
-        private SearchAlgorithm(){}
-    }
 
+        private SearchAlgorithm() {
+        }
+    }
 
 
     @Properties.Parameter(key = "testGenerationStrategy", group = "Crash reproduction", description = "Which mode to use for crash reproduction")
@@ -80,15 +84,17 @@ public class CrashProperties {
     public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.WeightedSum};
 
 
-    /** The target frame in the crash stack trace */
+    /**
+     * The target frame in the crash stack trace
+     */
     @Parameter(key = "max_target_injection_tries", group = "Runtime", description = "The maximum number of times the search tries to generate an individuals with the target method.")
     public static int max_target_injection_tries = 150;
 
     static java.util.Properties configFile = new java.util.Properties();
 
-    private CrashProperties(){
+    private CrashProperties() {
         loadConfig();
-        for (String property : configFile.stringPropertyNames()){
+        for (String property : configFile.stringPropertyNames()) {
             try {
                 if (Properties.hasParameter(property)) {
                     Properties.getInstance().setValue(property, configFile.getProperty(property));
@@ -101,15 +107,13 @@ public class CrashProperties {
         }
 
 
-
     }
 
-    private void loadConfig(){
+    private void loadConfig() {
         try {
-            InputStream inputstream = new FileInputStream(Paths.get(System.getProperty("user.dir"),"src","main","java","eu","stamp","botsing","config.properties").toString());
+            InputStream inputstream = getClass().getClassLoader().getResourceAsStream("config.properties");
             configFile.load(inputstream);
-
-        }catch(FileNotFoundException eta){
+        } catch (FileNotFoundException eta) {
             eta.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
@@ -124,14 +128,13 @@ public class CrashProperties {
     }
 
     public String getStringValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
-        if (Properties.hasParameter(property)){
+        if (Properties.hasParameter(property)) {
             return Properties.getStringValue(property);
-        }else if (configFile.containsKey(property)){
+        } else if (configFile.containsKey(property)) {
             return configFile.getProperty(property);
         }
         return null;
     }
-
 
 
     public int getIntValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
@@ -139,16 +142,16 @@ public class CrashProperties {
     }
 
 
-    public  long getLongValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
+    public long getLongValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
         return Properties.getLongValue(property);
     }
 
 
-    public Boolean getBooleanValue(String property){
-        try{
-            if (Properties.hasParameter(property)){
+    public Boolean getBooleanValue(String property) {
+        try {
+            if (Properties.hasParameter(property)) {
                 return Properties.getBooleanValue(property);
-            }else if (configFile.containsKey(property)){
+            } else if (configFile.containsKey(property)) {
                 return Boolean.valueOf(configFile.getProperty(property));
             }
         } catch (Properties.NoSuchParameterException e) {
@@ -159,15 +162,16 @@ public class CrashProperties {
         return null;
     }
 
-    public void setupStackTrace(CommandLine command){
+    public void setupStackTrace(CommandLine command) {
         java.util.Properties properties = command.getOptionProperties("D");
-        crash.setup(properties.getProperty("crash_log"),Integer.parseInt(properties.getProperty("target_frame")));
+        crash.setup(properties.getProperty("crash_log"), Integer.parseInt(properties.getProperty("target_frame")));
     }
 
-    public void setupStackTrace(StackTrace crash){
+    public void setupStackTrace(StackTrace crash) {
         this.crash = crash;
     }
-    public void setClasspath(String projectClassPath){
+
+    public void setClasspath(String projectClassPath) {
         projectClassPaths = projectClassPath.split(File.pathSeparator);
     }
 
@@ -175,16 +179,16 @@ public class CrashProperties {
         return projectClassPaths;
     }
 
-    public StackTrace getStackTrace(){
+    public StackTrace getStackTrace() {
         return crash;
     }
 
-    public Properties.StoppingCondition getStoppingCondition(){
+    public Properties.StoppingCondition getStoppingCondition() {
         return Properties.STOPPING_CONDITION;
     }
 
-    public Throwable getTargetException () {
-        StackTraceElement [] stackArray = new StackTraceElement [crash.getNumberOfFrames()];
+    public Throwable getTargetException() {
+        StackTraceElement[] stackArray = new StackTraceElement[crash.getNumberOfFrames()];
         stackArray = crash.getFrames().toArray(stackArray);
         Throwable targetException = new Exception();
         targetException.setStackTrace(stackArray);
@@ -192,10 +196,9 @@ public class CrashProperties {
     }
 
 
-    public void resetStackTrace(){
+    public void resetStackTrace() {
         crash = new StackTrace();
     }
-
 
 
 }
