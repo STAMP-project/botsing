@@ -153,7 +153,8 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
     }
 
     public void reset(){
-        fillPublicCalls();
+            fillPublicCalls();
+        attemptedPublicParents.clear();
     }
 
     private void fillPublicCalls(){

@@ -108,10 +108,14 @@ public class GuidedSearchUtility<T extends Chromosome> {
 
 
     public Set<String> getPublicCalls() {
-        StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
-        String targetClass = givenStackTrace.getTargetClass();
-        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
-        return getPublicCalls(givenStackTrace, instructions);
+        if (publicCalls == null){
+            StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
+            String targetClass = givenStackTrace.getTargetClass();
+            List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+            publicCalls =  getPublicCalls(givenStackTrace, instructions);
+        }
+
+        return publicCalls;
     }
 
     private static boolean isProtectedMethod(ActualControlFlowGraph acfg){
@@ -127,7 +131,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
         LinkedList<String> callers =  new LinkedList<String>(); // all of the callers will be stored here
         Set<String> visitedMethods = new HashSet<String>();    // list of visited methods
         HashMap<BytecodeInstruction, ArrayList<String>> CUTMethods = new HashMap<>(); // all of the methods in Class Under Test!
-        callers.add(targetInstruction.getActualCFG().getMethodName()); // this is the first non-public method to visit //FixMe: Why??
+        callers.add(targetInstruction.getActualCFG().getMethodName()); // this is the first non-public method to visit
         // Preparing CUTMethods
         for (BytecodeInstruction instruct : instructions) {
             if(!CUTMethods.containsKey(instruct)) {
@@ -150,7 +154,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
             for( BytecodeInstruction key : CUTMethods.keySet()) {
                 ArrayList<String> list = CUTMethods.get(key);
                 for (String invokedMethod : list) {
-                    if (invokedMethod.equals(CUTMethods)) {
+                    if (invokedMethod.equals(privateMethod)) {
                         // the key is a caller.
                         // Checking the caller to see if it is private or not.
                         if(key.getActualCFG().isPublicMethod() || isProtectedMethod(key.getActualCFG())){
