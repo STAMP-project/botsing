@@ -34,7 +34,7 @@ public class BotsingMojo extends AbstractMojo {
 	/**
 	 * Per le properties vedere il file org.evosuite.Properties.java
 	 */
-	
+
 	/**
 	 * Folder to save the tests
 	 */
@@ -52,16 +52,16 @@ public class BotsingMojo extends AbstractMojo {
 	 */
 	@Parameter(property = "bin_dir")
 	private String binDir;
-	
+
 	@Parameter(defaultValue = "50", property = "max_recursion")
 	private Integer maxRecursion;
-	
+
 	@Parameter(defaultValue = "80", property = "population")
 	private Integer population;
-	
+
 	@Parameter(defaultValue = "1800", property = "search_budget")
 	private Integer searchBudget;
-	
+
 	/**
 	 * The frame level up to which parse the stack trace
 	 */
@@ -69,11 +69,11 @@ public class BotsingMojo extends AbstractMojo {
 	private Integer targetFrameLevel;
 
 	/**
-	 * Maven variables 
+	 * Maven variables
 	 */
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
 	private MavenProject project;
-	
+
 	@Component
 	private RepositorySystem repoSystem;
 
@@ -83,6 +83,7 @@ public class BotsingMojo extends AbstractMojo {
 	@Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
 	private List<RemoteRepository> repositories;
 
+	@Override
 	public void execute() throws MojoExecutionException {
 		getLog().info("Starting Botsing"
 				+ " to generate tests with EvoCrash");
@@ -90,11 +91,11 @@ public class BotsingMojo extends AbstractMojo {
 		getLog().info("log_file: " + logFile);
 
 		Botsing botsing = new Botsing();
-		
+
 		List<String> propertiesList = new ArrayList<String>();
 		propertiesList.add("-Dcrash_log=" + logFile);
 		propertiesList.add("-Dtarget_frame=" + targetFrameLevel);
-		
+
 		String dependencies = null;
 		if (binDir != null) {
 			dependencies = getDependenciesFromFolder(binDir);
@@ -105,14 +106,14 @@ public class BotsingMojo extends AbstractMojo {
 		getLog().debug("dependencies: " + dependencies);
 		propertiesList.add("-projectCP");
 		propertiesList.add(dependencies);
-		
+
 		// TODO fin a way to pass parameters to botsing
 		try {
 			botsing.parseCommandLine(propertiesList.toArray(new String[0]));
 		} catch (Exception e) {
 			throw new MojoExecutionException("Error executing Botsing", e);
 		}
-		
+
 		getLog().info("Stopping EvoSuite");
 	}
 
@@ -129,22 +130,22 @@ public class BotsingMojo extends AbstractMojo {
 		// Add project dependencies
 		for( Artifact unresolvedArtifact : this.project.getDependencyArtifacts()) {
 			File file = getArtifactFile(unresolvedArtifact);
-			
+
 			result += file.getAbsolutePath() + File.pathSeparator;
 		}
-		
+
 		return result;
 	}
-	
+
 	private File getArtifactFile(Artifact artifact) throws MojoExecutionException {
 		/**
 		 * Taken from https://gist.github.com/vincent-zurczak/282775f56d27e12a70d3
 		 */
-		
+
 		// We ask Maven to resolve the artifact's location.
 		// It may imply downloading it from a remote repository,
 		// searching the local repository or looking into the reactor's cache.
-		
+
 		// To achieve this, we must use Aether
 		// (the dependency mechanism behind Maven).
 		String artifactId = artifact.getArtifactId();
@@ -169,10 +170,10 @@ public class BotsingMojo extends AbstractMojo {
 		if( file == null || ! file.exists()) {
 			getLog().warn( "Artifact " + artifactId + " has no attached file. Its content will not be copied in the target model directory." );
 		}
-		
+
 		return file;
 	}
-	
+
 	public static String getDependenciesFromFolder(String dependenciesFolder) {
 		String result = "";
 
