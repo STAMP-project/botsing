@@ -46,7 +46,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     private static final Logger LOG = LoggerFactory.getLogger(BotsingIndividualStrategy.class);
 
     @Resource
-    FitnessFunctionHelper fitnessFunctionHelper;
+    FitnessFunctionHelper fitnessFunctionHelper =  new FitnessFunctionHelper();
 
     @Override
     public TestSuiteChromosome generateTests() {
