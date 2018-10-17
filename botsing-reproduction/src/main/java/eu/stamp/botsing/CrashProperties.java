@@ -21,7 +21,6 @@ package eu.stamp.botsing;
  * #L%
  */
 
-import org.apache.commons.cli.CommandLine;
 import org.evosuite.Properties;
 
 
@@ -162,9 +161,8 @@ public class CrashProperties {
         return null;
     }
 
-    public void setupStackTrace(CommandLine command) {
-        java.util.Properties properties = command.getOptionProperties("D");
-        crash.setup(properties.getProperty("crash_log"), Integer.parseInt(properties.getProperty("target_frame")));
+    public void setupStackTrace(String stacktraceFile, int targetFrame) {
+        crash.setup(stacktraceFile, targetFrame);
     }
 
     public void setupStackTrace(StackTrace crash) {
@@ -173,6 +171,10 @@ public class CrashProperties {
 
     public void setClasspath(String projectClassPath) {
         projectClassPaths = projectClassPath.split(File.pathSeparator);
+    }
+
+    public void setClasspath(String[] projectClassPath) {
+        projectClassPaths = projectClassPath;
     }
 
     public String[] getProjectClassPaths() {
