@@ -82,12 +82,10 @@ public class BotsingMojo extends AbstractMojo {
 
 	@Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
 	private List<RemoteRepository> repositories;
-	
-	public static final String SEPARATOR = System.getProperty("path.separator");
-
 
 	public void execute() throws MojoExecutionException {
-		getLog().info("Starting EvoSuite to generate tests with EvoCrash");
+		getLog().info("Starting Botsing"
+				+ " to generate tests with EvoCrash");
 		getLog().info("user_dir: " + binDir);
 		getLog().info("log_file: " + logFile);
 
@@ -125,13 +123,14 @@ public class BotsingMojo extends AbstractMojo {
 		//File projectArtifactFile = project.getArtifact().getFile();
 		//result += projectArtifactFile.getAbsolutePath() + SEPARATOR;
 		// TODO find a better way to get the project artifact path
-		result += "/home/luca/Progetti/stamp/commons-collections/target/"+project.getArtifact().getArtifactId()+"-"+project.getArtifact().getVersion()+"."+project.getArtifact().getType() + SEPARATOR;
+		result += project.getModel().getBuild().getDirectory() + File.separator + project.getArtifact().getArtifactId() + "-"
+				+ project.getArtifact().getVersion() + "." + project.getArtifact().getType() + File.pathSeparator;
 
 		// Add project dependencies
 		for( Artifact unresolvedArtifact : this.project.getDependencyArtifacts()) {
 			File file = getArtifactFile(unresolvedArtifact);
 			
-			result += file.getAbsolutePath() + SEPARATOR;
+			result += file.getAbsolutePath() + File.pathSeparator;
 		}
 		
 		return result;
@@ -190,7 +189,7 @@ public class BotsingMojo extends AbstractMojo {
 				Path depPath = Paths.get(depFolder.getAbsolutePath(), listOfFilesInSourceFolder[i].getName());
 				String dependency = depPath.toString();
 
-				result += (dependency + SEPARATOR);
+				result += (dependency + File.pathSeparator);
 			}
 		}
 
