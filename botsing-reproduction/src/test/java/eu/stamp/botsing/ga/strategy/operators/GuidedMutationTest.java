@@ -2,6 +2,7 @@ package eu.stamp.botsing.ga.strategy.operators;
 
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
+import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
@@ -16,6 +17,7 @@ import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -33,12 +35,13 @@ public class GuidedMutationTest {
 
         TestChromosome clone = (TestChromosome) chromosome.clone();
 
-        GuidedMutation mutation = new GuidedMutation();
+        GuidedMutation mutation = Mockito.spy(new GuidedMutation());
+        Mockito.doNothing().when(mutation).insertRandomStatement(Mockito.any(Chromosome.class));
+        Mockito.doNothing().when(mutation).doRandomMutation(Mockito.any(Chromosome.class));
         mutation.mutateOffspring(chromosome);
 
         assertNotEquals(clone, chromosome);
     }
-
 
     private TestCase getIntTest(int x) throws NoSuchMethodException, SecurityException, ConstructionFailedException, ClassNotFoundException {
         Class<?> sut = TestGenerationContext.getInstance().getClassLoaderForSUT().loadClass("java.lang.Integer");
