@@ -2,11 +2,11 @@ package eu.stamp.botsing;
 
 import ch.qos.logback.classic.Level;
 import org.evosuite.result.TestGenerationResult;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class BotsingTest {
 
-    @Test
+    @Test @Ignore
     public void testFractionCrash() {
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.INFO);
