@@ -32,6 +32,13 @@
             <artifactId>evosuite-client</artifactId>
             <version>${evosuite-client.version}</version>
            	<!--<exclusions>
+
+        <dependency>
+            <groupId>org.evosuite</groupId>
+            <artifactId>evosuite-shaded</artifactId>
+            <version>${evosuite-client.version}</version>
+        </dependency>
+
            		<exclusion>
 		            <groupId>ch.qos.logback</groupId>
    			        <artifactId>logback-classic</artifactId>

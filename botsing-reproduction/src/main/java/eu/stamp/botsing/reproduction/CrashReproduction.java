@@ -196,6 +196,8 @@ public class CrashReproduction {
                 throwable.printStackTrace();
             }
         }
+        LOG.info("{}",CrashProperties.getInstance().getStackTrace().getTargetClass());
+        LOG.info("{}",Arrays.asList(cp.split(File.pathSeparator)));
         BotsingDependencyAnalysor.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
         LOG.info("Analysing dependencies done!");
     }
