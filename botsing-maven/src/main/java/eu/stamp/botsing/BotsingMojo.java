@@ -24,7 +24,7 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 
 /**
- * Generate tests using stacktrace log.
+ * Mojo class to run Botsing
  *
  * @author Luca Andreatta
  */
@@ -32,41 +32,26 @@ import org.eclipse.aether.resolution.ArtifactResult;
 public class BotsingMojo extends AbstractMojo {
 
 	/**
-	 * Per le properties vedere il file org.evosuite.Properties.java
+	 * To see all the properties available take a look at org.evosuite.Properties.java
 	 */
-
-	/**
-	 * Folder to save the tests
-	 */
-	@Parameter(defaultValue = "CrashReproduction-tests", property = "test_dir")
-	private String testDir;
 
 	/**
 	 * Log file with the stacktrace
 	 */
-	@Parameter(defaultValue = "sample.log", property = "log_file")
-	private String logFile;
+	@Parameter(defaultValue = "target/classes", property = "projectCP")
+	private String projectCP;
 
 	/**
-	 * Folder with binary files to reproduce the stacktrace
+	 * Log file with the stacktrace
 	 */
-	@Parameter(property = "bin_dir")
-	private String binDir;
-
-	@Parameter(defaultValue = "50", property = "max_recursion")
-	private Integer maxRecursion;
-
-	@Parameter(defaultValue = "80", property = "population")
-	private Integer population;
-
-	@Parameter(defaultValue = "1800", property = "search_budget")
-	private Integer searchBudget;
+	@Parameter(defaultValue = "sample.log", property = "crash_log")
+	private String crashLog;
 
 	/**
 	 * The frame level up to which parse the stack trace
 	 */
-	@Parameter(defaultValue = "3", property = "target_frame_level")
-	private Integer targetFrameLevel;
+	@Parameter(defaultValue = "3", property = "target_frame")
+	private Integer targetFrame;
 
 	/**
 	 * Maven variables
@@ -77,28 +62,28 @@ public class BotsingMojo extends AbstractMojo {
 	@Component
 	private RepositorySystem repoSystem;
 
-	@Parameter( defaultValue = "${repositorySystemSession}", readonly = true, required = true )
+	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession repoSession;
 
-	@Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
+	@Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true)
 	private List<RemoteRepository> repositories;
 
 	@Override
 	public void execute() throws MojoExecutionException {
-		getLog().info("Starting Botsing"
-				+ " to generate tests with EvoCrash");
-		getLog().info("user_dir: " + binDir);
-		getLog().info("log_file: " + logFile);
+		getLog().info("Starting Botsing to generate tests with EvoSuite");
 
 		Botsing botsing = new Botsing();
-
 		List<String> propertiesList = new ArrayList<String>();
-		propertiesList.add("-Dcrash_log=" + logFile);
-		propertiesList.add("-Dtarget_frame=" + targetFrameLevel);
+
+		propertiesList.add("-crash_log");
+		propertiesList.add(crashLog);
+
+		propertiesList.add("-target_frame");
+		propertiesList.add(targetFrame.toString());
 
 		String dependencies = null;
-		if (binDir != null) {
-			dependencies = getDependenciesFromFolder(binDir);
+		if (projectCP != null) {
+			dependencies = getDependenciesFromFolder(projectCP);
 		} else {
 			dependencies = getDependenciesFromPom();
 		}
@@ -107,28 +92,25 @@ public class BotsingMojo extends AbstractMojo {
 		propertiesList.add("-projectCP");
 		propertiesList.add(dependencies);
 
-		// TODO fin a way to pass parameters to botsing
 		try {
+			// Start Botsing
 			botsing.parseCommandLine(propertiesList.toArray(new String[0]));
+
 		} catch (Exception e) {
 			throw new MojoExecutionException("Error executing Botsing", e);
 		}
 
-		getLog().info("Stopping EvoSuite");
+		getLog().info("Stopping Botsing");
 	}
 
 	public String getDependenciesFromPom() throws MojoExecutionException {
 		String result = "";
 
-		// Add the project artifact itself
-		//File projectArtifactFile = project.getArtifact().getFile();
-		//result += projectArtifactFile.getAbsolutePath() + SEPARATOR;
-		// TODO find a better way to get the project artifact path
-		result += project.getModel().getBuild().getDirectory() + File.separator + project.getArtifact().getArtifactId() + "-"
-				+ project.getArtifact().getVersion() + "." + project.getArtifact().getType() + File.pathSeparator;
+		// Add ./target/classes
+		result += project.getModel().getBuild().getDirectory() + File.separator + "classes" + File.pathSeparator;
 
-		// Add project dependencies
-		for( Artifact unresolvedArtifact : this.project.getDependencyArtifacts()) {
+		// Add pom project dependencies
+		for (Artifact unresolvedArtifact : this.project.getDependencyArtifacts()) {
 			File file = getArtifactFile(unresolvedArtifact);
 
 			result += file.getAbsolutePath() + File.pathSeparator;
@@ -149,26 +131,23 @@ public class BotsingMojo extends AbstractMojo {
 		// To achieve this, we must use Aether
 		// (the dependency mechanism behind Maven).
 		String artifactId = artifact.getArtifactId();
-		org.eclipse.aether.artifact.Artifact aetherArtifact = new DefaultArtifact(
-				artifact.getGroupId(),
-				artifact.getArtifactId(),
-				artifact.getClassifier(),
-				artifact.getType(),
-				artifact.getVersion());
+		org.eclipse.aether.artifact.Artifact aetherArtifact = new DefaultArtifact(artifact.getGroupId(),
+				artifact.getArtifactId(), artifact.getClassifier(), artifact.getType(), artifact.getVersion());
 
-		ArtifactRequest req = new ArtifactRequest().setRepositories( this.repositories ).setArtifact( aetherArtifact );
+		ArtifactRequest req = new ArtifactRequest().setRepositories(this.repositories).setArtifact(aetherArtifact);
 		ArtifactResult resolutionResult;
 		try {
-			resolutionResult = this.repoSystem.resolveArtifact( this.repoSession, req );
+			resolutionResult = this.repoSystem.resolveArtifact(this.repoSession, req);
 
-		} catch( ArtifactResolutionException e ) {
-			throw new MojoExecutionException( "Artifact " + artifactId + " could not be resolved.", e );
+		} catch (ArtifactResolutionException e) {
+			throw new MojoExecutionException("Artifact " + artifactId + " could not be resolved.", e);
 		}
 
 		// The file should exists, but we never know.
 		File file = resolutionResult.getArtifact().getFile();
-		if( file == null || ! file.exists()) {
-			getLog().warn( "Artifact " + artifactId + " has no attached file. Its content will not be copied in the target model directory." );
+		if (file == null || !file.exists()) {
+			getLog().warn("Artifact " + artifactId
+					+ " has no attached file. Its content will not be copied in the target model directory.");
 		}
 
 		return file;
