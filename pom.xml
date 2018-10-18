@@ -209,7 +209,14 @@
                             <goal>checkstyle</goal>
                         </goals>
                     </execution>
-                </executions>
+	        </executions>
+		<dependencies>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>jcl-over-slf4j</artifactId>
+				<version>1.7.5</version>
+			</dependency>
+		</dependencies>
             </plugin>
             <!-- Compute test code coverage -->
             <plugin>
