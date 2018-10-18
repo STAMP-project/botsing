@@ -36,9 +36,9 @@ public class BotsingMojo extends AbstractMojo {
 	 */
 
 	/**
-	 * Log file with the stacktrace
+	 * Folder with dependencies to run the project
 	 */
-	@Parameter(defaultValue = "target/classes", property = "projectCP")
+	@Parameter(property = "projectCP")
 	private String projectCP;
 
 	/**
