@@ -1,14 +1,12 @@
 package eu.stamp.botsing;
 
 import ch.qos.logback.classic.Level;
-import org.evosuite.Properties;
 import org.evosuite.result.TestGenerationResult;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
