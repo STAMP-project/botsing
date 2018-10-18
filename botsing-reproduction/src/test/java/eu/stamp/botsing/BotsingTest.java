@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class BotsingTest {
 
-    @Test @Ignore
+    @Test
     public void testFractionCrash() {
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.INFO);
