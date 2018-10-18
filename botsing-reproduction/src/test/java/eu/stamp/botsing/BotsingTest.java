@@ -28,16 +28,6 @@ public class BotsingTest {
         String user_dir = System.getProperty("user.dir"); // the current directory is the module <b>botsing-reproduction</b>
         File file = new File(user_dir);
         String base_dir = Paths.get(file.getParent(), "botsing-examples").toString(); // the crash to replicate is inside the module <b>botsing-examples</b>
-
-        File f = new File(base_dir);
-        assertTrue(f.exists());
-
-        f = new File(Paths.get(base_dir, "src","main","resources","Fraction.log").toString());
-        System.out.println(f.getAbsoluteFile()+ " Exists? "+f.exists());
-
-        f = new File(Paths.get(base_dir, "target","classes","eu","stamp","botsing","Fraction.class").toString());
-        System.out.println(f.getAbsoluteFile()+ " Exists? "+f.exists());
-
         //run Botsing
         String[] prop = {
                 "-crash_log",
