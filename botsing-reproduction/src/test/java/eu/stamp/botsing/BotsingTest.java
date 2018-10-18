@@ -33,10 +33,10 @@ public class BotsingTest {
         assertTrue(f.exists());
 
         f = new File(Paths.get(base_dir, "src","main","resources","Fraction.log").toString());
-        System.out.println(f.getAbsoluteFile()+ "Exists? "+f.exists());
+        System.out.println(f.getAbsoluteFile()+ " Exists? "+f.exists());
 
-        f = new File(Paths.get(base_dir, "target","classes").toString());
-        System.out.println(f.getAbsoluteFile()+ "Exists? "+f.exists());
+        f = new File(Paths.get(base_dir, "target","classes","eu","stamp","botsing","Fraction.class").toString());
+        System.out.println(f.getAbsoluteFile()+ " Exists? "+f.exists());
 
         //run Botsing
         String[] prop = {
