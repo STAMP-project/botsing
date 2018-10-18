@@ -48,8 +48,8 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 
     private static List<GenericAccessibleObject<?>> allMethods = new LinkedList<GenericAccessibleObject<?>>();
 
-    public RootMethodTestChromosomeFactory(){
-        this.utility = new GuidedSearchUtility();
+    public RootMethodTestChromosomeFactory(GuidedSearchUtility utility){
+        this.utility = utility;
         allMethods.clear();
         allMethods.addAll(TestCluster.getInstance().getTestCalls());
         Randomness.shuffle(allMethods);
