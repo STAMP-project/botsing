@@ -16,11 +16,9 @@ import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-
 import static org.junit.Assert.*;
 
 public class GuidedMutationTest {
@@ -30,6 +28,8 @@ public class GuidedMutationTest {
         TestCase testCase = getIntTest(20);
         TestChromosome chromosome = new TestChromosome();
         chromosome.setTestCase(testCase);
+
+        Properties.TARGET_CLASS = "java.lang.Integer";
 
         TestChromosome clone = (TestChromosome) chromosome.clone();
 
