@@ -11,15 +11,16 @@ public class Fraction {
     }
 
     public double getValue(){
-        if (denominator == 0)
+        if (denominator == 0) {
             throw new IllegalArgumentException();
+        }
         return ((double) this.numerator)/this.denominator;
     }
 
     public double getShiftedValue(int shift){
-        if (denominator == 0)
+        if (denominator == 0) {
             throw new IllegalArgumentException();
-
+        }
         return this.numerator/(this.denominator + shift);
     }
 }
