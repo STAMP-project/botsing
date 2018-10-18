@@ -42,13 +42,14 @@ import java.util.*;
 
 public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFactory {
     private static final Logger LOG = LoggerFactory.getLogger(RootMethodTestChromosomeFactory.class);
-    private static GuidedSearchUtility utility = new GuidedSearchUtility();
+    private GuidedSearchUtility utility;
     private static Set<GenericAccessibleObject<?>> publicParentCalls = new HashSet<GenericAccessibleObject<?>>();
     private static Set<GenericAccessibleObject<?>> attemptedPublicParents = new HashSet<GenericAccessibleObject<?>>();
 
     private static List<GenericAccessibleObject<?>> allMethods = new LinkedList<GenericAccessibleObject<?>>();
 
-    public RootMethodTestChromosomeFactory(){
+    public RootMethodTestChromosomeFactory(GuidedSearchUtility utility){
+        this.utility = utility;
         allMethods.clear();
         allMethods.addAll(TestCluster.getInstance().getTestCalls());
         Randomness.shuffle(allMethods);
@@ -153,19 +154,21 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
     }
 
     public void reset(){
-            fillPublicCalls();
+        fillPublicCalls();
         attemptedPublicParents.clear();
     }
 
     private void fillPublicCalls(){
-        Iterator<String> iterateParents = utility.getPublicCalls().iterator();
+        if (utility != null){
+            Iterator<String> iterateParents = utility.getPublicCalls().iterator();
 
-        // Fill up the set of parent calls by assessing the method names
-        while (iterateParents.hasNext()) {
-            String nextCall = iterateParents.next();
-            for (int i=0; i<allMethods.size(); i++) {
-                if (allMethods.get(i).getName().equals(nextCall)) {
-                    publicParentCalls.add(allMethods.get(i));
+            // Fill up the set of parent calls by assessing the method names
+            while (iterateParents.hasNext()) {
+                String nextCall = iterateParents.next();
+                for (int i=0; i<allMethods.size(); i++) {
+                    if (allMethods.get(i).getName().equals(nextCall)) {
+                        publicParentCalls.add(allMethods.get(i));
+                    }
                 }
             }
         }

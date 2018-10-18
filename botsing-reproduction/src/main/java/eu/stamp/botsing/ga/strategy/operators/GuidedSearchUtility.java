@@ -108,7 +108,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
 
 
     public Set<String> getPublicCalls() {
-        if (publicCalls == null){
+        if (publicCalls.size() ==0){
             StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
             String targetClass = givenStackTrace.getTargetClass();
             List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
