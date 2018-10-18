@@ -83,6 +83,7 @@
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <evosuite-client.version>1.0.6</evosuite-client.version>
         <commons-cli.version>1.4</commons-cli.version>
+        <asm.version>6.2.1</asm.version>
     </properties>
 
     <profiles>
