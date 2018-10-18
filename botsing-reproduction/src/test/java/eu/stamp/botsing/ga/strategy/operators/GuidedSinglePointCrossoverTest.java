@@ -1,5 +1,6 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
+import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.testcase.DefaultTestCase;
@@ -90,6 +91,7 @@ public class GuidedSinglePointCrossoverTest {
     }
 
     private TestCase getIntTest(int x, String methodName) throws NoSuchMethodException, SecurityException, ConstructionFailedException, ClassNotFoundException {
+        Properties.RANDOM_SEED =(long) 1;
         Class<?> sut = TestGenerationContext.getInstance().getClassLoaderForSUT().loadClass("java.lang.Integer");
         GenericClass clazz = new GenericClass(sut);
 

@@ -29,32 +29,26 @@ import org.evosuite.Properties;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.junit.writer.TestSuiteWriterUtils;
+import org.evosuite.result.TestGenerationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 
 public class Botsing {
 
     private static final Logger LOG = LoggerFactory.getLogger(Botsing.class);
 
-    public Object parseCommandLine(String[] args) {
+    public List<TestGenerationResult> parseCommandLine(String[] args) {
         // Get default properties
         CrashProperties crashProperties = CrashProperties.getInstance();
 
         // Parse commands according to the defined options
-        CommandLineParser parser = new DefaultParser();
         Options options = CommandLineParameters.getCommandLineOptions();
-        CommandLine commands = null;
-        try {
-            commands = parser.parse(options, args);
-        } catch (ParseException e) {
-            LOG.error("Could not parse command line!", e);
-            printHelpMessage(options);
-            return null;
-        }
+        CommandLine commands = parseCommands(args, options);
 
         // If help option is provided
         if (commands.hasOption(HELP_OPT)) {
@@ -64,57 +58,78 @@ public class Botsing {
             printHelpMessage(options);
         } else {// Otherwise, proceed to crash reproduction
             java.util.Properties properties = commands.getOptionProperties(D_OPT);
-            // Update default properties with values from command line
-            for (String property : properties.stringPropertyNames()) {
-                if (Properties.hasParameter(property)) {
-                    try {
-                        Properties.getInstance().setValue(property, properties.getProperty(property));
-                    } catch (Properties.NoSuchParameterException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            // Setup given stack trace
-            crashProperties.setupStackTrace(commands.getOptionValue(CRASH_LOG_OPT),
-                    Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
-
-            // Setup Project's class path
-            String cp = commands.getOptionValue(PROJECT_CP_OPT);
-            File file = new File(cp);
-            // If the file is a directory, get all the jar files in that directory.
-            if(file.isDirectory()){
-                File[] jarsFiles = file.listFiles((File f) -> f.isFile() && f.getName().endsWith(".jar"));
-                String[] jarsCp = new String[jarsFiles.length];
-                for(int i = 0 ; i < jarsCp.length ; i++){
-                    jarsCp[i] = jarsFiles[i].getAbsolutePath();
-                }
-                crashProperties.setClasspath(jarsCp);
-            } else {
-                crashProperties.setClasspath(cp);
-            }
-            ClassPathHandler.getInstance().changeTargetClassPath(crashProperties.getProjectClassPaths());
-
-            // locate Tool jar
-            if (TestSuiteWriterUtils.needToUseAgent() && Properties.JUNIT_CHECK) {
-                ClassPathHacker.initializeToolJar();
-            }
-
-            // Adding the target project classpath entries.
-            for (String entry : ClassPathHandler.getInstance().getTargetProjectClasspath().split(File.pathSeparator)) {
-                try {
-                    ClassPathHacker.addFile(entry);
-                } catch (IOException e) {
-                    LOG.info("* Error while adding classpath entry: " + entry);
-                }
-            }
-
+            updateProperties(properties);
+            setupStackTrace(crashProperties, commands);
+            setupProjectClasspath(crashProperties, commands);
             return CrashReproduction.execute();
         }
         return null;
 
+    }
+
+    protected CommandLine parseCommands(String[] args, Options options){
+        CommandLineParser parser = new DefaultParser();
+        CommandLine commands = null;
+        try {
+            commands = parser.parse(options, args);
+        } catch (ParseException e) {
+            LOG.error("Could not parse command line!", e);
+            printHelpMessage(options);
+            return null;
+        }
+        return commands;
+    }
+
+    protected void updateProperties(java.util.Properties properties){
+        for (String property : properties.stringPropertyNames()) {
+            if (Properties.hasParameter(property)) {
+                try {
+                    Properties.getInstance().setValue(property, properties.getProperty(property));
+                } catch (Properties.NoSuchParameterException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void setupStackTrace(CrashProperties crashProperties, CommandLine commands){
+        // Setup given stack trace
+        crashProperties.setupStackTrace(commands.getOptionValue(CRASH_LOG_OPT),
+                Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
+    }
+
+    protected void setupProjectClasspath(CrashProperties crashProperties, CommandLine commands){
+        // Setup Project's class path
+        String cp = commands.getOptionValue(PROJECT_CP_OPT);
+        File file = new File(cp);
+        // If the file is a directory, get all the jar files in that directory.
+        if(file.isDirectory()){
+            File[] jarsFiles = file.listFiles((File f) -> f.isFile() && f.getName().endsWith(".jar"));
+            String[] jarsCp = new String[jarsFiles.length];
+            for(int i = 0 ; i < jarsCp.length ; i++){
+                jarsCp[i] = jarsFiles[i].getAbsolutePath();
+            }
+            crashProperties.setClasspath(jarsCp);
+        } else {
+            crashProperties.setClasspath(cp);
+        }
+        ClassPathHandler.getInstance().changeTargetClassPath(crashProperties.getProjectClassPaths());
+
+        // locate Tool jar
+        if (TestSuiteWriterUtils.needToUseAgent() && Properties.JUNIT_CHECK) {
+            ClassPathHacker.initializeToolJar();
+        }
+
+        // Adding the target project classpath entries.
+        for (String entry : ClassPathHandler.getInstance().getTargetProjectClasspath().split(File.pathSeparator)) {
+            try {
+                ClassPathHacker.addFile(entry);
+            } catch (IOException e) {
+                LOG.info("* Error while adding classpath entry: " + entry);
+            }
+        }
     }
 
     private void printHelpMessage(Options options) {
