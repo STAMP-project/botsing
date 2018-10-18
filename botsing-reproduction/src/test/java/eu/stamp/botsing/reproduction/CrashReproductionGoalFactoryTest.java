@@ -50,10 +50,6 @@ public class CrashReproductionGoalFactoryTest {
     @Test
     public void testCrashReproductionGoalFactory() {
 
-        WeightedSum goal = Mockito.mock(WeightedSum.class);
-        Mockito.when(goal.getTargetClass()).thenReturn("eu.stamp.ClassB");
-        Mockito.when(goal.getTargetMethod()).thenReturn("method1");
-        Mockito.doReturn(goal).when(fitnessFunctionHelper).getSingleObjective(0);
         assertEquals("class eu.stamp.botsing.fitnessfunction.WeightedSum",crashReproductionGoalFactory.getCoverageGoals().get(0).getClass().toString());
 
 

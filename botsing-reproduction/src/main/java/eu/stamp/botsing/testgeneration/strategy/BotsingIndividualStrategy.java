@@ -24,6 +24,7 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.RootMethodTestChromosomeFactory;
 import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
+import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.Properties;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -108,7 +109,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     }
 
     private ChromosomeFactory<TestChromosome> getChromosomeFactory() {
-        return new RootMethodTestChromosomeFactory();
+        return new RootMethodTestChromosomeFactory(new GuidedSearchUtility());
     }
 
     private TestFitnessFunction getFF(){
