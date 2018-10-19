@@ -16,6 +16,7 @@ import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -24,6 +25,11 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 
 public class GuidedMutationTest {
+
+    @Before
+    public void initialize(){
+        Properties.RANDOM_SEED =(long) 1;
+    }
 
     @Test
     public void testMutation() throws NoSuchMethodException, ConstructionFailedException, ClassNotFoundException {
