@@ -47,7 +47,7 @@
         <url>https://github.com/STAMP-project/botsing</url>
         <tag>HEAD</tag>
     </scm>
-<!--
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh-snapshots</id>
@@ -58,7 +58,7 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
--->
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -161,7 +161,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!--
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -180,7 +179,6 @@
                             </dependency>
                         </dependencies>
                     </plugin>
-                    -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-release-plugin</artifactId>
