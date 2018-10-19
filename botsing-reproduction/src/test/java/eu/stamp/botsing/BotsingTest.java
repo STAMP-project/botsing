@@ -2,22 +2,23 @@ package eu.stamp.botsing;
 
 import ch.qos.logback.classic.Level;
 import org.evosuite.result.TestGenerationResult;
-import org.junit.Ignore;
+
 import org.junit.Test;
 
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.io.FileMatchers.*;
 
 /**
  * This class contains integration test cases for botsing. Each test method runs Botsing against one of the exmaple of crashes in the module <b>botsing-example</b>
  */
 public class BotsingTest {
 
-    @Test @Ignore
+    @Test
     public void testFractionCrash() {
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.INFO);
@@ -29,14 +30,8 @@ public class BotsingTest {
         File file = new File(user_dir);
         String base_dir = Paths.get(file.getParent(), "botsing-examples").toString(); // the crash to replicate is inside the module <b>botsing-examples</b>
 
-        File f = new File(base_dir);
-        assertTrue(f.exists());
-
-        f = new File(Paths.get(base_dir, "src","main","resources","Fraction.log").toString());
-        System.out.println(f.getAbsoluteFile()+ " Exists? "+f.exists());
-
-        f = new File(Paths.get(base_dir, "target","classes","eu","stamp","botsing","Fraction.class").toString());
-        System.out.println(f.getAbsoluteFile()+ " Exists? "+f.exists());
+        // Set the output directory
+        File outputDir = Paths.get(user_dir, "target", "crash-reproduction-tests").toFile();
 
         //run Botsing
         String[] prop = {
@@ -46,9 +41,16 @@ public class BotsingTest {
                 ""+1,
                 "-projectCP",
                 Paths.get(base_dir, "target","classes").toString() + System.getProperty("path.separator"),
+                "-Dtest_dir=" + outputDir.getAbsolutePath(),
         };
+
+        // Check results
         List<TestGenerationResult> results = botsing.parseCommandLine(prop);
-        assertTrue(results.size() > 0);
-        assertEquals(TestGenerationResult.Status.SUCCESS, results.get(0).getTestGenerationStatus());
+        assertThat(results, hasSize(greaterThan(0))); ;
+        assertThat(results.get(0).getTestGenerationStatus(), is(TestGenerationResult.Status.SUCCESS));
+
+        // Check output directory
+        assertThat(outputDir, anExistingDirectory());
+        assertThat(outputDir.list(), arrayWithSize(greaterThan(0)));
     }
 }
