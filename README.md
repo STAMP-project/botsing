@@ -15,7 +15,10 @@ Botsing has three mandatory parameters:
  - `-target_frame` the target frame to reproduce. This number should be between 1 and the number of frames in the stacktrace.
  - `-projectCP` the classpath of the project and all its dependencies. The classpath can be a folder containing all the required `.jar` files.
  
-By default, Botsing uses a budget of 30 min. to try to reproduce a crash. This value can be modified by specifying an additional parameter in format `-Dsearch_budget=60` (here, for 60 seconds). Similarly, the default population is set to 100 individuals, this value may be modified using `-Dpopulation=10` (here, for 10 individuals).
+By default, Botsing uses the following parameter values:
+ - `-Dsearch_budget=1800`, a time budget of 30 min. This value can be modified by specifying an additional parameter in format `-Dsearch_budget=60` (here, for 60 seconds). 
+ - `-Dpopulation=100`, a default population with 100 individuals. This value may be modified using `-Dpopulation=10` (here, for 10 individuals).
+ - `-Dtest_dir=crash-reproduction-tests`, the output directory where the tests will be created (if any test is generated). This value may be modified using `-Dtest_dir=newoutputdir`.
 
 To check the list of options, use:
 
