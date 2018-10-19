@@ -207,6 +207,7 @@
                     <configLocation>checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failOnViolation>true</failOnViolation>
+                    <excludes>**/generated-sources/**/*</excludes>
                 </configuration>
                 <executions>
                     <execution>
