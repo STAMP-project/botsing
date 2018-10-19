@@ -1,7 +1,6 @@
 package eu.stamp.botsing_model_generation.analysis.classpath;
 
 import org.evosuite.TestGenerationContext;
-import org.evosuite.setup.DependencyAnalysis;
 import org.evosuite.setup.InheritanceTree;
 import org.evosuite.setup.InheritanceTreeGenerator;
 import org.evosuite.setup.TestClusterGenerator;
