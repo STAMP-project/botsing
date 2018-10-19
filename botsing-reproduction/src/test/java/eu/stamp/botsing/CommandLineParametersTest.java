@@ -1,16 +1,14 @@
 package eu.stamp.botsing;
 
-import org.apache.commons.cli.Option;
+import static eu.stamp.botsing.CommandLineParameters.CRASH_LOG_OPT;
+import static eu.stamp.botsing.CommandLineParameters.D_OPT;
+import static eu.stamp.botsing.CommandLineParameters.HELP_OPT;
+import static eu.stamp.botsing.CommandLineParameters.PROJECT_CP_OPT;
+import static eu.stamp.botsing.CommandLineParameters.TARGET_FRAME_OPT;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.cli.Options;
 import org.junit.Test;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
-import static org.junit.Assert.*;
-
-import static eu.stamp.botsing.CommandLineParameters.*;
 
 public class CommandLineParametersTest {
 

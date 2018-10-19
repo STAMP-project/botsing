@@ -1,13 +1,13 @@
 package eu.stamp.botsing;
 
-import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 
 public class FitnessFunctionHelperTest {
 

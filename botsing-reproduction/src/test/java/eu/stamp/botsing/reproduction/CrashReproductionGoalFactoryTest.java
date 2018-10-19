@@ -1,25 +1,21 @@
 package eu.stamp.botsing.reproduction;
 
-import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.StackTrace;
-import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+
+import java.io.BufferedReader;
+import java.io.StringReader;
+
 import org.junit.Before;
 import org.junit.Test;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-
-import java.io.BufferedReader;
-
-import java.io.StringReader;
-
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
+import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 
 
 public class CrashReproductionGoalFactoryTest {

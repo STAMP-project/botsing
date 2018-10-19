@@ -1,6 +1,15 @@
 package eu.stamp.botsing.fitnessfunction.fitnessCalculator;
 
-import eu.stamp.botsing.StackTrace;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.branch.BranchCoverageGoal;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
@@ -11,16 +20,7 @@ import org.evosuite.testcase.execution.ExecutionTraceImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import eu.stamp.botsing.StackTrace;
 
 public class CrashCoverageFitnessCalculatorTest {
     CrashCoverageFitnessCalculator calculator = new CrashCoverageFitnessCalculator();

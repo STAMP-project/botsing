@@ -207,7 +207,10 @@
                     <configLocation>checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failOnViolation>true</failOnViolation>
-                    <excludes>**/generated-sources/**/*</excludes>
+                    <sourceDirectories>
+                       <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                       <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                    </sourceDirectories>
                 </configuration>
                 <executions>
                     <execution>

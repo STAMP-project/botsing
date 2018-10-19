@@ -1,16 +1,15 @@
 package eu.stamp.botsing;
 
-import org.apache.commons.cli.*;
-import org.evosuite.Properties;
-import org.junit.Test;
-
-import org.mockito.Mockito;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 
-
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyString;
+import org.apache.commons.cli.ParseException;
+import org.evosuite.Properties;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 public class CrashPropertiesTest {
 

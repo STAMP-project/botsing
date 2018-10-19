@@ -1,18 +1,17 @@
 package eu.stamp.botsing;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.StringReader;
+import java.util.ArrayList;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.lang.IndexOutOfBoundsException;
-import java.io.StringReader;
-import java.util.ArrayList;
-
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyString;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StackTraceTest {

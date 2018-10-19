@@ -1,6 +1,15 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
-import eu.stamp.botsing.StackTrace;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.evosuite.TestGenerationContext;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
@@ -19,16 +28,11 @@ import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Method;
-import java.util.*;
-
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyString;
+import eu.stamp.botsing.StackTrace;
 
 public class GuidedSearchUtilityTest {
 

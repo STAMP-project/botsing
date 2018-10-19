@@ -1,5 +1,11 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.ga.ConstructionFailedException;
@@ -8,7 +14,6 @@ import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFactory;
 import org.evosuite.testcase.statements.MethodStatement;
-import org.evosuite.testcase.statements.StringPrimitiveStatement;
 import org.evosuite.testcase.statements.numeric.IntPrimitiveStatement;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.utils.generic.GenericClass;
@@ -16,11 +21,6 @@ import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
-import static org.junit.Assert.*;
 
 public class GuidedSinglePointCrossoverTest {
 
