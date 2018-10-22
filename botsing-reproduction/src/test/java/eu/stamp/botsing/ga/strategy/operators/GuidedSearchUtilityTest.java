@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
@@ -42,13 +43,13 @@ public class GuidedSearchUtilityTest {
     @Before
     public void init() throws ConstructionFailedException, NoSuchMethodException, ClassNotFoundException {
         Properties.RANDOM_SEED =(long) 1;
-         
+
         TestCase tc = initializeTestCase();
         this.chromosome = new TestChromosome();
         this.chromosome.setTestCase(tc);
 
         this.trace = initializeStackTrace();
-        
+
     }
 
     private TestCase initializeTestCase() throws ConstructionFailedException, NoSuchMethodException, ClassNotFoundException {

@@ -74,10 +74,17 @@
         <jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
         <junit.version>4.12</junit.version>
         <license-maven-plugin.version>1.16</license-maven-plugin.version>
+        <maven-aether-provider.version>3.3.9</maven-aether-provider.version>
         <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
         <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
+        <maven-compat.version>3.5.4</maven-compat.version>
+        <maven-core.version>3.5.4</maven-core.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
+        <maven-model.version>3.5.4</maven-model.version>
+        <maven-plugin-annotations.version>3.5.2</maven-plugin-annotations.version>
+        <maven-plugin-api.version>3.5.4</maven-plugin-api.version>
+        <maven-plugin-testing-harness.version>3.3.0</maven-plugin-testing-harness.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-source-plugin.version>2.4</maven-source-plugin.version>
         <mockito.version>2.23.0</mockito.version>

@@ -30,44 +30,44 @@
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-plugin-api</artifactId>
-			<version>3.5.4</version>
+			<version>${maven-plugin-api.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.maven.plugin-tools</groupId>
 			<artifactId>maven-plugin-annotations</artifactId>
-			<version>3.5.2</version>
+			<version>${maven-plugin-annotations.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.maven.plugin-testing</groupId>
 			<artifactId>maven-plugin-testing-harness</artifactId>
-			<version>3.3.0</version>
+			<version>${maven-plugin-testing-harness.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-compat</artifactId>
-			<version>3.5.4</version>
+			<version>${maven-compat.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-core</artifactId>
-			<version>3.5.4</version>
+			<version>${maven-core.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-model</artifactId>
-			<version>3.5.4</version>
+			<version>${maven-model.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-aether-provider</artifactId>
-			<version>3.3.9</version>
+			<version>${maven-aether-provider.version}</version>
 		</dependency>
 
 		<dependency>
