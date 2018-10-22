@@ -1,8 +1,10 @@
 package eu.stamp.botsing;
 
 import ch.qos.logback.classic.Level;
+import org.evosuite.Properties;
 import org.evosuite.result.TestGenerationResult;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -18,10 +20,15 @@ import static org.hamcrest.io.FileMatchers.*;
  */
 public class BotsingTest {
 
+    @Before
+    public void initialize(){
+        Properties.RANDOM_SEED =(long) 1;
+    }
+
     @Test
     public void testFractionCrash() {
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-        root.setLevel(Level.INFO);
+        root.setLevel(Level.WARN);
 
         Botsing botsing = new Botsing();
 
