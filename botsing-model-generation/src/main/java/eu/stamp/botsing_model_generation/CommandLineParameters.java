@@ -27,17 +27,23 @@ public class CommandLineParameters {
 
     public static final String PROJECT_CP_OPT = "projectCP";
     public static final String HELP_OPT = "help";
+    public static final String PROJECT_PREFIX = "projectPrefix";
 
     public static Options getCommandLineOptions() {
         Options options = new Options();
         // Classpath
         options.addOption(Option.builder(PROJECT_CP_OPT)
                 .hasArg()
-                .desc("classpath of the project under test and all its dependencies")
+                .desc("Classpath of the project under test and all its dependencies")
                 .build());
         // Help message
         options.addOption(Option.builder(HELP_OPT)
                 .desc("Prints this help message.")
+                .build());
+
+        options.addOption(Option.builder(PROJECT_PREFIX)
+                .hasArg()
+                .desc("Prefix of the classes that we want to use for manual/dynamic analysis")
                 .build());
 
         return options;

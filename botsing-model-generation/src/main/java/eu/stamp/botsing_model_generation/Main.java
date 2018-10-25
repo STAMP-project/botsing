@@ -3,6 +3,7 @@ package eu.stamp.botsing_model_generation;
 import eu.stamp.botsing_model_generation.generation.behavioral_model.ModelGeneration;
 import eu.stamp.botsing_model_generation.generation.behavioral_model.model.Model;
 import org.apache.commons.cli.*;
+import org.evosuite.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +41,17 @@ public class Main {
             }else{
                 modelGeneration =  new ModelGeneration(commands.getOptionValue(PROJECT_CP_OPT));
             }
-            Model result = modelGeneration.generate();
-            if(result == null){
-                LOG.error("The generated model is NULL!");
-            }
 
+            // set project prefix
+            if (commands.hasOption(PROJECT_PREFIX)) {
+                Properties.TARGET_CLASS_PREFIX = commands.getOptionValue(PROJECT_PREFIX);
+                Model result = modelGeneration.generate();
+                if(result == null){
+                    LOG.error("The generated model is NULL!");
+                }
+            }else{
+                LOG.error("Project prefix should be passed as an input. For more information -> help");
+            }
         }else{
             LOG.error("Project classpath should be passed as an input. For more information -> help");
         }
