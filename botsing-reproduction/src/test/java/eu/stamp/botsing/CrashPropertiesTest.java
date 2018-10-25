@@ -2,17 +2,33 @@ package eu.stamp.botsing;
 
 import org.apache.commons.cli.*;
 import org.evosuite.Properties;
+import org.junit.Rule;
 import org.junit.Test;
 
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyString;
 
 public class CrashPropertiesTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CrashPropertiesTest.class);
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            LOG.info(String.format("Starting test: %s()...",
+                    description.getMethodName()));
+        }
+    };
 
     @Test
     public void testSetupStackTrace() throws ParseException {
@@ -43,7 +59,7 @@ public class CrashPropertiesTest {
         assertEquals(true, bool);
 
         Properties.StoppingCondition cond = CrashProperties.getInstance().getStoppingCondition();
-        assertEquals("MAXTIME",cond.toString());
+        assertEquals("MAXTIME", cond.toString());
     }
 
     @Test
@@ -56,22 +72,21 @@ public class CrashPropertiesTest {
         assertEquals("jar2", jars[1]);
     }
 
-    @ Test
-    public void testGetTargetException() throws Exception{
+    @Test
+    public void testGetTargetException() throws Exception {
 
         ArrayList<StackTraceElement> stackTrace = new ArrayList<StackTraceElement>();
         stackTrace.add(new StackTraceElement("eu.stamp.ClassA", "method2", "ClassA", 10));
         stackTrace.add(new StackTraceElement("eu.stamp.ClassB", "method1", "ClassB", 20));
 
-        StackTrace trace =  Mockito.mock(StackTrace.class);
+        StackTrace trace = Mockito.mock(StackTrace.class);
         Mockito.when(trace.getNumberOfFrames()).thenReturn(2);
         Mockito.when(trace.getFrames()).thenReturn(stackTrace);
 
         CrashProperties.getInstance().setupStackTrace(trace);
         Throwable target = CrashProperties.getInstance().getTargetException();
-        assertArrayEquals(target.getStackTrace(),stackTrace.toArray());
+        assertArrayEquals(target.getStackTrace(), stackTrace.toArray());
     }
-
 
 
 }

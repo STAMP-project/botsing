@@ -1,11 +1,18 @@
 package eu.stamp.botsing;
 
 import ch.qos.logback.classic.Level;
+import eu.stamp.botsing.reproduction.CrashReproductionHelperTest;
 import org.evosuite.Properties;
 import org.evosuite.result.TestGenerationResult;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -20,9 +27,22 @@ import static org.hamcrest.io.FileMatchers.*;
  */
 public class BotsingTest {
 
+
+    private static final Logger LOG = LoggerFactory.getLogger(BotsingTest.class);
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            LOG.info(String.format("Starting test: %s()...",
+                    description.getMethodName()));
+        }
+    };
+
+
     @Before
-    public void initialize(){
-        Properties.RANDOM_SEED =(long) 1;
+    public void initialize() {
+        Properties.RANDOM_SEED = (long) 1;
     }
 
     @Test
@@ -43,17 +63,18 @@ public class BotsingTest {
         //run Botsing
         String[] prop = {
                 "-crash_log",
-                Paths.get(base_dir, "src","main","resources","Fraction.log").toString(),
+                Paths.get(base_dir, "src", "main", "resources", "Fraction.log").toString(),
                 "-target_frame",
-                ""+1,
+                "" + 1,
                 "-projectCP",
-                Paths.get(base_dir, "target","classes").toString() + System.getProperty("path.separator"),
+                Paths.get(base_dir, "target", "classes").toString() + System.getProperty("path.separator"),
                 "-Dtest_dir=" + outputDir.getAbsolutePath(),
         };
 
         // Check results
         List<TestGenerationResult> results = botsing.parseCommandLine(prop);
-        assertThat(results, hasSize(greaterThan(0))); ;
+        assertThat(results, hasSize(greaterThan(0)));
+        ;
         assertThat(results.get(0).getTestGenerationStatus(), is(TestGenerationResult.Status.SUCCESS));
 
         // Check output directory
