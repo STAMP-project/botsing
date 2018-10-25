@@ -47,7 +47,7 @@ public class StackTraceTest {
         assertEquals("java.lang.IllegalArgumentException", trace.getExceptionType());
         assertEquals("eu.stamp.ClassB", trace.getTargetClass());
         assertEquals("method1", trace.getTargetMethod());
-        assertEquals(2, trace.getTarget_frame_level());
+        assertEquals(2, trace.getTargetFrameLevel());
         assertEquals(20, trace.getTargetLine());
     }
 
