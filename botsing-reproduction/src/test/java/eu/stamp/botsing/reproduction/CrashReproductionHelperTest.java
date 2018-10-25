@@ -1,6 +1,7 @@
 package eu.stamp.botsing.reproduction;
 
-import eu.stamp.botsing.CrashProperties;
+import static org.junit.Assert.assertEquals;
+
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,7 +11,7 @@ import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertEquals;
+import eu.stamp.botsing.CrashProperties;
 
 public class CrashReproductionHelperTest {
 

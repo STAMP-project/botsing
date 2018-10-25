@@ -1,6 +1,15 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
-import eu.stamp.botsing.StackTrace;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.ga.ConstructionFailedException;
@@ -30,10 +39,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
-import java.util.*;
-
-import static org.junit.Assert.*;
+import eu.stamp.botsing.StackTrace;
 
 public class GuidedSearchUtilityTest {
 

@@ -1,7 +1,6 @@
 package eu.stamp.botsing;
 
 import ch.qos.logback.classic.Level;
-import eu.stamp.botsing.reproduction.CrashReproductionHelperTest;
 import org.evosuite.Properties;
 import org.evosuite.result.TestGenerationResult;
 
