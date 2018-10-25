@@ -1,20 +1,38 @@
 package eu.stamp.botsing;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.StringReader;
-import java.util.ArrayList;
-
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.lang.IndexOutOfBoundsException;
+import java.io.StringReader;
+import java.util.ArrayList;
+
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StackTraceTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(StackTraceTest.class);
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            LOG.info(String.format("Starting test: %s()...",
+                    description.getMethodName()));
+        }
+    };
 
     @Test
     public void testLogParsing() throws Exception {

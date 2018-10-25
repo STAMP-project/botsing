@@ -20,10 +20,27 @@ import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GuidedMutationTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GuidedMutationTest.class);
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            LOG.info(String.format("Starting test: %s()...",
+                    description.getMethodName()));
+        }
+    };
 
     @Before
     public void initialize(){

@@ -1,16 +1,30 @@
 package eu.stamp.botsing;
 
-import static eu.stamp.botsing.CommandLineParameters.CRASH_LOG_OPT;
-import static eu.stamp.botsing.CommandLineParameters.D_OPT;
-import static eu.stamp.botsing.CommandLineParameters.HELP_OPT;
-import static eu.stamp.botsing.CommandLineParameters.PROJECT_CP_OPT;
-import static eu.stamp.botsing.CommandLineParameters.TARGET_FRAME_OPT;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.cli.Options;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.*;
+
+import static eu.stamp.botsing.CommandLineParameters.*;
 
 public class CommandLineParametersTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CommandLineParametersTest.class);
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            LOG.info(String.format("Starting test: %s()...",
+                    description.getMethodName()));
+        }
+    };
 
     @Test
     public void testGetCommandLineOptions() {

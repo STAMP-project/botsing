@@ -6,12 +6,18 @@ import eu.stamp.botsing.fitnessfunction.fitnessCalculator.CrashCoverageFitnessCa
 import org.evosuite.coverage.mutation.WeakMutationSuiteFitness;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.execution.ExecutionResult;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -27,6 +33,17 @@ import static org.mockito.ArgumentMatchers.anyString;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WeightedSumTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WeightedSumTest.class);
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            LOG.info(String.format("Starting test: %s()...",
+                    description.getMethodName()));
+        }
+    };
 
     // Mock CrashCoverageFitnessCalculator to control the value of the line coverage fitness and stack trace similarity fitness
     @Mock
