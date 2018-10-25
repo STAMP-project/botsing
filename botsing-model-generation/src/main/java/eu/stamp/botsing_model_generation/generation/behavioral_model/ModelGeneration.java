@@ -10,7 +10,6 @@ import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
-import org.evosuite.instrumentation.InstrumentingClassLoader;
 import org.evosuite.setup.InheritanceTree;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.execution.EvosuiteError;
@@ -39,6 +38,7 @@ public class ModelGeneration {
     public ModelGeneration(String[] jarsCp ){
         projectClassPaths = jarsCp.clone();
     }
+    private List<String> interestingClasses =  new ArrayList<String>();
 
 
     private static Statement currentThreadStmt;
@@ -59,40 +59,56 @@ public class ModelGeneration {
         } catch (ClassNotFoundException e) {
             LOG.error("The passed class could not be found! please revise your input.");
         }
-        InheritanceTree projectTree = CPAnalysor.getInheritanceTree();
-        Properties.TARGET_CLASS_PREFIX = "org.tudelft";
 
-        InstrumentingClassLoader loader = new InstrumentingClassLoader();
-        LOG.info(loader.getLoadedClasses().size()+"SIZE");
+        detectInterestingClasses();
+        generateCFGS();
+        staticAnalysis();
 
-        for (String clazz:  projectTree.getAllClasses()){
-            if (clazz.startsWith(Properties.TARGET_CLASS_PREFIX)){
-                LOG.info("Analyzing class "+ clazz);
-                DefaultTestCase test = buildLoadClassTestCase(clazz);
-                LOG.info("Loaded class: "+ test.toCode());
-                ExecutionResult execResult = TestExecutor.getInstance().execute(test, Integer.MAX_VALUE);
-                // TODO: check the result of the execution
+        return null;
+    }
 
-                GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(clazz);
-                for(Map.Entry<String,RawControlFlowGraph> entry : methodsGraphs.entrySet()){
-                    String methodname = entry.getKey();
-                    LOG.info("Reading Call Sequences from method "+methodname);
-                    RawControlFlowGraph cfg = entry.getValue();
-                    List<BytecodeInstruction> bcList = cfg.determineMethodCalls();
-                    for (BytecodeInstruction bc : bcList){
-                        LOG.info(bc.toString());
+    private void staticAnalysis() {
+        for(String clazz: interestingClasses) {
+            GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+            Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(clazz);
+            for (Map.Entry<String, RawControlFlowGraph> entry : methodsGraphs.entrySet()) {
+                String methodname = entry.getKey();
+                LOG.info("Reading Call Sequences from method " + methodname);
+                RawControlFlowGraph cfg = entry.getValue();
+                List<BytecodeInstruction> bcList = cfg.determineMethodCalls();
+                for (BytecodeInstruction bc : bcList) {
+                    // TODO: Store them in CallSequence Pool
+                    LOG.info(bc.toString());
+                    String keyName = bc.getCalledMethodsClass();
+                    if (!keyName.equals(clazz)){
+//                        if (!temp.containsKey(keyName)){
+//                            temp.put(keyName,new ArrayList<MethodCalls>());
+//                        }
+//                        temp.get(keyName).add(new MethodCalls(bc));
                     }
                 }
             }
         }
+    }
 
+    private void generateCFGS() {
+        for(String clazz: interestingClasses){
+            LOG.info("Analyzing class "+ clazz);
+            DefaultTestCase test = buildLoadClassTestCase(clazz);
+            ExecutionResult execResult = TestExecutor.getInstance().execute(test, Integer.MAX_VALUE);
+            // TODO: check the result of the execution
+            LOG.info("The process of generating CFG for class -{} is finished.",clazz);
+        }
+    }
 
+    private void detectInterestingClasses() {
+        InheritanceTree projectTree = CPAnalysor.getInheritanceTree();
+        for (String clazz:  projectTree.getAllClasses()){
+            if (clazz.startsWith(Properties.TARGET_CLASS_PREFIX)){
+                interestingClasses.add(clazz);
+            }
+        }
 
-
-
-
-        return null;
     }
 
 
