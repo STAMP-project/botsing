@@ -31,13 +31,21 @@ import java.util.StringTokenizer;
 public class StackTrace {
 
     private static final Logger LOG = LoggerFactory.getLogger(StackTrace.class);
+
     private String exceptionType;
     private ArrayList<StackTraceElement> frames;
     private int targetFrameLevel;
     private String targetClass;
 
-    public void setup(String logPath, int frame_level) {
-        targetFrameLevel = frame_level;
+    /**
+     * Sets up this object with the stack trace read from the given file and having the given target frame.
+     *
+     * @param logPath    The file with a stack trace.
+     * @param frameLevel The target frame level.
+     * @throws IllegalArgumentException If the file at logPath could not be found or does not contain a valid stack trace.
+     */
+    public void setup(String logPath, int frameLevel) throws IllegalArgumentException {
+        targetFrameLevel = frameLevel;
         try {
             BufferedReader reader = readFromFile(logPath);
             // Parse type of the exception
@@ -53,24 +61,25 @@ public class StackTrace {
             }
 
             // Parse frames
-            for (int counter = 0; counter < frame_level; counter++) {
+            for (int counter = 0; counter < frameLevel; counter++) {
                 String tempFrame = reader.readLine();
                 if (tempFrame == null) {
                     break;
                 }
                 frames.add(stringToStackTraceElement(tempFrame));
             }
-            LOG.info("Target frame is set to: " + frames.get(frame_level - 1).toString());
+            LOG.info("Target frame is set to: " + frames.get(frameLevel - 1).toString());
 
             // Parse Target class
-            targetClass = frames.get(frame_level - 1).getClassName();
+            targetClass = frames.get(frameLevel - 1).getClassName();
             org.evosuite.Properties.TARGET_CLASS = targetClass;
             LOG.info("Target Class is set to: " + targetClass);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            LOG.debug("Stack trace file not found!", e);
+            throw new IllegalArgumentException("Stack trace file not found!", e);
         } catch (IOException e) {
-            //LOG.error("Unable to parse the stack trace:");
-            e.printStackTrace();
+            LOG.debug("Unable to read file {}!", logPath, e);
+            throw new IllegalArgumentException("Unable to read file "+ logPath + "!", e);
         }
     }
 
