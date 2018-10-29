@@ -46,11 +46,31 @@ public class ModelGeneration {
     StaticAnalyser staticAnalyser =  new StaticAnalyser();
 
     public Model generate(){
+
+        //pre-processes before starting the analysis
         if(projectClassPaths == null){
             LOG.error("Project classpath should be set before the model generation.");
             return null;
         }
 
+        // Class path handler
+        handleClassPath();
+
+        // Static Analysis
+        detectInterestingClasses();
+        generateCFGS();
+        staticAnalyser.analyse(interestingClasses);
+        // Checking the exported call sequences <TEMP>
+        CallSequencesPoolManager.getInstance().report();
+
+        // Dynamic Analysis
+
+
+
+        return null;
+    }
+
+    private void handleClassPath() {
         ClassPathHandler.getInstance().changeTargetClassPath(projectClassPaths);
         List<String> cpList = Arrays.asList(projectClassPaths);
         try {
@@ -58,17 +78,7 @@ public class ModelGeneration {
         } catch (ClassNotFoundException e) {
             LOG.error("The passed class could not be found! please revise your input.");
         }
-
-        detectInterestingClasses();
-        generateCFGS();
-        staticAnalyser.analyse(interestingClasses);
-
-        // Checking the exported call sequences <TEMP>
-        CallSequencesPoolManager.getInstance().report();
-
-        return null;
     }
-
 
 
     private void generateCFGS() {
