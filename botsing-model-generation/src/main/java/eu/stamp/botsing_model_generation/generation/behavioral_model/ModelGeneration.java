@@ -1,15 +1,13 @@
 package eu.stamp.botsing_model_generation.generation.behavioral_model;
 
 
-import eu.stamp.botsing_model_generation.BotsingTestGenerationContext;
 import eu.stamp.botsing_model_generation.analysis.classpath.CPAnalysor;
+import eu.stamp.botsing_model_generation.analysis.sourcecode.StaticAnalyser;
+import eu.stamp.botsing_model_generation.call_sequence.CallSequencesPoolManager;
 import eu.stamp.botsing_model_generation.generation.behavioral_model.model.Model;
 import eu.stamp.botsing_model_generation.testcase.execution.TestExecutor;
 import org.evosuite.Properties;
 import org.evosuite.classpath.ClassPathHandler;
-import org.evosuite.graphs.GraphPool;
-import org.evosuite.graphs.cfg.BytecodeInstruction;
-import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.evosuite.setup.InheritanceTree;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.execution.EvosuiteError;
@@ -45,6 +43,7 @@ public class ModelGeneration {
     private static Statement getContextClassLoaderStmt;
     private static BooleanPrimitiveStatement booleanStmnt;
 
+    StaticAnalyser staticAnalyser =  new StaticAnalyser();
 
     public Model generate(){
         if(projectClassPaths == null){
@@ -62,34 +61,15 @@ public class ModelGeneration {
 
         detectInterestingClasses();
         generateCFGS();
-        staticAnalysis();
+        staticAnalyser.analyse(interestingClasses);
+
+        // Checking the exported call sequences <TEMP>
+        CallSequencesPoolManager.getInstance().report();
 
         return null;
     }
 
-    private void staticAnalysis() {
-        for(String clazz: interestingClasses) {
-            GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-            Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(clazz);
-            for (Map.Entry<String, RawControlFlowGraph> entry : methodsGraphs.entrySet()) {
-                String methodname = entry.getKey();
-                LOG.info("Reading Call Sequences from method " + methodname);
-                RawControlFlowGraph cfg = entry.getValue();
-                List<BytecodeInstruction> bcList = cfg.determineMethodCalls();
-                for (BytecodeInstruction bc : bcList) {
-                    // TODO: Store them in CallSequence Pool
-                    LOG.info(bc.toString());
-                    String keyName = bc.getCalledMethodsClass();
-                    if (!keyName.equals(clazz)){
-//                        if (!temp.containsKey(keyName)){
-//                            temp.put(keyName,new ArrayList<MethodCalls>());
-//                        }
-//                        temp.get(keyName).add(new MethodCalls(bc));
-                    }
-                }
-            }
-        }
-    }
+
 
     private void generateCFGS() {
         for(String clazz: interestingClasses){
@@ -108,7 +88,6 @@ public class ModelGeneration {
                 interestingClasses.add(clazz);
             }
         }
-
     }
 
 
