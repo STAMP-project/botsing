@@ -2,6 +2,7 @@ package eu.stamp.botsing_model_generation.Instrumentation;
 
 import eu.stamp.botsing_model_generation.BotsingTestGenerationContext;
 import org.evosuite.classpath.ResourceList;
+import org.evosuite.runtime.instrumentation.RuntimeInstrumentation;
 import org.objectweb.asm.ClassReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,28 +12,37 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InstrumentingClassLoader extends org.evosuite.instrumentation.InstrumentingClassLoader {
+public class InstrumentingClassLoader extends ClassLoader {
     private static final Logger LOG = LoggerFactory.getLogger(InstrumentingClassLoader.class);
     private final Map<String, Class<?>> visitedClasses = new HashMap<>();
 
     private final BotsingBytecodeInstrumentation instrumentation;
 
+    private final ClassLoader classLoader;
     public InstrumentingClassLoader() {
         this(new BotsingBytecodeInstrumentation());
     }
 
     public InstrumentingClassLoader(BotsingBytecodeInstrumentation instrumentation) {
+        super(InstrumentingClassLoader.class.getClassLoader());
+        classLoader = InstrumentingClassLoader.class.getClassLoader();
         this.instrumentation = instrumentation;
     }
 
     @Override
     public Class<?> loadClass(String name) throws ClassNotFoundException {
+        if (!RuntimeInstrumentation.checkIfCanInstrument(name)){
+            Class<?> result = visitedClasses.get(name);
+            if (result != null) {
+                return result;
+            }
+            result = classLoader.loadClass(name);
+            return result;
+        }
         Class<?> result = visitedClasses.get(name);
         if (result != null) {
             return result;
         } else {
-
-            LOG.info("Instrumenting class: " + name);
             Class<?> instrumentedClass = instrumentClass(name);
             return instrumentedClass;
         }
