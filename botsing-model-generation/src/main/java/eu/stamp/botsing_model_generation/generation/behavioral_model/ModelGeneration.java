@@ -86,8 +86,15 @@ public class ModelGeneration {
             LOG.info("Analyzing class "+ clazz);
             DefaultTestCase test = buildLoadClassTestCase(clazz);
             ExecutionResult execResult = TestExecutor.getInstance().execute(test, Integer.MAX_VALUE);
-            // TODO: check the result of the execution
-            LOG.info("The process of generating CFG for class -{} is finished.",clazz);
+            if (!execResult.getAllThrownExceptions().isEmpty()) {
+                Throwable t = execResult.getAllThrownExceptions().iterator().next();
+                try {
+                    throw t;
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+            LOG.info("The process of generating CFG for class {} is finished.",clazz);
         }
     }
 
