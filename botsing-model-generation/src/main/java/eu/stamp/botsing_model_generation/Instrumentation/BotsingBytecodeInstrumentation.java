@@ -117,4 +117,9 @@ public class BotsingBytecodeInstrumentation {
         cv = exitClassInitAdapter;
         return cv;
     }
+
+
+    public static boolean checkIfCanInstrument(String className) {
+        return RuntimeInstrumentation.checkIfCanInstrument(className);
+    }
 }
