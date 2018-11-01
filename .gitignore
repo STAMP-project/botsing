@@ -12,6 +12,7 @@
 
 # Package Files #
 *.jar
+!*projectA*.jar
 *.war
 *.nar
 *.ear
