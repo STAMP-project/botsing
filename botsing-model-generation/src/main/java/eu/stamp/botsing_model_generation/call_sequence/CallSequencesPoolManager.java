@@ -2,12 +2,10 @@ package eu.stamp.botsing_model_generation.call_sequence;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.util.*;
 
 public class CallSequencesPoolManager extends CallSequencesPool {
@@ -53,37 +51,9 @@ public class CallSequencesPoolManager extends CallSequencesPool {
         try (PrintWriter out = new PrintWriter(outputPath)) {
             out.println(json);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            LOG.error("The output directory is not valid.");
         }
     }
 
-    public void readPoolFromTheFile(String fileName){
-        try {
-            String json = readFile(fileName);
-            Gson gson = new GsonBuilder().create();
-            Type listType = new TypeToken<HashMap<String, Set<List<MethodCall>>>>(){}.getType();
-            this.reWritePool(gson.fromJson(json,listType));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-    }
-
-
-    private String readFile(String fileName) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
-        try {
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-
-            while (line != null) {
-                sb.append(line);
-                sb.append("\n");
-                line = br.readLine();
-            }
-            return sb.toString();
-        } finally {
-            br.close();
-        }
-    }
 }
