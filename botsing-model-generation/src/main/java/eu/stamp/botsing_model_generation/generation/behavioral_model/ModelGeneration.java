@@ -3,6 +3,7 @@ package eu.stamp.botsing_model_generation.generation.behavioral_model;
 
 import eu.stamp.botsing_model_generation.analysis.classpath.CPAnalysor;
 import eu.stamp.botsing_model_generation.analysis.sourcecode.StaticAnalyser;
+import eu.stamp.botsing_model_generation.analysis.testcases.DynamicAnalyser;
 import eu.stamp.botsing_model_generation.call_sequence.CallSequencesPoolManager;
 import eu.stamp.botsing_model_generation.generation.behavioral_model.model.Model;
 import eu.stamp.botsing_model_generation.testcase.execution.TestExecutor;
@@ -44,6 +45,7 @@ public class ModelGeneration {
     private static BooleanPrimitiveStatement booleanStmnt;
 
     StaticAnalyser staticAnalyser =  new StaticAnalyser();
+    DynamicAnalyser dynamicAnalyser =  new DynamicAnalyser();
 
     public Model generate(){
 
@@ -52,7 +54,6 @@ public class ModelGeneration {
             LOG.error("Project classpath should be set before the model generation.");
             return null;
         }
-
         // Class path handler
         handleClassPath();
 
@@ -60,13 +61,12 @@ public class ModelGeneration {
         detectInterestingClasses();
         generateCFGS();
         staticAnalyser.analyse(interestingClasses);
-        // Checking the exported call sequences <TEMP>
-        CallSequencesPoolManager.getInstance().report();
 
         // Dynamic Analysis
+        dynamicAnalyser.analyse(interestingClasses);
 
-
-
+        // Checking the exported call sequences <TEMP>
+        CallSequencesPoolManager.getInstance().report();
         return null;
     }
 
