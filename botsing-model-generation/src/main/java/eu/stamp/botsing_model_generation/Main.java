@@ -15,8 +15,8 @@ public class Main {
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
     public static void main(String[] args) {
-        Main modelGenerator = new Main();
-        modelGenerator.parseCommandLine(args);
+        Main botsingModelGeneration = new Main();
+        botsingModelGeneration.parseCommandLine(args);
 
 
     }
