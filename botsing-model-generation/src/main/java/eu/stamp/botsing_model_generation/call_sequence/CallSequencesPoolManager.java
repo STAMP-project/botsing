@@ -40,6 +40,7 @@ public class CallSequencesPoolManager extends CallSequencesPool {
                 for(MethodCall methodCall: callSequence){
                     LOG.info(methodCall.getMethodName()+" - "+java.util.Arrays.toString(methodCall.getParams()));
                 }
+                counter++;
             }
         }
     }
