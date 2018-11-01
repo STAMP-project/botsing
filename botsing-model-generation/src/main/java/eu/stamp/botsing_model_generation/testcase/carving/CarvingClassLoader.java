@@ -16,9 +16,6 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author Gordon Fraser
- */
 public class CarvingClassLoader extends ClassLoader {
     private final static Logger logger = LoggerFactory.getLogger(CarvingClassLoader.class);
     private final Instrumenter instrumenter = new Instrumenter();

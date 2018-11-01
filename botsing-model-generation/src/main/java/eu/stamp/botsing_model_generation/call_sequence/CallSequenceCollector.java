@@ -1,11 +1,9 @@
-package eu.stamp.botsing_model_generation.generation.behavioral_model;
+package eu.stamp.botsing_model_generation.call_sequence;
 
 
 import eu.stamp.botsing_model_generation.analysis.classpath.CPAnalysor;
 import eu.stamp.botsing_model_generation.analysis.sourcecode.StaticAnalyser;
 import eu.stamp.botsing_model_generation.analysis.testcases.DynamicAnalyser;
-import eu.stamp.botsing_model_generation.call_sequence.CallSequencesPoolManager;
-import eu.stamp.botsing_model_generation.generation.behavioral_model.model.Model;
 import eu.stamp.botsing_model_generation.testcase.execution.TestExecutor;
 import org.evosuite.Properties;
 import org.evosuite.classpath.ClassPathHandler;
@@ -27,14 +25,14 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 
-public class ModelGeneration {
-    private static final Logger LOG = LoggerFactory.getLogger(ModelGeneration.class);
+public class CallSequenceCollector {
+    private static final Logger LOG = LoggerFactory.getLogger(CallSequenceCollector.class);
 
     private String[] projectClassPaths;
-    public ModelGeneration(String cp){
+    public CallSequenceCollector(String cp){
         projectClassPaths=cp.split(File.pathSeparator);
     }
-    public ModelGeneration(String[] jarsCp ){
+    public CallSequenceCollector(String[] jarsCp ){
         projectClassPaths = jarsCp.clone();
     }
     private List<String> interestingClasses =  new ArrayList<String>();
@@ -47,12 +45,11 @@ public class ModelGeneration {
     StaticAnalyser staticAnalyser =  new StaticAnalyser();
     DynamicAnalyser dynamicAnalyser =  new DynamicAnalyser();
 
-    public Model generate(){
+    public void collect(){
 
         //pre-processes before starting the analysis
         if(projectClassPaths == null){
             LOG.error("Project classpath should be set before the model generation.");
-            return null;
         }
         // Class path handler
         handleClassPath();
@@ -67,7 +64,6 @@ public class ModelGeneration {
 
         // Checking the exported call sequences <TEMP>
         CallSequencesPoolManager.getInstance().report();
-        return null;
     }
 
     private void handleClassPath() {

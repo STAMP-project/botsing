@@ -1,7 +1,6 @@
 package eu.stamp.botsing_model_generation;
 
-import eu.stamp.botsing_model_generation.generation.behavioral_model.ModelGeneration;
-import eu.stamp.botsing_model_generation.generation.behavioral_model.model.Model;
+import eu.stamp.botsing_model_generation.call_sequence.CallSequenceCollector;
 import org.apache.commons.cli.*;
 import org.evosuite.Properties;
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ public class Main {
         if (commands.hasOption(HELP_OPT)){
             printHelpMessage(options);
         }else if(commands.hasOption(PROJECT_CP_OPT)){ // Generate the model for passed cps
-            ModelGeneration modelGeneration;
+            CallSequenceCollector callSequenceCollector;
             File file = new File(commands.getOptionValue(PROJECT_CP_OPT));
             if(file.isDirectory()) {
                 File[] jarsFiles = file.listFiles((File f) -> f.isFile() && f.getName().endsWith(".jar"));
@@ -37,18 +36,16 @@ public class Main {
                 for (int i = 0; i < jarsCp.length; i++) {
                     jarsCp[i] = jarsFiles[i].getAbsolutePath();
                 }
-                modelGeneration =  new ModelGeneration(jarsCp);
+                callSequenceCollector =  new CallSequenceCollector(jarsCp);
             }else{
-                modelGeneration =  new ModelGeneration(commands.getOptionValue(PROJECT_CP_OPT));
+                callSequenceCollector =  new CallSequenceCollector(commands.getOptionValue(PROJECT_CP_OPT));
             }
 
             // set project prefix
             if (commands.hasOption(PROJECT_PREFIX)) {
                 Properties.TARGET_CLASS_PREFIX = commands.getOptionValue(PROJECT_PREFIX);
-                Model result = modelGeneration.generate();
-                if(result == null){
-                    LOG.error("The generated model is NULL!");
-                }
+                callSequenceCollector.collect();
+                // Here, we have the list of call sequences. We just need to pass it to the yami tool
             }else{
                 LOG.error("Project prefix should be passed as an input. For more information -> help");
             }
