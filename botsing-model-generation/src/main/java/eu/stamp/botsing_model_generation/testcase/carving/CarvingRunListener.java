@@ -1,6 +1,5 @@
 package eu.stamp.botsing_model_generation.testcase.carving;
 
-import com.oracle.tools.packager.Log;
 import eu.stamp.botsing_model_generation.BotsingTestGenerationContext;
 import eu.stamp.botsing_model_generation.Instrumentation.BotsingBytecodeInstrumentation;
 import eu.stamp.botsing_model_generation.testcase.carving.codegeneration.CaptureLogAnalyzer;

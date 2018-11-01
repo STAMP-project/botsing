@@ -14,15 +14,17 @@ public class MethodCall{
     private static final Logger LOG = LoggerFactory.getLogger(MethodCall.class);
 
     public MethodCall(Statement statement){
-        if (statement.getAccessibleObject().isMethod())
+        if (statement.getAccessibleObject().isMethod()){
             methodName = statement.getAccessibleObject().getName();
-        else if (statement.getAccessibleObject().isConstructor())
+        } else if (statement.getAccessibleObject().isConstructor()){
             methodName =  "<init>";
+        }
 
         Type[] types = statement.getAccessibleObject().getGenericParameterTypes();
         params = new String[types.length];
-        for (int i=0;i<types.length;i++)
+        for (int i=0;i<types.length;i++){
             params[i]=types[i].getTypeName();
+        }
     }
 
     public MethodCall (BytecodeInstruction byteCode){

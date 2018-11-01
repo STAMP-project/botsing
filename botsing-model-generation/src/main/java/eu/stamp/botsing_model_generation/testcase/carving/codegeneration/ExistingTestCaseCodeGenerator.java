@@ -66,12 +66,17 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
 
     @Override
     public void createMethodCallStmt(final CaptureLog log, final int logRecNo) {
-        if (log == null)
+        if (log == null){
             throw new IllegalArgumentException("captured log must not be null");
-        if (logRecNo <= -1)
+        }
+
+        if (logRecNo <= -1){
             throw new IllegalArgumentException("log record number is invalid: " + logRecNo);
-        if (isMaximumLengthReached())
+        }
+
+        if (isMaximumLengthReached()){
             return;
+        }
 
         // assumption: all necessary statements are created and there is one variable for each referenced object
         final int oid = log.objectIds.get(logRecNo);
@@ -282,8 +287,7 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
         final int captureId = log.captureIds.get(logRecNo);
 
         final Object returnValue = log.returnValues.get(logRecNo);
-        if (!CaptureLog.RETURN_TYPE_VOID.equals(returnValue)) // TODO necessary?
-        {
+        if (!CaptureLog.RETURN_TYPE_VOID.equals(returnValue)){
             Integer returnValueOID = (Integer) returnValue;
 //			final String descriptor = log.descList.get(logRecNo);
 //			final org.objectweb.asm.Type fieldTypeType = org.objectweb.asm.Type.getType(descriptor);

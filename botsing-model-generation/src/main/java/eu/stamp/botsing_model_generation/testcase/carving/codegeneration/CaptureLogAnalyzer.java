@@ -30,16 +30,25 @@ public final class CaptureLogAnalyzer implements ICaptureLogAnalyzer {
 
     @SuppressWarnings("rawtypes")
     public void analyze(final CaptureLog originalLog, final ICodeGenerator generator, final Set<Class<?>> blackList, final Class<?>... observedClasses) {
-        if (originalLog == null)
+        if (originalLog == null){
             throw new IllegalArgumentException("captured log must not be null");
-        if (generator == null)
+        }
+
+        if (generator == null){
             throw new IllegalArgumentException("code generator must not be null");
-        if (blackList == null)
+        }
+
+        if (blackList == null){
             throw new IllegalArgumentException("set containing black listed classes must not be null");
-        if (observedClasses == null)
+        }
+        if (observedClasses == null){
             throw new IllegalArgumentException("array of observed classes must not be null");
-        if (observedClasses.length == 0)
+        }
+
+        if (observedClasses.length == 0){
             throw new IllegalArgumentException("array of observed classes must not be empty");
+        }
+
 
         final CaptureLog log = originalLog.clone();
 
@@ -98,10 +107,7 @@ public final class CaptureLogAnalyzer implements ICaptureLogAnalyzer {
         int currentOID = targetOIDs.get(0);
         int[] oidExchange = null;
 
-        // TODO knowing last logRecNo for termination criterion belonging to an observed instance would prevent processing unnecessary statements
-        for (int currentRecord = Math.abs(log.getRecordIndexOfWhereObjectWasInitializedFirst(currentOID)); currentRecord < numLogRecords; currentRecord++)
-        //for(int currentRecord = log.getRecordIndex(currentOID); currentRecord < numLogRecords; currentRecord++)
-        {
+        for (int currentRecord = Math.abs(log.getRecordIndexOfWhereObjectWasInitializedFirst(currentOID)); currentRecord < numLogRecords; currentRecord++) {
             currentOID = log.objectIds.get(currentRecord);
             logger.debug("Current record {}, current oid {} type {}", currentRecord, currentOID, log.getTypeName(currentOID));
             if (generator.isMaximumLengthReached()) {
@@ -186,8 +192,7 @@ public final class CaptureLogAnalyzer implements ICaptureLogAnalyzer {
                     type.equals("Integer") || type.equals("Float") || type.equals("Double") || type.equals("Byte") ||
                     type.equals("Character")) {
                 return Class.forName("java.lang." + type);
-            } else if (type.startsWith("$Proxy")) // FIXME is this approach correct?...
-            {
+            } else if (type.startsWith("$Proxy")){
                 return Proxy.class;
             }
 
@@ -221,8 +226,7 @@ public final class CaptureLogAnalyzer implements ICaptureLogAnalyzer {
             record = this.findEndOfMethod(log, record, log.objectIds.get(record));
             record++;
             logger.debug("Now is {}", record);
-        }
-        while (record < numRecords &&
+        } while (record < numRecords &&
                 !log.methodNames.get(record).equals(CaptureLog.END_CAPTURE_PSEUDO_METHOD));  // is not the end of the calling method
         logger.debug("records = {}", record);
 
@@ -247,21 +251,6 @@ public final class CaptureLogAnalyzer implements ICaptureLogAnalyzer {
 
 
     private int findEndOfMethod(final CaptureLog log, final int currentRecord, final int currentOID) {
-//		final int numRecords = log.objectIds.size();
-//
-//		int record = currentRecord;
-//
-//		final int captureId = log.captureIds.get(currentRecord);
-//		while(   record < numRecords &&
-//				! ( log.objectIds.get(record) == currentOID &&
-//				    log.captureIds.get(record) == captureId &&
-//				    log.methodNames.get(record).equals(CaptureLog.END_CAPTURE_PSEUDO_METHOD)))
-//		{
-//			record++;
-//		}
-//
-//		return record;
-
         int record = currentRecord;
 
         final int captureId = log.captureIds.get(record);
@@ -335,11 +324,14 @@ public final class CaptureLogAnalyzer implements ICaptureLogAnalyzer {
 
         for (; currentRecord < end; currentRecord++) {
 
-            if (generator.isMaximumLengthReached())
+            if (generator.isMaximumLengthReached()){
                 break;
+            }
 
-            if (!TimeController.getInstance().isThereStillTimeInThisPhase())
+
+            if (!TimeController.getInstance().isThereStillTimeInThisPhase()){
                 break;
+            }
 
 //			for(; currentRecord <= end; currentRecord++) {
             currentOID = log.objectIds.get(currentRecord);
@@ -392,8 +384,7 @@ public final class CaptureLogAnalyzer implements ICaptureLogAnalyzer {
                     generator.createUnobservedInitStmt(log, currentRecord);
                     currentRecord = findEndOfMethod(log, currentRecord, currentOID);
                 } else if (CaptureLog.PUTFIELD.equals(methodName) || CaptureLog.PUTSTATIC.equals(methodName) || // field write access such as p.id = id or Person.staticVar = "something"
-                        CaptureLog.GETFIELD.equals(methodName) || CaptureLog.GETSTATIC.equals(methodName))   // field READ access such as "int a =  p.id" or "String var = Person.staticVar"
-                {
+                        CaptureLog.GETFIELD.equals(methodName) || CaptureLog.GETSTATIC.equals(methodName)) {// field READ access such as "int a =  p.id" or "String var = Person.staticVar"
                     logger.debug("Field access");
                     final int dependencyOID = log.getDependencyOID(oid);
 

@@ -41,47 +41,36 @@ import org.objectweb.asm.util.TraceClassVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class Instrumenter
-{
+public final class Instrumenter {
     private int captureId;
 
     public static final int CAPTURE_ID_JAVA_UTIL_DATE     = Integer.MIN_VALUE;
-    public static final int CAPTURE_ID_JAVA_UTIL_CALENDAR = Integer.MIN_VALUE + 1;
-    public static final int CAPTURE_ID_JAVA_TEXT_DATEFORMAT = Integer.MIN_VALUE + 2;
-    public static final int CAPTURE_ID_JAVA_TEXT_SIMPLEDATEFORMAT = Integer.MIN_VALUE + 3;
 
 
     public static final String WRAP_NAME_PREFIX = "_sw_prototype_original_";
 
     private static final Logger logger = LoggerFactory.getLogger(Instrumenter.class);
 
-    public Instrumenter()
-    {
+    public Instrumenter(){
         this.captureId = CAPTURE_ID_JAVA_UTIL_DATE + 4;
     }
 
 
-    public void instrument(final String className, final ClassNode cn)
-    {
-        if(! TransformerUtil.isClassConsideredForInstrumentation(className))
-        {
+    public void instrument(final String className, final ClassNode cn){
+        if(! TransformerUtil.isClassConsideredForInstrumentation(className)){
             logger.debug("Class {} has not been instrumented because its name is on the blacklist", className);
             return;
         }
 
-        try
-        {
+        try{
             this.transformClassNode(cn, className);
-        }
-        catch(final Throwable t)
-        {
+        }catch(final Throwable t){
             logger.error("An error occurred while instrumenting class {} -> returning unmodified version", className, t);
         }
 
     }
 
-    public byte[] instrument(final String className, final byte[] classfileBuffer) throws IllegalClassFormatException
-    {
+    public byte[] instrument(final String className, final byte[] classfileBuffer) throws IllegalClassFormatException {
         logger.debug("Start instrumenting class {}", className);
 
 
@@ -90,63 +79,48 @@ public final class Instrumenter
         final ClassNode 		cn 			  = new ClassNode();
         cr.accept(cn, ClassReader.SKIP_DEBUG);
 
-        if(! TransformerUtil.isClassConsideredForInstrumentation(className))
-        {
+        if(! TransformerUtil.isClassConsideredForInstrumentation(className)){
             logger.debug("Class {} has not been instrumented because its name is on the blacklist", className);
             return classfileBuffer;
         }
 
-        try
-        {
+        try{
             this.transformClassNode(cn, className);
 
             cn.accept(cw);
 
             return cw.toByteArray();
 
-        }
-        catch(final Throwable t)
-        {
+        }catch(final Throwable t){
             logger.error("An error occurred while instrumenting class {} -> returning unmodified version", className, t);
             return classfileBuffer;
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void addFieldRegistryRegisterCall(final MethodNode methodNode)
-    {
+    private void addFieldRegistryRegisterCall(final MethodNode methodNode){
         AbstractInsnNode ins = null;
         ListIterator<AbstractInsnNode> iter = methodNode.instructions.iterator();
 
         int numInvokeSpecials = 0; // number of invokespecial calls before actual constructor call
 
-        while(iter.hasNext())
-        {
+        while(iter.hasNext()){
             ins = iter.next();
 
-            if(ins instanceof MethodInsnNode)
-            {
+            if(ins instanceof MethodInsnNode){
                 MethodInsnNode mins = (MethodInsnNode) ins;
-                if(ins.getOpcode()== Opcodes.INVOKESPECIAL)
-                {
-                    if(mins.name.startsWith("<init>"))
-                    {
-                        if(numInvokeSpecials == 0)
-                        {
+                if(ins.getOpcode()== Opcodes.INVOKESPECIAL) {
+                    if(mins.name.startsWith("<init>")) {
+                        if(numInvokeSpecials == 0) {
                             break;
-                        }
-                        else
-                        {
+                        } else{
                             numInvokeSpecials--;
                         }
                     }
                 }
-            }
-            else if (ins instanceof TypeInsnNode)
-            {
+            }else if (ins instanceof TypeInsnNode){
                 TypeInsnNode typeIns = (TypeInsnNode) ins;
-                if(typeIns.getOpcode() == Opcodes.NEW || typeIns.getOpcode() == Opcodes.NEWARRAY)
-                {
+                if(typeIns.getOpcode() == Opcodes.NEW || typeIns.getOpcode() == Opcodes.NEWARRAY) {
                     numInvokeSpecials++;
                 }
             }
@@ -165,10 +139,8 @@ public final class Instrumenter
     }
 
     @SuppressWarnings("unchecked")
-    public void transformClassNode(ClassNode cn, final String internalClassName)
-    {
-        if(! TransformerUtil.isClassConsideredForInstrumentation(internalClassName))
-        {
+    public void transformClassNode(ClassNode cn, final String internalClassName){
+        if(! TransformerUtil.isClassConsideredForInstrumentation(internalClassName)){
             logger.debug("Class {} has not been instrumented because its name is on the blacklist", internalClassName);
             return;
         }
@@ -186,9 +158,9 @@ public final class Instrumenter
         }
 
         String packageName = internalClassName.replace('/', '.');
-        if(packageName.contains("."))
+        if(packageName.contains(".")){
             packageName = packageName.substring(0, packageName.lastIndexOf('.'));
-
+        }
 
         // ASM has some problem with the access of inner classes
         // so we check if the inner class name is the current class name
@@ -230,24 +202,21 @@ public final class Instrumenter
         MethodNode methodNode;
 
         final Iterator<MethodNode> methodIter = cn.methods.iterator();
-        while(methodIter.hasNext())
-        {
+        while(methodIter.hasNext()){
             methodNode = methodIter.next();
 
             // consider only public methods which are not abstract or native
             if( ! TransformerUtil.isPrivate(methodNode.access)  &&
                     ! TransformerUtil.isAbstract(methodNode.access) &&
                     ! TransformerUtil.isNative(methodNode.access)   &&
-                    ! methodNode.name.equals("<clinit>"))
-            {
+                    ! methodNode.name.equals("<clinit>")){
                 if(! TransformerUtil.isPublic(methodNode.access)) {
                     //if(!Properties.CLASS_PREFIX.equals(packageName)) {
                     transformWrapperCalls(methodNode);
                     continue;
                     //}
                 }
-                if(methodNode.name.equals("<init>"))
-                {
+                if(methodNode.name.equals("<init>")){
                     if(TransformerUtil.isAbstract(cn.access)) {
                         // We cannot invoke constructors of abstract classes directly
                         continue;
@@ -265,8 +234,7 @@ public final class Instrumenter
         }
 
         final int numWM = wrappedMethods.size();
-        for(int i = 0; i < numWM; i++)
-        {
+        for(int i = 0; i < numWM; i++){
             cn.methods.add(wrappedMethods.get(i));
         }
 
@@ -275,32 +243,27 @@ public final class Instrumenter
     }
 
 
-    private void instrumentGETXXXFieldAccesses(final ClassNode cn, final String internalClassName, final MethodNode methodNode)
-    {
+    private void instrumentGETXXXFieldAccesses(final ClassNode cn, final String internalClassName, final MethodNode methodNode){
         final InsnList instructions = methodNode.instructions;
 
         AbstractInsnNode ins      = null;
         FieldInsnNode    fieldIns = null;
 
-        for(int i = 0; i < instructions.size(); i++)
-        {
+        for(int i = 0; i < instructions.size(); i++){
             ins = instructions.get(i);
-            if(ins instanceof FieldInsnNode)
-            {
+            if(ins instanceof FieldInsnNode){
                 fieldIns = (FieldInsnNode) ins;
 
                 /*
                  * Is field referencing outermost instance? if yes, ignore it
                  * http://tns-www.lcs.mit.edu/manuals/java-1.1.1/guide/innerclasses/spec/innerclasses.doc10.html
                  */
-                if(fieldIns.name.endsWith("$0"))
-                {
+                if(fieldIns.name.endsWith("$0")){
                     continue;
                 }
 
                 final int opcode = ins.getOpcode();
-                if(opcode == Opcodes.GETFIELD || opcode == Opcodes.GETSTATIC )
-                {
+                if(opcode == Opcodes.GETFIELD || opcode == Opcodes.GETSTATIC ){
                     final InsnList il = new InsnList();
 
                     if(opcode == Opcodes.GETFIELD) {
@@ -320,9 +283,9 @@ public final class Instrumenter
                             // -> Call
                             // w
                         }
-                    }
-                    else
+                    }else{
                         il.add(new InsnNode(Opcodes.ACONST_NULL));
+                    }
 
                     il.add(new LdcInsnNode(this.captureId));
                     il.add(new LdcInsnNode(fieldIns.owner));
@@ -344,8 +307,7 @@ public final class Instrumenter
     }
 
 
-    private void instrumentPUTXXXFieldAccesses(final ClassNode cn, final String internalClassName, final MethodNode methodNode)
-    {
+    private void instrumentPUTXXXFieldAccesses(final ClassNode cn, final String internalClassName, final MethodNode methodNode){
         final InsnList instructions = methodNode.instructions;
 
         AbstractInsnNode ins      = null;
@@ -353,26 +315,22 @@ public final class Instrumenter
 
         // needed get right receiver var in case of PUTFIELD
 
-        for(int i = 0; i < instructions.size(); i++)
-        {
+        for(int i = 0; i < instructions.size(); i++){
             ins = instructions.get(i);
-            if(ins instanceof FieldInsnNode)
-            {
+            if(ins instanceof FieldInsnNode){
                 fieldIns = (FieldInsnNode) ins;
 
                 /*
                  * Is field referencing outermost instance? if yes, ignore it
                  * http://tns-www.lcs.mit.edu/manuals/java-1.1.1/guide/innerclasses/spec/innerclasses.doc10.html
                  */
-                if(fieldIns.name.endsWith("$0"))
-                {
+                if(fieldIns.name.endsWith("$0")){
                     continue;
                 }
 
 
                 final int opcode = ins.getOpcode();
-                if(opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC )
-                {
+                if(opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC ){
                     // construction of
                     //   Capturer.capture(final Object receiver, final String methodName, final Object[] methodParams)
                     // call
@@ -400,9 +358,10 @@ public final class Instrumenter
                             // PUTFIELD
                             // v
                         }
-                    }
-                    else
+                    }else{
                         il.add(new InsnNode(Opcodes.ACONST_NULL));
+                    }
+
 
                     il.add(new LdcInsnNode(this.captureId));
                     il.add(new LdcInsnNode(fieldIns.owner));
@@ -427,16 +386,14 @@ public final class Instrumenter
 
 
 
-    private void instrumentMethod(final ClassNode cn, final String internalClassName, final MethodNode methodNode, final List<MethodNode> wrappedMethods)
-    {
+    private void instrumentMethod(final ClassNode cn, final String internalClassName, final MethodNode methodNode, final List<MethodNode> wrappedMethods){
         wrappedMethods.add(this.wrapMethod(cn, internalClassName, methodNode));
         this.captureId++;
     }
 
 
 
-    private InsnList addCaptureCall(final boolean isStatic, final String internalClassName, final String methodName, final String methodDesc,final Type[] argTypes)
-    {
+    private InsnList addCaptureCall(final boolean isStatic, final String internalClassName, final String methodName, final String methodDesc,final Type[] argTypes){
         // construction of
         //   Capturer.capture(final Object receiver, final String methodName, final Object[] methodParams)
         // call
@@ -446,8 +403,7 @@ public final class Instrumenter
 
         // --- load receiver argument
         int varIndex;
-        if(isStatic)
-        {
+        if(isStatic){
             // static method invocation
             il.add(new LdcInsnNode(internalClassName));
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
@@ -457,9 +413,7 @@ public final class Instrumenter
 
 
             varIndex = 0;
-        }
-        else
-        {
+        }else{
             // non-static method call
             il.add(new VarInsnNode(Opcodes.ALOAD, 0));
             varIndex = 1;
@@ -484,8 +438,7 @@ public final class Instrumenter
 
         // fill the array
 
-        for(int i = 0; i < argTypes.length; i++)
-        {
+        for(int i = 0; i < argTypes.length; i++){
             il.add(new InsnNode(Opcodes.DUP));
 
             // TODO ICONST_1 to ICONST_5 would be more efficient
@@ -496,8 +449,7 @@ public final class Instrumenter
             il.add(new InsnNode(Opcodes.AASTORE));
 
             // long/double take two registers
-            if(argTypes[i].equals(Type.LONG_TYPE) || argTypes[i].equals(Type.DOUBLE_TYPE) )
-            {
+            if(argTypes[i].equals(Type.LONG_TYPE) || argTypes[i].equals(Type.DOUBLE_TYPE) ){
                 varIndex++;
             }
         }
@@ -514,13 +466,11 @@ public final class Instrumenter
 
 
 
-    private void addCaptureEnableStatement(final String className, final MethodNode mn, final InsnList il, final int returnValueVar)
-    {
+    private void addCaptureEnableStatement(final String className, final MethodNode mn, final InsnList il, final int returnValueVar){
         il.add(new LdcInsnNode(this.captureId));
 
 
-        if(TransformerUtil.isStatic(mn.access))
-        {
+        if(TransformerUtil.isStatic(mn.access)){
             // static method
 
             il.add(new LdcInsnNode(className));
@@ -528,9 +478,7 @@ public final class Instrumenter
                     PackageInfo.getNameWithSlash(CaptureUtil.class),
                     "loadClass",
                     "(Ljava/lang/String;)Ljava/lang/Class;"));
-        }
-        else
-        {
+        }else{
             // non-static method
 
             il.add(new VarInsnNode(Opcodes.ALOAD, 0));
@@ -538,15 +486,12 @@ public final class Instrumenter
 
 
         final Type returnType = Type.getReturnType(mn.desc);
-        if(returnType.equals(Type.VOID_TYPE))
-        {
+        if(returnType.equals(Type.VOID_TYPE)){
             // load return value for VOID methods
             il.add(new FieldInsnNode(Opcodes.GETSTATIC, PackageInfo.getNameWithSlash(CaptureLog.class),
                     "RETURN_TYPE_VOID",
                     Type.getDescriptor(Object.class)));
-        }
-        else
-        {
+        }else{
             // load return value as object
             il.add(new VarInsnNode(Opcodes.ALOAD, returnValueVar));
         }
@@ -578,8 +523,7 @@ public final class Instrumenter
      * @param methodNode
      */
     @SuppressWarnings("unchecked")
-    private MethodNode wrapMethod(final ClassNode classNode, final String className, final MethodNode methodNode)
-    {
+    private MethodNode wrapMethod(final ClassNode classNode, final String className, final MethodNode methodNode){
         methodNode.maxStack+=4;
 
         // create wrapper for original method
@@ -607,8 +551,7 @@ public final class Instrumenter
 
         final InsnList wInstructions = wrappingMethodNode.instructions;
 
-        if("<init>".equals(methodNode.name))
-        {
+        if("<init>".equals(methodNode.name)){
             // wrap a constructor
 
             methodNode.name   = WRAP_NAME_PREFIX + "init" + WRAP_NAME_PREFIX;
@@ -619,42 +562,30 @@ public final class Instrumenter
 
             int numInvokeSpecials = 0; // number of invokespecial calls before actual constructor call
 
-            while(iter.hasNext())
-            {
+            while(iter.hasNext()){
                 ins = iter.next();
                 iter.remove();
                 wInstructions.add(ins);
 
-                if(ins instanceof MethodInsnNode)
-                {
+                if(ins instanceof MethodInsnNode){
                     MethodInsnNode mins = (MethodInsnNode) ins;
-                    if(ins.getOpcode()== Opcodes.INVOKESPECIAL)
-                    {
-                        if(mins.name.startsWith("<init>"))
-                        {
-                            if(numInvokeSpecials == 0)
-                            {
+                    if(ins.getOpcode()== Opcodes.INVOKESPECIAL) {
+                        if(mins.name.startsWith("<init>")) {
+                            if(numInvokeSpecials == 0) {
                                 break;
-                            }
-                            else
-                            {
+                            } else {
                                 numInvokeSpecials--;
                             }
                         }
                     }
-                }
-                else if (ins instanceof TypeInsnNode)
-                {
+                } else if (ins instanceof TypeInsnNode){
                     TypeInsnNode typeIns = (TypeInsnNode) ins;
-                    if(typeIns.getOpcode() == Opcodes.NEW || typeIns.getOpcode() == Opcodes.NEWARRAY)
-                    {
+                    if(typeIns.getOpcode() == Opcodes.NEW || typeIns.getOpcode() == Opcodes.NEWARRAY) {
                         numInvokeSpecials++;
                     }
                 }
             }
-        }
-        else
-        {
+        }else{
             methodNode.name = WRAP_NAME_PREFIX + methodNode.name;
         }
 
@@ -663,33 +594,27 @@ public final class Instrumenter
 
         final Type returnType = Type.getReturnType(methodNode.desc);
 
-        if(returnType.equals(Type.VOID_TYPE))
-        {
+        if(returnType.equals(Type.VOID_TYPE)){
             wrappingMethodNode.tryCatchBlocks.add(new TryCatchBlockNode(l0, l1, l1, "java/lang/Throwable"));
 
-        }
-        else
-        {
+        }else{
 
             wrappingMethodNode.tryCatchBlocks.add(new TryCatchBlockNode(l0, l1, l2, "java/lang/Throwable"));
 
             //--- create "Object returnValue = null;"
 
-            if( ! TransformerUtil.isStatic(methodNode.access))
-            {
+            if( ! TransformerUtil.isStatic(methodNode.access)){
                 // load "this"
                 varReturnValue++;
             }
 
             // consider method arguments to find right variable index
             final Type[] argTypes = Type.getArgumentTypes(methodNode.desc);
-            for(int i = 0; i < argTypes.length; i++)
-            {
+            for(int i = 0; i < argTypes.length; i++){
                 varReturnValue++;
 
                 // long/double take two registers
-                if(argTypes[i].equals(Type.LONG_TYPE) || argTypes[i].equals(Type.DOUBLE_TYPE) )
-                {
+                if(argTypes[i].equals(Type.LONG_TYPE) || argTypes[i].equals(Type.DOUBLE_TYPE) ){
                     varReturnValue++;
                 }
             }
@@ -708,8 +633,7 @@ public final class Instrumenter
 
         // --- construct call to wrapped methode
 
-        if( ! TransformerUtil.isStatic(methodNode.access))
-        {
+        if( ! TransformerUtil.isStatic(methodNode.access)){
             // load "this" to call method
             wInstructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
             var++;
@@ -717,27 +641,22 @@ public final class Instrumenter
 
 
         final Type[] argTypes = Type.getArgumentTypes(methodNode.desc);
-        for(int i = 0; i < argTypes.length; i++)
-        {
+        for(int i = 0; i < argTypes.length; i++){
             this.addLoadInsn(wInstructions, argTypes[i], var++);
 
             // long/double take two registers
-            if(argTypes[i].equals(Type.LONG_TYPE) || argTypes[i].equals(Type.DOUBLE_TYPE) )
-            {
+            if(argTypes[i].equals(Type.LONG_TYPE) || argTypes[i].equals(Type.DOUBLE_TYPE) ){
                 var++;
             }
         }
 
 
-        if(TransformerUtil.isStatic(methodNode.access))
-        {
+        if(TransformerUtil.isStatic(methodNode.access)){
             wInstructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
                     classNode.name,
                     methodNode.name,
                     methodNode.desc));
-        }
-        else
-        {
+        }else{
             wInstructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
                     classNode.name,
                     methodNode.name,
@@ -746,8 +665,7 @@ public final class Instrumenter
 
         var++;
 
-        if(returnType.equals(Type.VOID_TYPE))
-        {
+        if(returnType.equals(Type.VOID_TYPE)){
             wInstructions.add(new JumpInsnNode(Opcodes.GOTO, l2));
 
             // --- L1
@@ -773,9 +691,7 @@ public final class Instrumenter
             this.addCaptureEnableStatement(className, methodNode, wInstructions, -1);
 
             wInstructions.add(new InsnNode(Opcodes.RETURN));
-        }
-        else
-        {
+        }else{
             // construct store of the wrapped method call's result
 
             this.addBoxingStmt(wInstructions, returnType);
@@ -886,8 +802,9 @@ public final class Instrumenter
                                         Type returnType = Type.getReturnType(methodInsnNode.desc);
                                         Type[] newargs = new Type[args.length+1];
                                         newargs[0] = Type.getObjectType(methodInsnNode.owner);
-                                        for(int i = 0; i < args.length; i++)
+                                        for(int i = 0; i < args.length; i++){
                                             newargs[i+1] = args[i];
+                                        }
                                         methodInsnNode.desc = Type.getMethodDescriptor(returnType, newargs);
                                         methodInsnNode.owner = PackageInfo.getEvoSuitePackageWithSlash()+"/testcarver/wrapper/" + methodInsnNode.owner;
                                     } else {
@@ -931,270 +848,166 @@ public final class Instrumenter
         }
     }
 
-    private void addReturnInsn(final InsnList il, final Type type)
-    {
-        if (type.equals(Type.BOOLEAN_TYPE))
-        {
+    private void addReturnInsn(final InsnList il, final Type type){
+        if (type.equals(Type.BOOLEAN_TYPE)){
             il.add(new InsnNode(Opcodes.IRETURN));
-        }
-        else if (type.equals(Type.CHAR_TYPE))
-        {
+        }else if (type.equals(Type.CHAR_TYPE)){
             il.add(new InsnNode(Opcodes.IRETURN));
-        }
-        else if (type.equals(Type.BYTE_TYPE))
-        {
+        }else if (type.equals(Type.BYTE_TYPE)){
             il.add(new InsnNode(Opcodes.IRETURN));
-        }
-        else if (type.equals(Type.SHORT_TYPE))
-        {
+        }else if (type.equals(Type.SHORT_TYPE)){
             il.add(new InsnNode(Opcodes.IRETURN));
-        }
-        else if (type.equals(Type.INT_TYPE))
-        {
+        }else if (type.equals(Type.INT_TYPE)){
             il.add(new InsnNode(Opcodes.IRETURN));
-        }
-        else if (type.equals(Type.FLOAT_TYPE))
-        {
+        }else if (type.equals(Type.FLOAT_TYPE)){
             il.add(new InsnNode(Opcodes.FRETURN));
-        }
-        else if (type.equals(Type.LONG_TYPE))
-        {
+        }else if (type.equals(Type.LONG_TYPE)){
             il.add(new InsnNode(Opcodes.LRETURN));
-        }
-        else if (type.equals(Type.DOUBLE_TYPE))
-        {
+        }else if (type.equals(Type.DOUBLE_TYPE)){
             il.add(new InsnNode(Opcodes.DRETURN));
-        }
-        else
-        {
+        }else{
             il.add(new InsnNode(Opcodes.ARETURN));
         }
     }
 
-    private void addLoadInsn(final InsnList il, final Type type, final int argLocation)
-    {
-        if (type.equals(Type.BOOLEAN_TYPE))
-        {
+    private void addLoadInsn(final InsnList il, final Type type, final int argLocation){
+        if (type.equals(Type.BOOLEAN_TYPE)){
             il.add(new VarInsnNode(Opcodes.ILOAD, argLocation));
-        }
-        else if (type.equals(Type.CHAR_TYPE))
-        {
+        }else if (type.equals(Type.CHAR_TYPE)){
             il.add(new VarInsnNode(Opcodes.ILOAD, argLocation));
-        }
-        else if (type.equals(Type.BYTE_TYPE))
-        {
+        }else if (type.equals(Type.BYTE_TYPE)){
             il.add(new VarInsnNode(Opcodes.ILOAD, argLocation));
-        }
-        else if (type.equals(Type.SHORT_TYPE))
-        {
+        }else if (type.equals(Type.SHORT_TYPE)){
             il.add(new VarInsnNode(Opcodes.ILOAD, argLocation));
-        }
-        else if (type.equals(Type.INT_TYPE))
-        {
+        }else if (type.equals(Type.INT_TYPE)){
             il.add(new VarInsnNode(Opcodes.ILOAD, argLocation));
-        }
-        else if (type.equals(Type.FLOAT_TYPE))
-        {
+        }else if (type.equals(Type.FLOAT_TYPE)){
             il.add(new VarInsnNode(Opcodes.FLOAD, argLocation));
-        }
-        else if (type.equals(Type.LONG_TYPE))
-        {
+        }else if (type.equals(Type.LONG_TYPE)){
             il.add(new VarInsnNode(Opcodes.LLOAD, argLocation));
-        }
-        else if (type.equals(Type.DOUBLE_TYPE))
-        {
+        }else if (type.equals(Type.DOUBLE_TYPE)){
             il.add(new VarInsnNode(Opcodes.DLOAD, argLocation));
-        }
-        else
-        {
+        }else{
             il.add(new VarInsnNode(Opcodes.ALOAD, argLocation));
         }
     }
 
 
-    private String getInternalName(final Type type)
-    {
-        if (type.equals(Type.BOOLEAN_TYPE))
-        {
+    private String getInternalName(final Type type){
+        if (type.equals(Type.BOOLEAN_TYPE)){
             return "java/lang/Boolean";
-        }
-        else if (type.equals(Type.CHAR_TYPE))
-        {
+        }else if (type.equals(Type.CHAR_TYPE)){
             return "java/lang/Character";
-        }
-        else if (type.equals(Type.BYTE_TYPE))
-        {
+        }else if (type.equals(Type.BYTE_TYPE)){
             return "java/lang/Byte";
-        }
-        else if (type.equals(Type.SHORT_TYPE))
-        {
+        }else if (type.equals(Type.SHORT_TYPE)){
             return "java/lang/Short";
-        }
-        else if (type.equals(Type.INT_TYPE))
-        {
+        }else if (type.equals(Type.INT_TYPE)){
             return "java/lang/Integer";
-        }
-        else if (type.equals(Type.FLOAT_TYPE))
-        {
+        }else if (type.equals(Type.FLOAT_TYPE)){
             return "java/lang/Float";
-        }
-        else if (type.equals(Type.LONG_TYPE))
-        {
+        }else if (type.equals(Type.LONG_TYPE)){
             return "java/lang/Long";
-        }
-        else if (type.equals(Type.DOUBLE_TYPE))
-        {
+        }else if (type.equals(Type.DOUBLE_TYPE)){
             return "java/lang/Double";
-        }
-        else
-        {
+        }else{
             return type.getInternalName();
         }
     }
 
 
-    private void loadAndConvertToObject(final InsnList il, final Type type, final int argLocation)
-    {
-        if (type.equals(Type.BOOLEAN_TYPE))
-        {
+    private void loadAndConvertToObject(final InsnList il, final Type type, final int argLocation){
+        if (type.equals(Type.BOOLEAN_TYPE)){
             il.add(new VarInsnNode(Opcodes.ILOAD, argLocation));
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Boolean",
                     "valueOf", "(Z)Ljava/lang/Boolean;"));
-        }
-        else if (type.equals(Type.CHAR_TYPE))
-        {
+        }else if (type.equals(Type.CHAR_TYPE)){
             il.add(new VarInsnNode(Opcodes.ILOAD, argLocation));
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Character",
                     "valueOf", "(C)Ljava/lang/Character;"));
-        }
-        else if (type.equals(Type.BYTE_TYPE))
-        {
+        }else if (type.equals(Type.BYTE_TYPE)){
             il.add(new VarInsnNode(Opcodes.ILOAD, argLocation));
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Byte",
                     "valueOf", "(B)Ljava/lang/Byte;"));
-        }
-        else if (type.equals(Type.SHORT_TYPE))
-        {
+        }else if (type.equals(Type.SHORT_TYPE)){
             il.add(new VarInsnNode(Opcodes.ILOAD, argLocation));
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Short",
                     "valueOf", "(S)Ljava/lang/Short;"));
-        }
-        else if (type.equals(Type.INT_TYPE))
-        {
+        }else if (type.equals(Type.INT_TYPE)){
             il.add(new VarInsnNode(Opcodes.ILOAD, argLocation));
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Integer",
                     "valueOf", "(I)Ljava/lang/Integer;"));
-        }
-        else if (type.equals(Type.FLOAT_TYPE))
-        {
+        }else if (type.equals(Type.FLOAT_TYPE)){
             il.add(new VarInsnNode(Opcodes.FLOAD, argLocation));
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Float",
                     "valueOf", "(F)Ljava/lang/Float;"));
-        }
-        else if (type.equals(Type.LONG_TYPE))
-        {
+        }else if (type.equals(Type.LONG_TYPE)){
             il.add(new VarInsnNode(Opcodes.LLOAD, argLocation));
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Long",
                     "valueOf", "(J)Ljava/lang/Long;"));
-        }
-        else if (type.equals(Type.DOUBLE_TYPE))
-        {
+        }else if (type.equals(Type.DOUBLE_TYPE)){
             il.add(new VarInsnNode(Opcodes.DLOAD, argLocation));
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Double",
                     "valueOf", "(D)Ljava/lang/Double;"));
-        }
-        else
-        {
+        }else{
             il.add(new VarInsnNode(Opcodes.ALOAD, argLocation));
         }
     }
 
 
 
-    private void addBoxingStmt(final InsnList il, final Type type)
-    {
-        if (type.equals(Type.BOOLEAN_TYPE))
-        {
+    private void addBoxingStmt(final InsnList il, final Type type){
+        if (type.equals(Type.BOOLEAN_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Boolean",
                     "valueOf", "(Z)Ljava/lang/Boolean;"));
-        }
-        else if (type.equals(Type.CHAR_TYPE))
-        {
+        }else if (type.equals(Type.CHAR_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Character",
                     "valueOf", "(C)Ljava/lang/Character;"));
-        }
-        else if (type.equals(Type.BYTE_TYPE))
-        {
+        }else if (type.equals(Type.BYTE_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Byte",
                     "valueOf", "(B)Ljava/lang/Byte;"));
-        }
-        else if (type.equals(Type.SHORT_TYPE))
-        {
+        }else if (type.equals(Type.SHORT_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Short",
                     "valueOf", "(S)Ljava/lang/Short;"));
-        }
-        else if (type.equals(Type.INT_TYPE))
-        {
+        }else if (type.equals(Type.INT_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Integer",
                     "valueOf", "(I)Ljava/lang/Integer;"));
-        }
-        else if (type.equals(Type.FLOAT_TYPE))
-        {
+        }else if (type.equals(Type.FLOAT_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Float",
                     "valueOf", "(F)Ljava/lang/Float;"));
-        }
-        else if (type.equals(Type.LONG_TYPE))
-        {
+        }else if (type.equals(Type.LONG_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Long",
                     "valueOf", "(J)Ljava/lang/Long;"));
-        }
-        else if (type.equals(Type.DOUBLE_TYPE))
-        {
+        }else if (type.equals(Type.DOUBLE_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Double",
                     "valueOf", "(D)Ljava/lang/Double;"));
         }
     }
 
 
-    private void addUnBoxingStmt(final InsnList il, final Type type)
-    {
-        if (type.equals(Type.BOOLEAN_TYPE))
-        {
+    private void addUnBoxingStmt(final InsnList il, final Type type){
+        if (type.equals(Type.BOOLEAN_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean",
                     "booleanValue", "()Z"));
-        }
-        else if (type.equals(Type.CHAR_TYPE))
-        {
+        }else if (type.equals(Type.CHAR_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Character",
                     "charValue", "()C"));
-        }
-        else if (type.equals(Type.BYTE_TYPE))
-        {
+        }else if (type.equals(Type.BYTE_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Byte",
                     "byteValue", "()B"));
-        }
-        else if (type.equals(Type.SHORT_TYPE))
-        {
+        }else if (type.equals(Type.SHORT_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Short",
                     "shortValue", "()S"));
-        }
-        else if (type.equals(Type.INT_TYPE))
-        {
+        }else if (type.equals(Type.INT_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Integer",
                     "intValue", "()I"));
-        }
-        else if (type.equals(Type.FLOAT_TYPE))
-        {
+        }else if (type.equals(Type.FLOAT_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Float",
                     "floatValue", "()F"));
-        }
-        else if (type.equals(Type.LONG_TYPE))
-        {
+        }else if (type.equals(Type.LONG_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Long",
                     "longValue", "()J"));
-        }
-        else if (type.equals(Type.DOUBLE_TYPE))
-        {
+        }else if (type.equals(Type.DOUBLE_TYPE)){
             il.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Double",
                     "doubleValue", "()D"));
         }

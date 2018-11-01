@@ -1,6 +1,5 @@
 package eu.stamp.botsing_model_generation.testcase.carving;
 
-import eu.stamp.botsing_model_generation.Instrumentation.InstrumentingClassLoader;
 import org.evosuite.Properties;
 import org.evosuite.classpath.ResourceList;
 import org.evosuite.testcarver.capture.FieldRegistry;
