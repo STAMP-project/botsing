@@ -59,12 +59,12 @@ public class StaticAnalyser {
                 if(bc.isConstructorInvocation()) {
                     // Here, we should instantiate a new call sequence
                     handleConstructorInvocation(bc, cfg, callSequencesOfCurrentMethod);
-                }else if(bc.isCallToStaticMethod()) {
+                }else if(bc.isCallToStaticMethod() || bc.toString().contains("INVOKESTATIC")) {
                     // Here, we have a call to a static method call. It means we may need a new call sequence.
                     handleStaticMethodCallInvocation(bc, callSequencesOfCurrentMethod);
                 }else {
                     // Here, we have a regular method call. Also, We are sure that we do not need to initialize a new call sequence of call here. We should just add this to an existing call sequence.
-                    handleRegularMethodInvocation(bc, callSequencesOfCurrentMethod);
+                    handleRegularMethodInvocation(bc,cfg, callSequencesOfCurrentMethod);
                 }
             }else{
                 LOG.debug("The bytecode Instruction is filtered.");
@@ -74,7 +74,7 @@ public class StaticAnalyser {
         return callSequencesOfCurrentMethod;
     }
 
-    private void handleRegularMethodInvocation(BytecodeInstruction bc, Map<String,Map<String,List<MethodCall>>> callSequencesOfCurrentMethod) {
+    private void handleRegularMethodInvocation(BytecodeInstruction bc, RawControlFlowGraph cfg, Map<String,Map<String,List<MethodCall>>> callSequencesOfCurrentMethod) {
         if (bc.getSourceOfMethodInvocationInstruction() != null){
             if (bc.getSourceOfMethodInvocationInstruction().getVariableName() != null){
                 if(bc.getSourceOfMethodInvocationInstruction().getVariableName().length() > 0){
@@ -141,7 +141,7 @@ public class StaticAnalyser {
             // Here, we need to add a new call sequence to the methodCallSequences
             recordInvocation(bc, bc.getCalledMethodsClass(),newVariableName,callSequencesOfCurrentMethod);
         }else{
-            LOG.debug("Constructor did not set a new object");
+            LOG.debug("Could not find a new variable. It is not a call sequence.");
         }
 
     }
@@ -181,8 +181,8 @@ public class StaticAnalyser {
             newVariableName = next.getVariableName();
         }else{
             if(!next.getInstructionType().equals("ALOAD")){
-                LOG.error("Invalid type of instruction {}",next.getInstructionType());
-                System.exit(0);
+                LOG.error("The returned value is probably used as an input argument.");
+                LOG.error(next.explain());
             }
         }
         return newVariableName;
