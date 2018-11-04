@@ -1,9 +1,8 @@
 package eu.stamp.botsing_model_generation.analysis.classpath;
 
-import org.evosuite.TestGenerationContext;
+
 import org.evosuite.setup.InheritanceTree;
 import org.evosuite.setup.InheritanceTreeGenerator;
-import org.evosuite.setup.TestClusterGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,16 +14,13 @@ public class CPAnalysor {
 
     private static InheritanceTree inheritanceTree = null;
 
-    public static void analyzeClass( List<String> classPath) throws RuntimeException,
-            ClassNotFoundException {
+    public static void analyzeClass( List<String> classPath) throws RuntimeException{
         initInheritanceTree(classPath);
     }
 
     private static void initInheritanceTree(List<String> classPath) {
         LOG.info("Calculate inheritance hierarchy"+classPath.toString());
         inheritanceTree = InheritanceTreeGenerator.createFromClassPath(classPath);
-        TestClusterGenerator clusterGenerator = new TestClusterGenerator(inheritanceTree);
-        TestGenerationContext.getInstance().setTestClusterGenerator(clusterGenerator);
         InheritanceTreeGenerator.gatherStatistics(inheritanceTree);
     }
 
