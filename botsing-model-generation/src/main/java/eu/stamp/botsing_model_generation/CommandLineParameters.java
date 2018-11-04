@@ -28,6 +28,7 @@ public class CommandLineParameters {
     public static final String PROJECT_CP_OPT = "projectCP";
     public static final String HELP_OPT = "help";
     public static final String PROJECT_PREFIX = "projectPrefix";
+    public static final String OUTPUT_FOLDER = "outDir";
 
     public static Options getCommandLineOptions() {
         Options options = new Options();
@@ -44,6 +45,12 @@ public class CommandLineParameters {
         options.addOption(Option.builder(PROJECT_PREFIX)
                 .hasArg()
                 .desc("Prefix of the classes that we want to use for manual/dynamic analysis")
+                .build());
+
+
+        options.addOption(Option.builder(OUTPUT_FOLDER)
+                .hasArg()
+                .desc("the output directory.")
                 .build());
 
         return options;
