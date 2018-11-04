@@ -1,6 +1,9 @@
 package eu.stamp.botsing_model_generation;
 
+import be.yami.exception.SessionBuildException;
 import eu.stamp.botsing_model_generation.call_sequence.CallSequenceCollector;
+import eu.stamp.botsing_model_generation.call_sequence.CallSequencesPoolManager;
+import eu.stamp.botsing_model_generation.model.ModelGenerator;
 import org.apache.commons.cli.*;
 import org.evosuite.Properties;
 import org.slf4j.Logger;
@@ -8,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 
 import java.io.File;
+import java.io.IOException;
 
 import static eu.stamp.botsing_model_generation.CommandLineParameters.*;
 
@@ -46,6 +50,16 @@ public class Main {
                 Properties.TARGET_CLASS_PREFIX = commands.getOptionValue(PROJECT_PREFIX);
                 callSequenceCollector.collect();
                 // Here, we have the list of call sequences. We just need to pass it to the yami tool
+                ModelGenerator modelGenerator =  new ModelGenerator();
+                String outputFolder = commands.hasOption(OUTPUT_FOLDER)?commands.getOptionValue(OUTPUT_FOLDER):"generated_model";
+                try {
+                    modelGenerator.generate(CallSequencesPoolManager.getInstance().getPool(),outputFolder);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (SessionBuildException e) {
+                    e.printStackTrace();
+                }
+
             }else{
                 LOG.error("Project prefix should be passed as an input. For more information -> help");
             }
