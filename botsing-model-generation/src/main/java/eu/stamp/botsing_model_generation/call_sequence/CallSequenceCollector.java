@@ -69,11 +69,7 @@ public class CallSequenceCollector {
     private void handleClassPath() {
         ClassPathHandler.getInstance().changeTargetClassPath(projectClassPaths);
         List<String> cpList = Arrays.asList(projectClassPaths);
-        try {
-            CPAnalysor.analyzeClass(cpList);
-        } catch (ClassNotFoundException e) {
-            LOG.error("The passed class could not be found! please revise your input.");
-        }
+        CPAnalysor.analyzeClass(cpList);
     }
 
 

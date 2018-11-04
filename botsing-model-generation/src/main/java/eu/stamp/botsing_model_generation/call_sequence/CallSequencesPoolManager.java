@@ -56,4 +56,9 @@ public class CallSequencesPoolManager extends CallSequencesPool {
     }
 
 
+    public Map<String, Set<List<MethodCall>>> getPool(){
+        return this.pool;
+    }
+
+
 }

@@ -30,8 +30,6 @@ public class DynamicAnalyser {
         }else{
             LOG.info("No test suite detected for dynamic analysis!");
         }
-
-
         // Execute the test cases in the detected test suite, and run the dynamic analysis on them.
     }
 

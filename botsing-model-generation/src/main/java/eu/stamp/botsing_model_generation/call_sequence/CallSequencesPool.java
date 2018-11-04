@@ -13,10 +13,4 @@ public class CallSequencesPool implements Serializable {
 
         pool.get(clazz).add(sequences);
     }
-
-    public void reWritePool(Map<String, Set<List<MethodCall>>> poolFromFile){
-        pool = new HashMap<String, Set<List<MethodCall>>>(poolFromFile);
-    }
-
-
 }
