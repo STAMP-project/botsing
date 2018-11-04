@@ -30,6 +30,13 @@
             <version>${gson.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>be.unamur.info</groupId>
+            <artifactId>yami-tool</artifactId>
+            <version>${yami.version}</version>
+        </dependency>
+
+
     </dependencies>
 
 </project>
