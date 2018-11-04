@@ -53,10 +53,8 @@ public class InstrumentingClassLoader extends ClassLoader {
         InputStream is = null;
         try {
             is = ResourceList.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getClassAsStream(fullyQualifiedTargetClass);
-
             if (is == null) {
-                throw new ClassNotFoundException("Class '" + className + ".class"
-                        + "' should be in target project, but could not be found!");
+                throw new ClassNotFoundException("Class '" + className + ".class" + "' should be in target project!");
             }
             byte[] byteBuffer = getTransformedBytes(className,is);
             createPackageDefinition(fullyQualifiedTargetClass);
@@ -83,15 +81,18 @@ public class InstrumentingClassLoader extends ClassLoader {
     protected byte[] getTransformedBytes(String className, InputStream is) throws IOException {
         return instrumentation.transformBytes(this, className, new ClassReader(is));
     }
+
     private void createPackageDefinition(String className){
         int i = className.lastIndexOf('.');
+        // check if className is valid
         if (i != -1) {
-            String pkgname = className.substring(0, i);
+            String packageName = className.substring(0, i);
             // Check if package already loaded.
-            Package pkg = getPackage(pkgname);
+            Package pkg = getPackage(className.substring(0, i));
             if(pkg==null){
-                definePackage(pkgname, null, null, null, null, null, null, null);
-                LOG.info("Defined package (3): "+getPackage(pkgname)+", "+getPackage(pkgname).hashCode());
+                // If it is not loadeed we will define it to the classloder
+                definePackage(packageName, null, null, null, null, null, null, null);
+                LOG.info("Defined package (3): "+getPackage(packageName)+", "+getPackage(packageName).hashCode());
             }
         }
     }
