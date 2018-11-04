@@ -2,7 +2,6 @@ package eu.stamp.botsing_model_generation.testcase.carving.capture;
 
 import eu.stamp.botsing_model_generation.BotsingTestGenerationContext;
 import org.evosuite.classpath.ResourceList;
-import org.objectweb.asm.Type;
 
 
 public final class CaptureUtil {
