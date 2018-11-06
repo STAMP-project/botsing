@@ -1,7 +1,6 @@
 package eu.stamp.botsing_model_generation.testcase.carving.instrument;
 
 import java.io.PrintWriter;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -17,8 +16,6 @@ import org.evosuite.testcarver.capture.CaptureLog;
 import eu.stamp.botsing_model_generation.testcase.carving.capture.CaptureUtil;
 import org.evosuite.testcarver.capture.FieldRegistry;
 import org.evosuite.testcarver.instrument.TransformerUtil;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -56,48 +53,6 @@ public final class Instrumenter {
     }
 
 
-    public void instrument(final String className, final ClassNode cn){
-        if(! TransformerUtil.isClassConsideredForInstrumentation(className)){
-            logger.debug("Class {} has not been instrumented because its name is on the blacklist", className);
-            return;
-        }
-
-        try{
-            this.transformClassNode(cn, className);
-        }catch(final Throwable t){
-            logger.error("An error occurred while instrumenting class {} -> returning unmodified version", className, t);
-        }
-
-    }
-
-    public byte[] instrument(final String className, final byte[] classfileBuffer) throws IllegalClassFormatException {
-        logger.debug("Start instrumenting class {}", className);
-
-
-        final ClassReader 		cr 			  = new ClassReader(classfileBuffer);
-        final ClassWriter 		cw 			  = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        final ClassNode 		cn 			  = new ClassNode();
-        cr.accept(cn, ClassReader.SKIP_DEBUG);
-
-        if(! TransformerUtil.isClassConsideredForInstrumentation(className)){
-            logger.debug("Class {} has not been instrumented because its name is on the blacklist", className);
-            return classfileBuffer;
-        }
-
-        try{
-            this.transformClassNode(cn, className);
-
-            cn.accept(cw);
-
-            return cw.toByteArray();
-
-        }catch(final Throwable t){
-            logger.error("An error occurred while instrumenting class {} -> returning unmodified version", className, t);
-            return classfileBuffer;
-        }
-    }
-
-    @SuppressWarnings("unchecked")
     private void addFieldRegistryRegisterCall(final MethodNode methodNode){
         AbstractInsnNode ins = null;
         ListIterator<AbstractInsnNode> iter = methodNode.instructions.iterator();

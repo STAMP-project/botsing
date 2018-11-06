@@ -22,11 +22,7 @@ public class CarvingClassLoader extends ClassLoader {
     private final ClassLoader classLoader;
     private final Map<String, Class<?>> classes = new HashMap<String, Class<?>>();
 
-    /**
-     * <p>
-     * Constructor for InstrumentingClassLoader.
-     * </p>
-     */
+
     public CarvingClassLoader() {
         classLoader = CarvingClassLoader.class.getClassLoader();
     }
@@ -48,6 +44,7 @@ public class CarvingClassLoader extends ClassLoader {
         if(name.equals("eu.stamp.botsing_model_generation.testcase.carving.capture.CaptureUtil")){
             return eu.stamp.botsing_model_generation.testcase.carving.capture.CaptureUtil.class;
         }
+
         Class<?> result = classes.get(name);
         if (result != null) {
             return result;

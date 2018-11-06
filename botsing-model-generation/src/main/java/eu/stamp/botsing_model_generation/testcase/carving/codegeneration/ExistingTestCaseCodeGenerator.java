@@ -17,6 +17,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import eu.stamp.botsing_model_generation.BotsingTestGenerationContext;
+import eu.stamp.botsing_model_generation.testcase.carving.CarvingHelper;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.evosuite.Properties;
 import org.evosuite.classpath.ResourceList;
@@ -85,7 +86,7 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
         Class<?> type;
         try {
             final String typeName = log.getTypeName(oid);
-            type = getClassForName(typeName);
+            type = CarvingHelper.getClassForName(typeName);
 
             logger.debug("Creating method call statement for call to method {}.{}", typeName, methodName);
 
@@ -199,15 +200,14 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
         final VariableReference varRef;
 
         if (value instanceof Class) {
-            // final PrimitiveStatement cps = ClassPrimitiveStatement.getPrimitiveStatement(testCase, getClassForName(type));
             final PrimitiveStatement cps = new ClassPrimitiveStatement(testCase,
-                    getClassForName(type));
+                    CarvingHelper.getClassForName(type));
             cps.setValue(value);
 
             varRef = testCase.addStatement(cps);
         } else {
             final PrimitiveStatement primitiveValue = PrimitiveStatement.getPrimitiveStatement(testCase,
-                    getClassForName(type));
+                    CarvingHelper.getClassForName(type));
             primitiveValue.setValue(value);
 
             varRef = testCase.addStatement(primitiveValue);
@@ -249,7 +249,7 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
         final String typeName = log.getTypeName(oid);
 
         try {
-            final Class<?> type = getClassForName(typeName);
+            final Class<?> type = CarvingHelper.getClassForName(typeName);
 
             final String fieldDesc = log.descList.get(logRecNo);
             final Class<?> fieldType = CaptureUtil.getClassFromDesc(fieldDesc);
@@ -296,7 +296,7 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
 
             try {
 //				final Class<?> fieldType = getClassFromType(fieldTypeType);
-                final Class<?> type = getClassForName(typeName);
+                final Class<?> type = CarvingHelper.getClassForName(typeName);
 
 //				final FieldReference valueRef = new FieldReference(testCase,
 //				        new GenericField(getDeclaredField(type, fieldName), type));
@@ -314,7 +314,7 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
             } catch (final Exception e) {
                 logger.debug("Error while trying to get field "
                         + fieldName + " of class "
-                        + getClassForName(typeName) + ": " + e);
+                        + CarvingHelper.getClassForName(typeName) + ": " + e);
                 CodeGeneratorException.propagateError(e, "[logRecNo = %s] - an unexpected error occurred while creating field read access stmt. Log: %s", logRecNo, log);
             }
         }
@@ -361,68 +361,7 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
             }
         }
 
-        //		try
-        //		{
-        return getClassForName(type.getClassName());
-        //			return Class.forName(type.getClassName(), true, StaticTestCluster.classLoader);
-        //		}
-        //		catch (final ClassNotFoundException e)
-        //		{
-        //			throw new RuntimeException(e);
-        //		}
-    }
-
-    private final Class<?> getClassForName(String type) {
-        try {
-            if (type.equals("boolean") || type.equals("java.lang.Boolean")) {
-                return Boolean.TYPE;
-            } else if (type.equals("byte") || type.equals("java.lang.Byte")) {
-                return Byte.TYPE;
-            } else if (type.equals("char") || type.equals("java.lang.Character")) {
-                return Character.TYPE;
-            } else if (type.equals("double") || type.equals("java.lang.Double")) {
-                return Double.TYPE;
-            } else if (type.equals("float") || type.equals("java.lang.Float")) {
-                return Float.TYPE;
-            } else if (type.equals("int") || type.equals("java.lang.Integer")) {
-                return Integer.TYPE;
-            } else if (type.equals("long") || type.equals("java.lang.Long")) {
-                return Long.TYPE;
-            } else if (type.equals("short") || type.equals("java.lang.Short")) {
-                return Short.TYPE;
-            } else if (type.equals("String")) {
-                return Class.forName("java.lang." + type, true,
-                        BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-            }
-
-            if (type.endsWith("[]")) {
-                // see http://stackoverflow.com/questions/3442090/java-what-is-this-ljava-lang-object
-
-                final StringBuilder arrayTypeNameBuilder = new StringBuilder(30);
-
-                int index = 0;
-                while ((index = type.indexOf('[', index)) != -1) {
-                    arrayTypeNameBuilder.append('[');
-                    index++;
-                }
-
-                arrayTypeNameBuilder.append('L'); // always needed for Object arrays
-
-                // remove bracket from type name get array component type
-                type = type.replace("[]", "");
-                arrayTypeNameBuilder.append(type);
-
-                arrayTypeNameBuilder.append(';'); // finalize object array name
-
-                return Class.forName(arrayTypeNameBuilder.toString(), true,
-                        BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-            } else {
-                return Class.forName(ResourceList.getClassNameFromResourcePath(type), true,
-                        BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-            }
-        } catch (final ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        return CarvingHelper.getClassForName(type.getClassName());
     }
 
     private Field getDeclaredField(final Class<?> clazz, final String fieldName)
@@ -464,7 +403,7 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
 
         final Object[] params = log.params.get(logRecNo);
         final String arrTypeName = log.getTypeName(oid);
-        final Class<?> arrType = getClassForName(arrTypeName);
+        final Class<?> arrType = CarvingHelper.getClassForName(arrTypeName);
 
         // --- create array instance creation e.g. int[] var = new int[10];
 
@@ -522,7 +461,7 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
             final int oid = log.objectIds.get(logRecNo);
             final Object[] params = log.params.get(logRecNo);
             String collTypeName = log.getTypeName(oid);
-            Class<?> collType = getClassForName(collTypeName);
+            Class<?> collType = CarvingHelper.getClassForName(collTypeName);
 
             // -- determine if an alternative collection must be used for code generation
             final boolean isPublic = java.lang.reflect.Modifier.isPublic(collType.getModifiers());
@@ -599,7 +538,7 @@ public final class ExistingTestCaseCodeGenerator implements ICodeGenerator<TestC
             final int oid = log.objectIds.get(logRecNo);
             final Object[] params = log.params.get(logRecNo);
             String collTypeName = log.getTypeName(oid);
-            Class<?> collType = getClassForName(collTypeName);
+            Class<?> collType = CarvingHelper.getClassForName(collTypeName);
 
             // -- determine if an alternative collection must be used for code generation
             final boolean isPublic = java.lang.reflect.Modifier.isPublic(collType.getModifiers());

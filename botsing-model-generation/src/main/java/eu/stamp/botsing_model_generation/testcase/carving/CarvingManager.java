@@ -48,7 +48,7 @@ public class CarvingManager {
         final JUnitCore runner = new JUnitCore();
         final CarvingRunListener listener = new CarvingRunListener();
         runner.addListener(listener);
-//
+        // Set carving class loader
         FieldRegistry.carvingClassLoader = classLoader;
 
         for (String testSuiteName : testSuites) {
@@ -60,7 +60,7 @@ public class CarvingManager {
                 LOG.error("Failed to load JUnit test class {}: {}", classNameWithDots, e);
             }
         }
-        LOG.info("))-->"+junitTestClasses.size());
+
         final Class<?>[] classes = new Class<?>[junitTestClasses.size()];
         junitTestClasses.toArray(classes);
         Result result = runner.run(classes);

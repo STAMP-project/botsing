@@ -23,9 +23,12 @@ import java.util.concurrent.ThreadFactory;
 
 public class TestExecutor implements ThreadFactory {
     private static final Logger LOG = LoggerFactory.getLogger(TestExecutor.class);
+
     public static final String BOTSING_TEST_EXECUTION_THREAD_GROUP = "Botsing_Test_Execution_Group";
     public static final String BOTSING_TEST_EXECUTION_THREAD = "BOTSING_TEST_EXECUTION_THREAD";
+
     private Thread currentThread;
+
     private final Set<Thread> stalledThreads =  new HashSet<Thread>();
     private ThreadGroup threadGroup = null;
 
@@ -51,11 +54,6 @@ public class TestExecutor implements ThreadFactory {
     }
 
 
-    public ExecutionResult execute(TestCase tc) {
-        ExecutionResult result = execute(tc, Properties.TIMEOUT);
-        return result;
-    }
-
     public ExecutionResult execute(TestCase tc, int timeout) {
         Scope scope = new Scope();
         ExecutionResult result = execute(tc, scope, timeout);
@@ -69,22 +67,19 @@ public class TestExecutor implements ThreadFactory {
         MaxTestsStoppingCondition.testExecuted();
         Runtime.getInstance().resetRuntime();
 
-        TestRunnable callable = new TestRunnable(tc, scope, observers);
-        callable.storeCurrentThreads();
+        TestRunnable callableTest = new TestRunnable(tc, scope, observers);
+        callableTest.storeCurrentThreads();
 
         TimeoutHandler<ExecutionResult> handler = new TimeoutHandler<ExecutionResult>();
         try {
-
             ExecutionResult result = null;
-
-            // important to call it before setting up the sandbox
             SystemInUtil.getInstance().initForTestCase();
             JOptionPaneInputs.getInstance().initForTestCase();
 
             Sandbox.goingToExecuteSUTCode();
             BotsingTestGenerationContext.getInstance().goingToExecuteSUTCode();
             try {
-                result = handler.execute(callable, executor, timeout, Properties.CPU_TIMEOUT);
+                result = handler.execute(callableTest, executor, timeout, Properties.CPU_TIMEOUT);
             } finally {
                 Sandbox.doneWithExecutingSUTCode();
                 BotsingTestGenerationContext.getInstance().doneWithExecutingSUTCode();

@@ -25,11 +25,13 @@ public class CarvingRunListener extends RunListener {
         return carvedTestCases;
     }
 
+    // Run this when new test started
     @Override
     public void testStarted(Description description){
         Capturer.startCapture();
     }
 
+    // Run this after finishing a test
     @Override
     public void testFinished(Description description){
         LOG.debug("DESC: "+ description.toString());
