@@ -8,11 +8,9 @@ import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class StaticAnalyserTest {
 
