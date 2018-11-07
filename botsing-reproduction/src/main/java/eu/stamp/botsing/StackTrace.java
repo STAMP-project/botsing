@@ -31,19 +31,27 @@ import java.util.StringTokenizer;
 public class StackTrace {
 
     private static final Logger LOG = LoggerFactory.getLogger(StackTrace.class);
+
     private String exceptionType;
     private ArrayList<StackTraceElement> frames;
-    private int target_frame_level;
+    private int targetFrameLevel;
     private String targetClass;
 
-    public void setup(String logPath,int frame_level){
-        target_frame_level =  frame_level;
+    /**
+     * Sets up this object with the stack trace read from the given file and having the given target frame.
+     *
+     * @param logPath    The file with a stack trace.
+     * @param frameLevel The target frame level.
+     * @throws IllegalArgumentException If the file at logPath could not be found or does not contain a valid stack trace.
+     */
+    public void setup(String logPath, int frameLevel) throws IllegalArgumentException {
+        targetFrameLevel = frameLevel;
         try {
             BufferedReader reader = readFromFile(logPath);
             // Parse type of the exception
             StringTokenizer st = new StringTokenizer(reader.readLine(), ":");
-            exceptionType =  st.nextToken();
-            LOG.info("Exception type is detected: "+exceptionType);
+            exceptionType = st.nextToken();
+            LOG.info("Exception type is detected: " + exceptionType);
 
             // clear the frames in this.frames (if any)
             if (frames == null) {
@@ -53,52 +61,53 @@ public class StackTrace {
             }
 
             // Parse frames
-            for(int counter=0;counter<frame_level;counter++){
+            for (int counter = 0; counter < frameLevel; counter++) {
                 String tempFrame = reader.readLine();
-                if (tempFrame == null){
+                if (tempFrame == null) {
                     break;
                 }
                 frames.add(stringToStackTraceElement(tempFrame));
             }
-            LOG.info("Target frame is set to: "+frames.get(frame_level-1).toString());
+            LOG.info("Target frame is set to: " + frames.get(frameLevel - 1).toString());
 
             // Parse Target class
-            targetClass = frames.get(frame_level-1).getClassName();
+            targetClass = frames.get(frameLevel - 1).getClassName();
             org.evosuite.Properties.TARGET_CLASS = targetClass;
-            LOG.info("Target Class is set to: "+targetClass);
+            LOG.info("Target Class is set to: " + targetClass);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            LOG.debug("Stack trace file not found!", e);
+            throw new IllegalArgumentException("Stack trace file not found!", e);
         } catch (IOException e) {
-            //LOG.error("Unable to parse the stack trace:");
-            e.printStackTrace();
+            LOG.debug("Unable to read file {}!", logPath, e);
+            throw new IllegalArgumentException("Unable to read file "+ logPath + "!", e);
         }
     }
 
-    private StackTraceElement stringToStackTraceElement(String frameString){
-        int startPoint = frameString.indexOf("at ")+3;
+    private StackTraceElement stringToStackTraceElement(String frameString) {
+        int startPoint = frameString.indexOf("at ") + 3;
         String usefulPart = frameString.substring(startPoint);
         int splitPoint = usefulPart.indexOf("(");
         String usefulForLineDetection = usefulPart.substring(splitPoint);
-        String usefulForOtherParts = usefulPart.substring(0,splitPoint);
+        String usefulForOtherParts = usefulPart.substring(0, splitPoint);
 
         //Line detection
-        int lineFirstSplitpoint = usefulForLineDetection.indexOf(":")+1;
+        int lineFirstSplitpoint = usefulForLineDetection.indexOf(":") + 1;
         int lineSecondSplitpoint = usefulForLineDetection.indexOf(")");
 
-        int lineNumber = Integer.parseInt(usefulForLineDetection.substring(lineFirstSplitpoint,lineSecondSplitpoint));
+        int lineNumber = Integer.parseInt(usefulForLineDetection.substring(lineFirstSplitpoint, lineSecondSplitpoint));
 
         String[] split = usefulForOtherParts.split("\\.");
         // method Detection
-        String methodName =  split[(split.length-1)];
+        String methodName = split[(split.length - 1)];
 
         // class detection
-        String clazz = String.join(".",Arrays.copyOfRange(split,0,split.length-1));
-        return new StackTraceElement(clazz, methodName, split[(split.length-2)], lineNumber);
+        String clazz = String.join(".", Arrays.copyOfRange(split, 0, split.length - 1));
+        return new StackTraceElement(clazz, methodName, split[(split.length - 2)], lineNumber);
     }
 
 
-    public int getTarget_frame_level() {
-        return target_frame_level;
+    public int getTargetFrameLevel() {
+        return targetFrameLevel;
     }
 
     public String getExceptionType() {
@@ -109,21 +118,23 @@ public class StackTrace {
         return targetClass;
     }
 
-    public StackTraceElement getFrame(int index){
-        return frames.get(index-1);
+    public StackTraceElement getFrame(int index) {
+        return frames.get(index - 1);
     }
-    public int getNumberOfFrames(){
+
+    public int getNumberOfFrames() {
         return frames.size();
     }
 
-    public String getTargetMethod(){
-        return frames.get(target_frame_level-1).getMethodName();
-    }
-    public int getTargetLine(){
-        return frames.get(target_frame_level-1).getLineNumber();
+    public String getTargetMethod() {
+        return frames.get(targetFrameLevel - 1).getMethodName();
     }
 
-    public ArrayList<StackTraceElement> getFrames(){
+    public int getTargetLine() {
+        return frames.get(targetFrameLevel - 1).getLineNumber();
+    }
+
+    public ArrayList<StackTraceElement> getFrames() {
         return frames;
     }
 

@@ -22,6 +22,8 @@ package eu.stamp.botsing;
  */
 
 import org.evosuite.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.io.*;
@@ -32,6 +34,8 @@ import java.lang.annotation.Target;
 
 
 public class CrashProperties {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CrashProperties.class);
 
     private static CrashProperties instance = null;
     private StackTrace crash = new StackTrace();
@@ -99,9 +103,11 @@ public class CrashProperties {
                     Properties.getInstance().setValue(property, configFile.getProperty(property));
                 }
             } catch (Properties.NoSuchParameterException e) {
-                e.printStackTrace();
+                LOG.debug("Property {} not found!", property, e);
+                throw new IllegalArgumentException("Property " + property + " not found!", e);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                LOG.debug("Illegal access for property {}!", property, e);
+                throw new IllegalArgumentException("Illegal access for property " + property + "!", e);
             }
         }
 
@@ -113,9 +119,11 @@ public class CrashProperties {
             InputStream inputstream = getClass().getClassLoader().getResourceAsStream("config.properties");
             configFile.load(inputstream);
         } catch (FileNotFoundException eta) {
-            eta.printStackTrace();
+            LOG.error("Default config.properties file not found in the resources of the jar file!");
+            throw new IllegalStateException("Default config.properties file not found in the resources of the jar file!");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Exception while reading default config.properties from the resources of the jar file!");
+            throw new IllegalStateException("Exception while reading default config.properties from the resources of the jar file!");
         }
     }
 
@@ -145,7 +153,12 @@ public class CrashProperties {
         return Properties.getLongValue(property);
     }
 
-
+    /**
+     * Returns the value of the given property or null if the property could not be found.
+     * @param property the property to get the value of.
+     * @return The value of the given property or null if the property could not be found.
+     * @throws IllegalStateException If the property could not be accessed.
+     */
     public Boolean getBooleanValue(String property) {
         try {
             if (Properties.hasParameter(property)) {
@@ -154,9 +167,10 @@ public class CrashProperties {
                 return Boolean.valueOf(configFile.getProperty(property));
             }
         } catch (Properties.NoSuchParameterException e) {
-            e.printStackTrace();
+            LOG.debug("Property {} not found!", property, e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            LOG.debug("Illegal access for property {}!", property, e);
+            throw new IllegalStateException("Illegal access for property " + property + "!", e);
         }
         return null;
     }
