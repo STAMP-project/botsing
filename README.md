@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/STAMP-project/botsing.svg?branch=master)](https://travis-ci.org/STAMP-project/botsing)
 [![Coverage Status](https://coveralls.io/repos/github/STAMP-project/botsing/badge.svg?branch=master)](https://coveralls.io/github/STAMP-project/botsing?branch=master)
+[![Maven Central](https://img.shields.io/maven-central/v/eu.stamp-project/botsing-reproduction.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22eu.stamp-project%22%20AND%20a:%22botsing-reproduction%22)
 
 Botsing is a Java framework for crash reproduction. It relies on [EvoSuite](http://www.evosuite.org) for code instrumentation.
 
@@ -10,7 +11,7 @@ Botsing is a Java framework for crash reproduction. It relies on [EvoSuite](http
 
 ### Command line interface
 
-The latest version of Botsing command line (botsgin-reproduction-X-X-X.jar) is available at [https://github.com/STAMP-project/botsing/releases](https://github.com/STAMP-project/botsing/releases). 
+The latest version of Botsing command line (botsing-reproduction-X-X-X.jar) is available at [https://github.com/STAMP-project/botsing/releases](https://github.com/STAMP-project/botsing/releases). 
 
 Botsing has three mandatory parameters:
  - `-crash_log` the file with the stack trace. The stack trace should be clean (no error message) and cannot contain any nested exceptions.
