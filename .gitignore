@@ -12,6 +12,7 @@
 
 # Package Files #
 *.jar
+!*projectA*.jar
 *.war
 *.nar
 *.ear
@@ -48,4 +49,5 @@ Thumbs.db
 
 # local test directory
 **/test/**/botsing/local/
+**/test/**/botsing_model_generation/local/
 
