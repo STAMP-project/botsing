@@ -6,6 +6,7 @@ import eu.stamp.botsing_model_generation.analysis.sourcecode.StaticAnalyser;
 import eu.stamp.botsing_model_generation.analysis.testcases.DynamicAnalyser;
 import eu.stamp.botsing_model_generation.testcase.execution.TestExecutor;
 import org.evosuite.Properties;
+import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.setup.InheritanceTree;
 import org.evosuite.testcase.DefaultTestCase;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -69,6 +71,13 @@ public class CallSequenceCollector {
     private void handleClassPath() {
         ClassPathHandler.getInstance().changeTargetClassPath(projectClassPaths);
         List<String> cpList = Arrays.asList(projectClassPaths);
+        for (String cp: cpList){
+            try {
+                ClassPathHacker.addFile(cp);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         CPAnalysor.analyzeClass(cpList);
     }
 

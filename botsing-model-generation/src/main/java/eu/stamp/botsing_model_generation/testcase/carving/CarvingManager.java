@@ -3,6 +3,7 @@ package eu.stamp.botsing_model_generation.testcase.carving;
 import org.evosuite.Properties;
 import org.evosuite.classpath.ResourceList;
 import org.evosuite.testcarver.capture.FieldRegistry;
+import org.evosuite.testcarver.extraction.CarvingRunListener;
 import org.evosuite.testcase.TestCase;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -42,11 +43,11 @@ public class CarvingManager {
     private void carveTestCases() {
         List<String> testSuites = getListOftestSuites();
         // run test suites
-        final CarvingClassLoader classLoader = new CarvingClassLoader();
+        final org.evosuite.testcarver.extraction.CarvingClassLoader classLoader = new org.evosuite.testcarver.extraction.CarvingClassLoader();
         final List<Class<?>> junitTestClasses = new ArrayList<Class<?>>();
 
         final JUnitCore runner = new JUnitCore();
-        final CarvingRunListener listener = new CarvingRunListener();
+        final org.evosuite.testcarver.extraction.CarvingRunListener listener = new CarvingRunListener();
         runner.addListener(listener);
         // Set carving class loader
         FieldRegistry.carvingClassLoader = classLoader;
