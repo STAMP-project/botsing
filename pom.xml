@@ -8,8 +8,9 @@
     <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>botsing</name>
-    <description>Botsing is a Java framework for crash replication using evolutionary algorithms.</description>
+    <name>Botsing</name>
+    <description>Botsing is a Java framework for crash reproduction using evolutionary algorithms.</description>
+    <url>https://www.stamp-project.eu/</url>
     <inceptionYear>2017</inceptionYear>
 
     <organization>
