@@ -18,11 +18,10 @@ import static eu.stamp.botsing_model_generation.CommandLineParameters.*;
 public class Main {
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) {
         Main botsingModelGeneration = new Main();
         botsingModelGeneration.parseCommandLine(args);
-
-
     }
 
 
