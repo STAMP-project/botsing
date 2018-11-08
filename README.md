@@ -11,7 +11,7 @@ Botsing is a Java framework for crash reproduction. It relies on [EvoSuite](http
 
 ### Command line interface
 
-The latest version of Botsing command line (botsgin-reproduction-X-X-X.jar) is available at [https://github.com/STAMP-project/botsing/releases](https://github.com/STAMP-project/botsing/releases). 
+The latest version of Botsing command line (botsing-reproduction-X-X-X.jar) is available at [https://github.com/STAMP-project/botsing/releases](https://github.com/STAMP-project/botsing/releases). 
 
 Botsing has three mandatory parameters:
  - `-crash_log` the file with the stack trace. The stack trace should be clean (no error message) and cannot contain any nested exceptions.
