@@ -64,10 +64,6 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
         }
     }
 
-    public void setFitnessFunction(){
-
-    }
-
     @Override
     public void generateSolution() {
         currentIteration = 0;
