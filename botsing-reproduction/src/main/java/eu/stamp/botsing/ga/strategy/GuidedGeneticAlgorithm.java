@@ -44,23 +44,23 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
 
     protected ReplacementFunction replacementFunction = new FitnessReplacementFunction();
 
-    private GuidedMutation mutation;
+    private GuidedMutation<T> mutation;
 
     private int populationSize;
 
     private int eliteSize;
 
-    public GuidedGeneticAlgorithm(ChromosomeFactory factory) {
+    public GuidedGeneticAlgorithm(ChromosomeFactory<T> factory) {
         super(factory);
         this.crossoverFunction = new GuidedSinglePointCrossover();
-        this.mutation = new GuidedMutation();
+        this.mutation = new GuidedMutation<>();
         try {
             this.populationSize =  CrashProperties.getInstance().getIntValue("population");
             this.eliteSize = CrashProperties.getInstance().getIntValue("elite");
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            LOG.error("Illegal access during initialization", e);
         } catch (Properties.NoSuchParameterException e) {
-            e.printStackTrace();
+            LOG.error("Parameter not found during initialization", e);
         }
     }
 
@@ -72,46 +72,44 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
     public void generateSolution() {
         currentIteration = 0;
 
-        // generate solution
+        // generate initial population
         initializePopulation();
 
         LOG.debug("Starting evolution");
         int starvationCounter = 0;
-        double bestFitness = Double.MAX_VALUE;
-        double lastBestFitness = Double.MAX_VALUE;
+        double bestFitness = getBestFitness();
+        double lastBestFitness = bestFitness;
 
-        double bestFFinInitialization = getBestFitness();
-        LOG.debug("Best FF in the initial population is: "+bestFFinInitialization);
+        LOG.debug("Best fitness in the initial population is: {}", bestFitness);
         while (!isFinished()){
-            double bestFitnessBeforeEvolution = getBestFitness();
+            // Create next generation
             evolve();
             sortPopulation();
-            double newFitness = getBestFitness();
-            LOG.info("New fitness Function is: "+newFitness);
 
+            bestFitness = getBestFitness();
+            LOG.debug("New fitness is: {}", bestFitness);
+
+            // Check for starvation
             if (Double.compare(bestFitness, lastBestFitness) == 0) {
                 starvationCounter++;
             } else {
-                LOG.info("reset starvationCounter after " + starvationCounter + " iterations");
+                LOG.debug("Reset starvationCounter after {} iterations", starvationCounter);
                 starvationCounter = 0;
                 lastBestFitness = bestFitness;
             }
-
             updateSecondaryCriterion(starvationCounter);
 
-            LOG.info("Current iteration: " + currentIteration);
+            LOG.debug("Current iteration: {}", currentIteration);
             this.notifyIteration();
-
         }
+        LOG.debug("Best fitness in the final population is: {}", lastBestFitness);
     }
 
     @Override
     protected void evolve() {
-        List<T> newGeneration = new ArrayList<T>();
         // Elitism
         LOG.debug("Selection");
-
-        newGeneration.addAll(elitism());
+        List<T> newGeneration = new ArrayList<T>(elitism());
 
         while (newGeneration.size() < this.populationSize && !isFinished()) {
             LOG.debug("Generating offspring");
