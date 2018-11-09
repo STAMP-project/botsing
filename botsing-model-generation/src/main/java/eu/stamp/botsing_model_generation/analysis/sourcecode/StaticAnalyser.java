@@ -28,9 +28,13 @@ public class StaticAnalyser {
             LOG.info("Analyzing methods of class " + clazz);
             GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
             Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(clazz);
-            for (Map.Entry<String, RawControlFlowGraph> entry : methodsGraphs.entrySet()) {
-                Map<String, Map<String,List<MethodCall>>> collectedCallSequencesForCurrentMethod = analyseMethod(clazz, entry.getKey(),entry.getValue());
-                savingMethodCallSequences(collectedCallSequencesForCurrentMethod);
+            if (methodsGraphs != null){
+                for (Map.Entry<String, RawControlFlowGraph> entry : methodsGraphs.entrySet()) {
+                    Map<String, Map<String,List<MethodCall>>> collectedCallSequencesForCurrentMethod = analyseMethod(clazz, entry.getKey(),entry.getValue());
+                    savingMethodCallSequences(collectedCallSequencesForCurrentMethod);
+                }
+            }else {
+                LOG.warn("The generated control flow graphs for class {} was empty. We cannot execute manual analysis withour the control flow graph.",clazz);
             }
         }
     }
@@ -94,12 +98,11 @@ public class StaticAnalyser {
                     recordInvocation(bc, this.oldBCObject,oldBCBranch,callSequencesOfCurrentMethod);
                 }else{
                     LOG.error("The variable name of the current byteCode instruction is missed: "+ bc.toString());
-                    System.exit(0);
                 }
             }
         }else{
-            LOG.error("Following regular method call cannot find its source of method invocation: "+ bc.toString());
-            System.exit(0);
+            LOG.warn("Following regular method call cannot find its source of method invocation: "+ bc.toString());
+//            System.exit(0);
         }
     }
 
