@@ -98,7 +98,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
                 starvationCounter = 0;
                 lastBestFitness = bestFitness;
                 finalPT = getPassingTime();
-                LOG.info("The new best fitness function is {}. PT: {} seconds",lastBestFitness,finalPT);
+                reportNewBestFF(lastBestFitness,finalPT);
             }
             updateSecondaryCriterion(starvationCounter);
 
