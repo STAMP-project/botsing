@@ -21,7 +21,6 @@ package eu.stamp.botsing.ga.strategy;
  */
 
 
-import com.oracle.tools.packager.Log;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
@@ -105,7 +104,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
             LOG.debug("Current iteration: {}", currentIteration);
             this.notifyIteration();
         }
-        Log.info("The search process is finished.");
+        LOG.info("The search process is finished.");
         reportNewBestFF(lastBestFitness,finalPT);
     }
 
