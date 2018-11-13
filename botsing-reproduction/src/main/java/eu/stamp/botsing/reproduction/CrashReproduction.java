@@ -195,8 +195,8 @@ public class CrashReproduction {
                 throwable.printStackTrace();
             }
         }
-        //LOG.info("{}",CrashProperties.getInstance().getStackTrace().getTargetClass());
-        //LOG.info("{}",Arrays.asList(cp.split(File.pathSeparator)));
+        List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
+        LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
         DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
         LOG.info("Analysing dependencies done!");
     }
