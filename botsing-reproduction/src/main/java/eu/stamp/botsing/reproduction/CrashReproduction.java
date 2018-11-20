@@ -21,7 +21,6 @@ package eu.stamp.botsing.reproduction;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.setup.BotsingDependencyAnalysor;
 import org.evosuite.Properties;
 import org.evosuite.TimeController;
 import org.evosuite.classpath.ClassPathHandler;
@@ -35,6 +34,7 @@ import org.evosuite.rmi.ClientServices;
 import org.evosuite.rmi.service.ClientState;
 import org.evosuite.runtime.LoopCounter;
 import org.evosuite.runtime.sandbox.Sandbox;
+import org.evosuite.setup.DependencyAnalysis;
 import org.evosuite.statistics.RuntimeVariable;
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.evosuite.testcase.ConstantInliner;
@@ -177,7 +177,6 @@ public class CrashReproduction {
 
     private static void initializeTargetClass() throws ClassNotFoundException {
         String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
-        LOG.debug("The target classpath is: "+cp );
         DefaultTestCase test = generateTestForLoadingClass(CrashProperties.getInstance().getStackTrace().getTargetClass());
 
         // execute the test contains the target class
@@ -196,9 +195,9 @@ public class CrashReproduction {
                 throwable.printStackTrace();
             }
         }
-        //LOG.info("{}",CrashProperties.getInstance().getStackTrace().getTargetClass());
-        //LOG.info("{}",Arrays.asList(cp.split(File.pathSeparator)));
-        BotsingDependencyAnalysor.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+        List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
+        LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
+        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
         LOG.info("Analysing dependencies done!");
     }
     private static ExceptionInInitializerError getInitializerError(ExecutionResult execResult) {

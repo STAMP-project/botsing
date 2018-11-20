@@ -69,21 +69,25 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
         currentIteration = 0;
 
         // generate initial population
+        LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         initializePopulation();
 
-        LOG.debug("Starting evolution");
         int starvationCounter = 0;
         double bestFitness = getBestFitness();
         double lastBestFitness = bestFitness;
-
-        LOG.debug("Best fitness in the initial population is: {}", bestFitness);
+        LOG.info("Best fitness in the initial population is: {}", bestFitness);
+        long finalPT = getPassingTime();
+        reportNewBestFF(lastBestFitness,finalPT);
+        this.notifyIteration();
+        LOG.info("Starting evolution");
+        int generationCounter = 1;
         while (!isFinished()){
             // Create next generation
             evolve();
             sortPopulation();
-
+            generationCounter++;
             bestFitness = getBestFitness();
-            LOG.debug("New fitness is: {}", bestFitness);
+            LOG.info("Best fitness in the current population: {} | {}", bestFitness,Properties.POPULATION *generationCounter);
 
             // Check for starvation
             if (Double.compare(bestFitness, lastBestFitness) == 0) {
@@ -92,13 +96,25 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
                 LOG.debug("Reset starvationCounter after {} iterations", starvationCounter);
                 starvationCounter = 0;
                 lastBestFitness = bestFitness;
+                finalPT = getPassingTime();
+                reportNewBestFF(lastBestFitness,finalPT);
             }
             updateSecondaryCriterion(starvationCounter);
 
             LOG.debug("Current iteration: {}", currentIteration);
             this.notifyIteration();
         }
-        LOG.debug("Best fitness in the final population is: {}", lastBestFitness);
+        LOG.info("The search process is finished.");
+        reportNewBestFF(lastBestFitness,finalPT);
+    }
+
+    private void reportNewBestFF(double lastBestFitness, long finalPT) {
+        if(Properties.STOPPING_CONDITION == Properties.StoppingCondition.MAXTIME){
+            LOG.info("Best fitness in the final population is: {}. PT: {} seconds", lastBestFitness,finalPT);
+        }else{
+            LOG.info("Best fitness in the final population is: {}. FE: {} ", lastBestFitness,finalPT);
+        }
+
     }
 
     @Override
@@ -238,6 +254,16 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
                 break;
             }
         }
+    }
+
+    public long getPassingTime(){
+        for (StoppingCondition c : stoppingConditions) {
+
+            if(c.getClass().getName().contains("MaxFitnessEvaluationsStoppingCondition") || c.getClass().getName().contains("MaxTimeStoppingCondition")){
+                return c.getCurrentValue();
+            }
+        }
+        return 0;
     }
 
     public boolean isFinished() {

@@ -18,7 +18,7 @@ public class GuidedMutation<T extends Chromosome> {
         try {
             doRandomMutation(offspring);
         } catch (AssertionError e) {
-            LOG.warn("First try for insertion mutation was unsuccessful.");
+            LOG.debug("First try for insertion mutation was unsuccessful.");
         }
         // if the chromosome has no public call, we insert new random statements
         isValid = utility.includesPublicCall(offspring);
@@ -31,7 +31,7 @@ public class GuidedMutation<T extends Chromosome> {
                     insertRandomStatement(offspring);
                     isValid = utility.includesPublicCall(offspring);
                 } catch (AssertionError e) {
-                    LOG.warn("Random insertion mutation was unsuccessful.");
+                    LOG.debug("Random insertion mutation was unsuccessful.");
                 } finally {
                     nTrials++;
                 }

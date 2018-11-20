@@ -71,6 +71,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
     }
 
     protected Set<String> getPublicCalls(StackTrace trace, List<BytecodeInstruction> instructions){
+        LOG.info("Detecting the target method call(s) ...");
         int targetLine = trace.getTargetLine();
         String targetClass = trace.getTargetClass();
 
@@ -98,9 +99,11 @@ public class GuidedSearchUtility<T extends Chromosome> {
         LOG.info("Botsing found "+publicCalls.size()+" Target call(s):");
         Iterator<String> iterateParents = publicCalls.iterator();
 
+        int counter = 1;
         while (iterateParents.hasNext()) {
             String nextCall = iterateParents.next();
-            LOG.info(nextCall);
+            LOG.info("Target method #{} is {}",counter,nextCall);
+            counter++;
         }
 
         return publicCalls;
@@ -160,10 +163,10 @@ public class GuidedSearchUtility<T extends Chromosome> {
                         if(key.getActualCFG().isPublicMethod() || isProtectedMethod(key.getActualCFG())){
                             // this caller is public or protected.
                             if(fitnessFunctionHelper.isConstructor(key)){
-                                LOG.info("One target constructor is added");
+                                LOG.debug("One target constructor is added");
                                 publicCalls.add(key.getMethodName());
                             } else {
-                                LOG.info("One target method is added");
+                                LOG.debug("One target method is added");
                                 publicCalls.add(cleanMethodName(key.getMethodName()));
                             }
                         }else {
