@@ -1,6 +1,14 @@
 package eu.stamp.botsing.model.generation;
 
+import ch.qos.logback.classic.Level;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -11,6 +19,23 @@ import static org.hamcrest.io.FileMatchers.anExistingDirectory;
 import static org.junit.Assert.assertThat;
 
 public class ModelGenerationTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ModelGenerationTest.class);
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            LOG.info(String.format("Starting test: %s()...",
+                    description.getMethodName()));
+        }
+    };
+
+    @Before
+    public void initialize() {
+        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.setLevel(Level.INFO);
+    }
 
     @Test
     public void testMain(){
@@ -29,7 +54,8 @@ public class ModelGenerationTest {
                 "-outDir",
                 outputDir.getAbsolutePath()
         };
-        Main.main(prop);
+        Main main = new Main();
+        main.parseCommandLine(prop);
 
         // Check output directory
         assertThat(outputDir, anExistingDirectory());

@@ -2,7 +2,7 @@ package eu.stamp.botsing.fitnessfunction;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
-import eu.stamp.botsing.fitnessfunction.fitnessCalculator.CrashCoverageFitnessCalculator;
+import eu.stamp.botsing.fitnessfunction.calculator.CrashCoverageFitnessCalculator;
 import org.evosuite.coverage.mutation.WeakMutationSuiteFitness;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.execution.ExecutionResult;

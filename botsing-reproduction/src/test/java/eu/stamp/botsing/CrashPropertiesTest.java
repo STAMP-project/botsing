@@ -31,7 +31,7 @@ public class CrashPropertiesTest {
     };
 
     @Test
-    public void testSetupStackTrace() throws ParseException {
+    public void testSetupStackTrace() {
         CrashProperties properties = CrashProperties.getInstance();
         //assertNull(properties.getProjectClassPaths());
         properties.resetStackTrace();
@@ -63,7 +63,7 @@ public class CrashPropertiesTest {
     }
 
     @Test
-    public void testSetClasspath() throws Properties.NoSuchParameterException, IllegalAccessException {
+    public void testSetClasspath() {
         CrashProperties properties = CrashProperties.getInstance();
         properties.setClasspath("jar1:jar2");
         String[] jars = properties.getProjectClassPaths();
@@ -73,7 +73,7 @@ public class CrashPropertiesTest {
     }
 
     @Test
-    public void testGetTargetException() throws Exception {
+    public void testGetTargetException() {
 
         ArrayList<StackTraceElement> stackTrace = new ArrayList<StackTraceElement>();
         stackTrace.add(new StackTraceElement("eu.stamp.ClassA", "method2", "ClassA", 10));

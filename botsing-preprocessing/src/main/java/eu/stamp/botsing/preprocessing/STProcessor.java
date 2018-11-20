@@ -1,4 +1,4 @@
-package eu.stamp_project.botsing;
+package eu.stamp.botsing.preprocessing;
 
 import java.util.List;
 

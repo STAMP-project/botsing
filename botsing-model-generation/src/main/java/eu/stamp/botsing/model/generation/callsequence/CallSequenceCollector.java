@@ -140,7 +140,7 @@ public class CallSequenceCollector {
             Method forNameMethod = Class.class.getMethod("forName",String.class, boolean.class, ClassLoader.class);
             Statement forNameStmt = new MethodStatement(test,
                     new GenericMethod(forNameMethod, forNameMethod.getDeclaringClass()), null,
-                    Arrays.<VariableReference>asList(string0, boolean0, contextClassLoaderVar));
+                    Arrays.asList(string0, boolean0, contextClassLoaderVar));
             test.addStatement(forNameStmt);
             return test;
         } catch (NoSuchMethodException | SecurityException e) {

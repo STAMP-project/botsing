@@ -51,26 +51,26 @@ public class CrashProperties {
         String description();
     }
 
-    public static enum TestGenerationStrategy {
+    public enum TestGenerationStrategy {
         Single_GA,
         Multi_GA;
 
-        private TestGenerationStrategy() {
+        TestGenerationStrategy() {
         }
     }
 
-    public static enum FitnessFunction {
+    public enum FitnessFunction {
         WeightedSum,
         SimpleSum;
 
-        private FitnessFunction() {
+        FitnessFunction() {
         }
     }
 
-    public static enum SearchAlgorithm {
+    public enum SearchAlgorithm {
         Single_Objective_GGA;
 
-        private SearchAlgorithm() {
+        SearchAlgorithm() {
         }
     }
 

@@ -17,11 +17,12 @@ public class Main {
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
+    @SuppressWarnings("checkstyle:systemexit")
     public static void main(String[] args) {
         Main botsingModelGeneration = new Main();
         botsingModelGeneration.parseCommandLine(args);
+        System.exit(0);
     }
-
 
     public  void parseCommandLine(String[] args) {
         Options options = CommandLineParameters.getCommandLineOptions();
@@ -63,7 +64,6 @@ public class Main {
         }else{
             LOG.error("Project classpath should be passed as an input. For more information -> help");
         }
-
     }
 
 

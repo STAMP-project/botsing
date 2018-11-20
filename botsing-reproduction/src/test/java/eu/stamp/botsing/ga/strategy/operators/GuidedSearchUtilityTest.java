@@ -80,13 +80,13 @@ public class GuidedSearchUtilityTest {
         VariableReference callee = testFactory.addConstructor(test, gc, 0, 0);
         VariableReference intVar = test.addStatement(new IntPrimitiveStatement(test, 10));
 
-        Method m = clazz.getRawClass().getMethod("reverse", new Class<?>[] { int.class});
+        Method m = clazz.getRawClass().getMethod("reverse", int.class);
         GenericMethod method = new GenericMethod(m, sut);
-        MethodStatement ms = new MethodStatement(test, method, callee, Arrays.asList(new VariableReference[] {intVar}));
+        MethodStatement ms = new MethodStatement(test, method, callee, Arrays.asList(intVar));
         test.addStatement(ms);
 
         GenericMethod method2 = new GenericMethod(m, sut);
-        MethodStatement ms2 = new MethodStatement(test, method2, callee, Arrays.asList(new VariableReference[] {intVar}));
+        MethodStatement ms2 = new MethodStatement(test, method2, callee, Arrays.asList(intVar));
         test.addStatement(ms2);
 
         return test;

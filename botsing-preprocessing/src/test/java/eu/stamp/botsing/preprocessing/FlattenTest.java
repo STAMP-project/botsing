@@ -1,4 +1,4 @@
-package eu.stamp_project.botsing;
+package eu.stamp.botsing.preprocessing;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,7 +66,7 @@ public class FlattenTest {
     }
 
     @Test
-    public void testOptions() throws Exception {
+    public void testOptions() {
         String[] args = {"-f", "-l=fakeinput.log", "-o=fakeoutput.log"};
         CommandLineParser parser = new DefaultParser();
         try {

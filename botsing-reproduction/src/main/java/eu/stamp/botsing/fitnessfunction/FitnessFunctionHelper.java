@@ -37,11 +37,7 @@ public class FitnessFunctionHelper {
             return false;
         }
         String className = classPath.substring(lastOccurrence+1);
-        if(className.equals(methodName)){
-            return true;
-        }
-
-        return false;
+        return className.equals(methodName);
 
     }
 

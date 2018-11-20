@@ -1,4 +1,4 @@
-package eu.stamp.botsing.fitnessfunction.fitnessCalculator;
+package eu.stamp.botsing.fitnessfunction.calculator;
 
 import eu.stamp.botsing.StackTrace;
 import org.evosuite.coverage.ControlFlowDistance;

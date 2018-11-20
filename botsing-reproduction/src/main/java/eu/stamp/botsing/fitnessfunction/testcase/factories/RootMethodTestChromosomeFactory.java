@@ -24,7 +24,6 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.Properties;
 import org.evosuite.ga.ConstructionFailedException;
-import org.evosuite.runtime.System;
 import org.evosuite.setup.TestCluster;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
@@ -139,7 +138,7 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 
         if (target_counter < 1 && max_rounds >= CrashProperties.max_target_injection_tries){
             LOG.error("Guided initialization failed. Please revise the target class and method!");
-            System.exit(0);
+            throw new IllegalStateException("Guided initialization failed. Please revise the target class and method!");
         }
 
         if (logger.isDebugEnabled()) {

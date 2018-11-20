@@ -1,4 +1,4 @@
-package eu.stamp_project.botsing;
+package eu.stamp.botsing.preprocessing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -39,7 +39,7 @@ public class Main {
 		return opt;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParseException, FileNotFoundException{
 		CommandLineParser parser = new DefaultParser();
 		try {
 			CommandLine cli = parser.parse(options, args);
@@ -52,10 +52,10 @@ public class Main {
 		} catch (ParseException e) {
 			System.out.println("wrong arguments. Available options are:");
 			System.out.println(options.toString());
-			System.exit(1);
+			throw e;
 		} catch (FileNotFoundException e1) {
 			System.out.println(e1.getMessage());
-			System.exit(1);
+            throw e1;
 		}
 	}
 
@@ -85,8 +85,7 @@ public class Main {
 			lines = ErrorMessage.get().preprocess(lines);
 		}
 		if (annotations) {
-			;
-		}
+        }
 		linesToFile(lines, outFile);
 	}
 

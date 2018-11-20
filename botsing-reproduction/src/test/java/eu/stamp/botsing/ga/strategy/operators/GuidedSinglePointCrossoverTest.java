@@ -92,7 +92,7 @@ public class GuidedSinglePointCrossoverTest {
     }
 
     @Test
-    public void crossOver_emptyChromosome() throws NoSuchMethodException, ConstructionFailedException, ClassNotFoundException {
+    public void crossOver_emptyChromosome() {
         TestCase tc1 = new DefaultTestCase();
         TestChromosome tch1 = new TestChromosome();
         tch1.setTestCase(tc1);
@@ -124,9 +124,9 @@ public class GuidedSinglePointCrossoverTest {
         VariableReference callee = testFactory.addConstructor(test, gc, 0, 0);
         VariableReference intVar = test.addStatement(new IntPrimitiveStatement(test, x));
 
-        Method m = clazz.getRawClass().getMethod(methodName, new Class<?>[] { int.class});
+        Method m = clazz.getRawClass().getMethod(methodName, int.class);
         GenericMethod method = new GenericMethod(m, sut);
-        MethodStatement ms = new MethodStatement(test, method, callee, Arrays.asList(new VariableReference[] {intVar}));
+        MethodStatement ms = new MethodStatement(test, method, callee, Arrays.asList(intVar));
         test.addStatement(ms);
 
         return test;

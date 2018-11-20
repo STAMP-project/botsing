@@ -1,4 +1,4 @@
-package eu.stamp.botsing.fitnessfunction.fitnessCalculator;
+package eu.stamp.botsing.fitnessfunction.calculator;
 
 /*-
  * #%L

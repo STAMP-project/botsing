@@ -71,10 +71,7 @@ public class DynamicAnalyser {
     }
 
     private boolean validForCallSequence(Statement statement) {
-        if (statement.getClass().getSimpleName().equals("MethodStatement") || statement.getClass().getSimpleName().equals("ConstructorStatement")){
-            return true;
-        }
-        return false;
+        return statement.getClass().getSimpleName().equals("MethodStatement") || statement.getClass().getSimpleName().equals("ConstructorStatement");
     }
 
     private List<String> detectTestSuites(List<String> interestingClasses) {

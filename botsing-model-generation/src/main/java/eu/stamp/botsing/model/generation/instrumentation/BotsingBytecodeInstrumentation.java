@@ -1,4 +1,4 @@
-package eu.stamp.botsing.model.generation.Instrumentation;
+package eu.stamp.botsing.model.generation.instrumentation;
 
 import org.evosuite.Properties;
 import org.evosuite.assertion.CheapPurityAnalyzer;

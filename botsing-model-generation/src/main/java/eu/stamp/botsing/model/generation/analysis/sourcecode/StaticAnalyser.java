@@ -78,7 +78,7 @@ public class StaticAnalyser {
         return callSequencesOfCurrentMethod;
     }
 
-    private void handleRegularMethodInvocation(BytecodeInstruction bc, RawControlFlowGraph cfg, Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) {
+    private void handleRegularMethodInvocation(BytecodeInstruction bc, RawControlFlowGraph cfg, Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) throws IllegalStateException{
         if (bc.getSourceOfMethodInvocationInstruction() != null) {
             if (bc.getSourceOfMethodInvocationInstruction().getVariableName() != null) {
                 if (bc.getSourceOfMethodInvocationInstruction().getVariableName().length() > 0) {
@@ -89,7 +89,7 @@ public class StaticAnalyser {
                     recordRegularInvocation(bc, parentType, variableName, callSequencesOfCurrentMethod);
                 } else {
                     LOG.error("The variable name is empty: {} ", bc);
-                    System.exit(0);
+                    throw new IllegalStateException("Variable with empty name discovered during static analysis for instruction: " + bc);
                 }
 
             } else {
@@ -97,16 +97,16 @@ public class StaticAnalyser {
                     // This method is invoked by the returned value of the previous method call. So, it should be store in the same call sequence.
                     recordInvocation(bc, this.oldBCObject, oldBCBranch, callSequencesOfCurrentMethod);
                 } else {
-                    LOG.error("The variable name of the current byteCode instruction is missed: " + bc.toString());
+                    LOG.error("The variable name of the current byteCode instruction is missing: " + bc.toString());
+                    throw new IllegalStateException("Variable with missing name discovered during static analysis for instruction: " + bc);
                 }
             }
         } else {
             LOG.warn("Following regular method call cannot find its source of method invocation: " + bc.toString());
-//            System.exit(0);
         }
     }
 
-    private void recordRegularInvocation(BytecodeInstruction bc, String parentType, String variableName, Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) {
+    private void recordRegularInvocation(BytecodeInstruction bc, String parentType, String variableName, Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) throws IllegalStateException {
         if (parentType == null || (parentType.equals(bc.getCalledMethodsClass()))) {
             // parent is initialized outside of the CUT. For instance, System.out variable in printing.
             recordInvocation(bc, bc.getCalledMethodsClass(), variableName, callSequencesOfCurrentMethod);
@@ -114,8 +114,8 @@ public class StaticAnalyser {
             // The object is initialized by another class. We will use this type for recording this invocation.
             recordInvocation(bc, parentType, variableName, callSequencesOfCurrentMethod);
         } else {
-            LOG.error("Cannot detect the right call sequence for recording:" + bc.toString());
-            System.exit(0);
+            LOG.error("Cannot detect the right call sequence for recording: {}", bc);
+            throw new IllegalStateException("Could not detect the right call sequence ofr recording " + bc);
         }
     }
 

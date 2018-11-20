@@ -1,4 +1,4 @@
-package eu.stamp.botsing.model.generation.Instrumentation;
+package eu.stamp.botsing.model.generation.instrumentation;
 
 import eu.stamp.botsing.model.generation.BotsingTestGenerationContext;
 import org.evosuite.classpath.ResourceList;

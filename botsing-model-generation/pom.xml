@@ -34,19 +34,25 @@
             <version>${commons-cli.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.evosuite</groupId>
-            <artifactId>evosuite-client</artifactId>
-            <version>${evosuite-client.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>${gson.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.evosuite</groupId>
+            <artifactId>evosuite-client</artifactId>
+            <version>${evosuite-client.version}</version>
+        </dependency>
+        <dependency>
             <groupId>be.unamur.info</groupId>
             <artifactId>yami-tool</artifactId>
             <version>${yami.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-slf4j-impl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
