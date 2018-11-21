@@ -61,13 +61,13 @@ public class BotsingTest {
 
         //run Botsing
         String[] prop = {
-                "-crash_log",
+                "-" + CommandLineParameters.CRASH_LOG_OPT,
                 Paths.get(base_dir, "src", "main", "resources", "Fraction.log").toString(),
-                "-target_frame",
+                "-" + CommandLineParameters.TARGET_FRAME_OPT,
                 "" + 1,
-                "-projectCP",
+                "-" + CommandLineParameters.PROJECT_CP_OPT,
                 Paths.get(base_dir, "target", "classes").toString() + System.getProperty("path.separator"),
-                "-Dtest_dir=" + outputDir.getAbsolutePath(),
+                "-" + CommandLineParameters.D_OPT + "test_dir=" + outputDir.getAbsolutePath(),
         };
 
         // Check results
