@@ -31,7 +31,6 @@ public class FitnessFunctionHelper {
         String methodName = targetInstruction.getMethodName();
         methodName = methodName.substring(0, methodName.indexOf('('));
         String classPath = targetInstruction.getClassName();
-        System.out.println(methodName+" "+classPath);
         int lastOccurrence = classPath.lastIndexOf(".");
         if (lastOccurrence == -1){
             return false;

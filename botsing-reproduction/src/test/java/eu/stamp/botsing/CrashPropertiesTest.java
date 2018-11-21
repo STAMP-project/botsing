@@ -44,7 +44,7 @@ public class CrashPropertiesTest {
     @Test
     public void testGetStringValue() throws Properties.NoSuchParameterException, IllegalAccessException {
         String value = CrashProperties.getInstance().getStringValue("D_OPT");
-        System.out.println(value);
+        LOG.debug(value);
     }
 
     @Test
