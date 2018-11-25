@@ -92,5 +92,6 @@ The underlying evolutionary algorithm and fitness function are described in:
 
 ## Funding
 
-Botsing is partially funded by research project STAMP (European Commission - H2020)
-![STAMP - European Commission - H2020](https://github.com/STAMP-project/docs-forum/blob/master/docs/images/logo_readme_md.png)
+Botsing is partially funded by research project STAMP (European Commission - H2020) ICT-16-10 No.731529.
+
+![STAMP - European Commission - H2020](docs/logo_readme_md.png)
