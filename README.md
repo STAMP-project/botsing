@@ -80,7 +80,7 @@ Please check in the list of properties that the dependency version is not alread
 
 ## Background
 
-Botsing is a complete re-implementation of the crash replication tool [EvoCrash](http://www.evocrash.org) ([github](https://github.com/STAMP-project/EvoCrash)).
+Botsing (Dutch for 'crash') is a complete re-implementation of the crash replication tool [EvoCrash](http://www.evocrash.org) ([github](https://github.com/STAMP-project/EvoCrash)).
 Whereas EvoCrash was a full clone of EvoSuite (making it hard to update EvoCrash as EvoSuite evolves), Botsing relies on EvoSuite as a (maven) dependency only. Furthermore, it comes with an extensive test suite, making it easier to extend. The license adopted is Apache, in order to facilitate adoption in industry and academia.
 
 The underlying evolutionary algorithm and fitness function are described in:
