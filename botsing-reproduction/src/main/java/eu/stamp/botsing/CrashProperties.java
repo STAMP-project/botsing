@@ -91,7 +91,7 @@ public class CrashProperties {
      * The target frame in the crash stack trace
      */
     @Parameter(key = "max_target_injection_tries", group = "Runtime", description = "The maximum number of times the search tries to generate an individuals with the target method.")
-    public static int max_target_injection_tries = 150;
+    public static int max_target_injection_tries = 1000;
 
     static java.util.Properties configFile = new java.util.Properties();
 
