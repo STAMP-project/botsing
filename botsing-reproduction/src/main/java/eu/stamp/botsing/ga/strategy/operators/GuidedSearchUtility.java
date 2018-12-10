@@ -77,8 +77,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
 
         BytecodeInstruction targetInstruction = getTargetInstruction(instructions, targetLine);
 
-        if (targetInstruction.getActualCFG().isPublicMethod() ||
-                isProtectedMethod(targetInstruction.getActualCFG())){
+        if (!isPrivateMethod(targetInstruction.getActualCFG())){
             LOG.info("The target method is public!");
 
             if(fitnessFunctionHelper.isConstructor(targetInstruction)){
@@ -121,8 +120,9 @@ public class GuidedSearchUtility<T extends Chromosome> {
         return publicCalls;
     }
 
-    private static boolean isProtectedMethod(ActualControlFlowGraph acfg){
-        return (acfg.getMethodAccess() & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED;
+
+    private static boolean isPrivateMethod(ActualControlFlowGraph acfg){
+        return (acfg.getMethodAccess() & Opcodes.ACC_PRIVATE) == Opcodes.ACC_PRIVATE;
     }
 
     private static String cleanMethodName(String method){
@@ -160,7 +160,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
                     if (invokedMethod.equals(privateMethod)) {
                         // the key is a caller.
                         // Checking the caller to see if it is private or not.
-                        if(key.getActualCFG().isPublicMethod() || isProtectedMethod(key.getActualCFG())){
+                        if(!isPrivateMethod(key.getActualCFG())){
                             // this caller is public or protected.
                             if(fitnessFunctionHelper.isConstructor(key)){
                                 LOG.debug("One target constructor is added");
