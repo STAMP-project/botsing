@@ -268,6 +268,7 @@ public class GuidedSearchUtilityTest {
     private ActualControlFlowGraph mockActualControlFlowGraph(BytecodeInstruction stmt, boolean isPublic){
         ActualControlFlowGraph actualCFG = Mockito.mock(ActualControlFlowGraph.class);
         Mockito.doReturn(isPublic).when(actualCFG).isPublicMethod();
+        Mockito.doReturn((isPublic)?1:2).when(actualCFG).getMethodAccess();
         return actualCFG;
     }
 
