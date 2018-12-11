@@ -90,6 +90,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
         }else{
             LOG.info("* The target crash is not covered! The best solution has "+ga.getBestIndividual().getFitness()+" fitness value.");
+            LOG.info("The best test is:(non-minimized version:\n)",((TestChromosome) ga.getBestIndividual()).toString());
         }
 
         // after finishing the search check: ga.getBestIndividual().getFitness() == 0.0
