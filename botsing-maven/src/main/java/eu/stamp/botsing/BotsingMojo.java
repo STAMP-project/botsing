@@ -38,7 +38,7 @@ public class BotsingMojo extends AbstractMojo {
     /**
      * Folder with dependencies to run the project
      */
-    @Parameter(property = "projectCP")
+    @Parameter(property = "project_cp")
     private String projectCP;
 
     /**
@@ -75,10 +75,10 @@ public class BotsingMojo extends AbstractMojo {
         Botsing botsing = new Botsing();
         List<String> propertiesList = new ArrayList<String>();
 
-        propertiesList.add("-crash_log");
+        propertiesList.add(CommandLineParameters.CRASH_LOG_OPT);
         propertiesList.add(crashLog);
 
-        propertiesList.add("-target_frame");
+        propertiesList.add(CommandLineParameters.TARGET_FRAME_OPT);
         propertiesList.add(targetFrame.toString());
 
         String dependencies = null;
@@ -89,7 +89,7 @@ public class BotsingMojo extends AbstractMojo {
         }
 
         getLog().debug("dependencies: " + dependencies);
-        propertiesList.add("-projectCP");
+        propertiesList.add(CommandLineParameters.PROJECT_CP_OPT);
         propertiesList.add(dependencies);
 
         try {

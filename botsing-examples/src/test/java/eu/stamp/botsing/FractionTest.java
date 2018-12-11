@@ -1,6 +1,5 @@
-package au.stamp.botsing;
+package eu.stamp.botsing;
 
-import eu.stamp.botsing.Fraction;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;

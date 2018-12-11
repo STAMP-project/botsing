@@ -46,7 +46,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>eu.stamp_project.botsing.Main</mainClass>
+							<mainClass>eu.stamp.botsing.preprocessing.Main</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

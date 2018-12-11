@@ -2,12 +2,13 @@ package eu.stamp.botsing.fitnessfunction.testcase.factories;
 
 import ch.qos.logback.classic.Level;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
-import org.evosuite.runtime.System;
+import org.evosuite.Properties;
 import org.evosuite.setup.TestCluster;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -40,9 +41,16 @@ public class RootMethodTestChromosomeFactoryTest {
         }
     };
 
-    @Test(expected = System.SystemExitException.class)
+    @Before
+    public void initialize() {
+        Properties.RANDOM_SEED = (long) 1;
+        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        root.setLevel(Level.INFO);
+    }
+
+
+    @Test(expected = IllegalStateException.class)
     public void testChromosomeMethod() throws NoSuchMethodException {
-        setLoggingLevel(Level.INFO);
         Object obj = new String();
         Class<?>[] classes = new Class<?>[1];
         classes[0] = String.class;
@@ -97,12 +105,8 @@ public class RootMethodTestChromosomeFactoryTest {
 
         generatedChromosome = rm.getChromosome();
 
-        fail("Should have sent SystemExitException by now!");
+        fail("Should have sent Exception by now!");
 
     }
 
-    public static void setLoggingLevel(ch.qos.logback.classic.Level level) {
-        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-        root.setLevel(level);
-    }
 }

@@ -14,10 +14,19 @@
         <property name="message" value="Do not use Windows line endings"/>
     </module>
 
+    <!-- Filter out Checkstyle warnings that have been suppressed with the @SuppressWarnings annotation -->
+    <module name="SuppressWarningsFilter" />
+
     <module name="TreeWalker">
         <module name="RegexpSinglelineJava">
             <property name="tabWidth" value="4"/>
             <property name="ignoreComments" value="true"/>
+        </module>
+
+        <!-- Checks for Naming Conventions.                  -->
+        <!-- See http://checkstyle.sf.net/config_naming.html -->
+        <module name="PackageName">
+            <property name="format" value="^eu\.stamp\.botsing(\.[a-z][a-z0-9]*)*$"/>
         </module>
 
         <!-- Checks for imports                              -->
@@ -35,5 +44,15 @@
         <module name="LeftCurly" />
         <module name="RightCurly" />
         <module name="NeedBraces"/>
+
+        <!-- Checks for System.exit -->
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="systemexit"/>
+            <property name="format" value="System\.exit"/>
+            <property name="message" value="Cannot use System.exit"/>
+        </module>
+
+        <!-- Make the @SuppressWarnings annotations available to Checkstyle -->
+        <module name="SuppressWarningsHolder" />
     </module>
 </module>

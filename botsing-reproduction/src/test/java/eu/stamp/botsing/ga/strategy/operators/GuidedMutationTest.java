@@ -76,9 +76,9 @@ public class GuidedMutationTest {
         VariableReference callee = testFactory.addConstructor(test, gc, 0, 0);
         VariableReference intVar = test.addStatement(new IntPrimitiveStatement(test, x));
 
-        Method m = clazz.getRawClass().getMethod("reverse", new Class<?>[] { int.class});
+        Method m = clazz.getRawClass().getMethod("reverse", int.class);
         GenericMethod method = new GenericMethod(m, sut);
-        MethodStatement ms = new MethodStatement(test, method, callee, Arrays.asList(new VariableReference[] {intVar}));
+        MethodStatement ms = new MethodStatement(test, method, callee, Arrays.asList(intVar));
         test.addStatement(ms);
 
         return test;

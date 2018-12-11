@@ -26,7 +26,7 @@ import org.apache.commons.cli.Options;
 public class CommandLineParameters {
 
     public static final String D_OPT = "D";
-    public static final String PROJECT_CP_OPT = "projectCP";
+    public static final String PROJECT_CP_OPT = "project_cp";
     public static final String TARGET_FRAME_OPT = "target_frame";
     public static final String CRASH_LOG_OPT = "crash_log";
     public static final String HELP_OPT = "help";

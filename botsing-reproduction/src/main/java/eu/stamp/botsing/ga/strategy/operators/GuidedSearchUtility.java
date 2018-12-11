@@ -54,18 +54,14 @@ public class GuidedSearchUtility<T extends Chromosome> {
     protected boolean isCall2Method(String callName, Statement currentStatement){
         if (!callName.contains(".") && currentStatement instanceof MethodStatement) {
             MethodStatement candidateMethod = (MethodStatement) currentStatement;
-            if (candidateMethod.getMethodName().equalsIgnoreCase(callName)) {
-                return true;
-            }
+            return candidateMethod.getMethodName().equalsIgnoreCase(callName);
         }
         return false;
     }
 
     protected boolean isCall2Constructor(String callName, Statement currentStatement){
         if (callName.contains(".") && currentStatement instanceof ConstructorStatement) {
-            if (callName.equals(((ConstructorStatement) currentStatement).getDeclaringClassName())) {
-                return true;
-            }
+            return callName.equals(((ConstructorStatement) currentStatement).getDeclaringClassName());
         }
         return false;
     }

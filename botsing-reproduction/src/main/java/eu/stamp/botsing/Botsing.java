@@ -137,8 +137,10 @@ public class Botsing {
         formatter.printHelp("java -jar botsing.jar -crash_log stacktrace.log -target_frame 2 -projectCP dep1.jar;dep2.jar  )", options);
     }
 
+    @SuppressWarnings("checkstyle:systemexit")
     public static void main(String[] args) {
         Botsing bot = new Botsing();
         bot.parseCommandLine(args);
+        System.exit(0);
     }
 }
