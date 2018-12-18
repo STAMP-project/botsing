@@ -40,6 +40,11 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
+		if(args.length==0){
+			System.out.println("Available options are:");
+			System.out.println(options.toString());
+			System.exit(1);
+		}			
 		CommandLineParser parser = new DefaultParser();
 		try {
 			CommandLine cli = parser.parse(options, args);
@@ -48,7 +53,7 @@ public class Main {
 			boolean a = cli.hasOption('a');
 			String input = cli.getOptionValue('l');
 			String output = cli.getOptionValue('o');
-			preprocess(f, e, a, input, output);
+			preprocess(f, a, e, input, output);
 		} catch (ParseException e) {
 			System.out.println("wrong arguments. Available options are:");
 			System.out.println(options.toString());
