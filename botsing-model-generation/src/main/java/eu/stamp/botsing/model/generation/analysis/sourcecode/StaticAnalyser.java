@@ -98,7 +98,6 @@ public class StaticAnalyser {
                     recordInvocation(bc, this.oldBCObject, oldBCBranch, callSequencesOfCurrentMethod);
                 } else {
                     LOG.error("The variable name of the current byteCode instruction is missing: " + bc.toString());
-                    throw new IllegalStateException("Variable with missing name discovered during static analysis for instruction: " + bc);
                 }
             }
         } else {
@@ -184,8 +183,7 @@ public class StaticAnalyser {
             newVariableName = next.getVariableName();
         } else {
             if (!next.getInstructionType().equals("ALOAD")) {
-                LOG.error("The returned value is probably used as an input argument.");
-                LOG.error(next.explain());
+                LOG.warn("The returned value did not stored: "+next.explain());
             }
         }
         return newVariableName;
