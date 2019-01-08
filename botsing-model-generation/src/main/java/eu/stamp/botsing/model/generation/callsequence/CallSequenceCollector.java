@@ -7,7 +7,6 @@ import eu.stamp.botsing.model.generation.analysis.classpath.CPAnalysor;
 import eu.stamp.botsing.model.generation.analysis.sourcecode.StaticAnalyser;
 import eu.stamp.botsing.model.generation.analysis.testcases.DynamicAnalyser;
 import eu.stamp.botsing.model.generation.testcase.execution.TestExecutor;
-import org.evosuite.Properties;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.setup.InheritanceTree;
