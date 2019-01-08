@@ -20,14 +20,25 @@ public class DynamicAnalyser {
 
     public Map<Class<?>,List<TestCase>> analyse(Map<String, List<String>> objectsTests, ArrayList<String> involvedObjects){
         List<String> testSuites =  new ArrayList<String>();
-        for(String involvedObj: involvedObjects){
-            LOG.info("inv: {}",involvedObj);
-            if(objectsTests.containsKey(involvedObj)){
-                for(String candidateTS: objectsTests.get(involvedObj)){
-                    testSuites.add(candidateTS);
+        if(involvedObjects.size()>0){
+            for(String involvedObj: involvedObjects){
+                LOG.info("inv: {}",involvedObj);
+                if(objectsTests.containsKey(involvedObj)){
+                    for(String candidateTS: objectsTests.get(involvedObj)){
+                        testSuites.add(candidateTS);
+                    }
+                }
+            }
+        }else{
+            for (Map.Entry<String, List<String>> entry : objectsTests.entrySet()){
+                for(String test: entry.getValue()){
+                    if(!testSuites.contains(test)){
+                        testSuites.add(test);
+                    }
                 }
             }
         }
+
 
         if(testSuites.size()>0){
             CarvingManager manager = CarvingManager.getInstance();
