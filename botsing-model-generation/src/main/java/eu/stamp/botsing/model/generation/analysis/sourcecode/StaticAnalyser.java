@@ -6,6 +6,7 @@ import eu.stamp.botsing.model.generation.callsequence.MethodCall;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
+import org.evosuite.junit.CoverageAnalysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,18 +20,38 @@ public class StaticAnalyser {
     private String oldBCObject = null;
     private String oldBCBranch = null;
 
+    private LinkedList testSuite = new LinkedList<>();
+    private Map<String,List<String>> objectsTests =  new HashMap<>();
+
 
 //    private Map<String, List<List<MethodCall>>> exportedMethodCalls =  new HashMap<String, List<List<MethodCall>>>();
 
 
     public void analyse(List<String> interestingClasses) {
+        int counter = 0;
         for (String clazz : interestingClasses) {
-            LOG.info("Analyzing methods of class " + clazz);
+            counter++;
+            LOG.info("Analyzing methods of class " + clazz + " ("+counter+"/"+interestingClasses.size()+")");
+            boolean isTest = false;
+            Class<?> cls = null;
+            try {
+                cls = Class.forName(clazz,false, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+                if(CoverageAnalysis.isTest(cls)){
+                    LOG.info("The class {} is a testSuite",clazz);
+                    isTest=true;
+                    testSuite.add(clazz);
+                }
+            } catch (ClassNotFoundException | NoClassDefFoundError e) {
+//                e.printStackTrace();
+                LOG.warn("error in loading {}",clazz);
+            }
+
+
             GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
             Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(clazz);
             if (methodsGraphs != null) {
                 for (Map.Entry<String, RawControlFlowGraph> entry : methodsGraphs.entrySet()) {
-                    Map<String, Map<String, List<MethodCall>>> collectedCallSequencesForCurrentMethod = analyseMethod(clazz, entry.getKey(), entry.getValue());
+                    Map<String, Map<String, List<MethodCall>>> collectedCallSequencesForCurrentMethod = analyseMethod(clazz, entry.getKey(), entry.getValue(),isTest);
                     savingMethodCallSequences(collectedCallSequencesForCurrentMethod);
                 }
             } else {
@@ -50,16 +71,25 @@ public class StaticAnalyser {
         }
     }
 
-    private Map<String, Map<String, List<MethodCall>>> analyseMethod(String className, String methodname, RawControlFlowGraph cfg) {
+    private Map<String, Map<String, List<MethodCall>>> analyseMethod(String className, String methodname, RawControlFlowGraph cfg, boolean isTest) {
         LOG.info("Reading Call Sequences from method " + methodname);
         clearOldBC();
         Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod = new HashMap<String, Map<String, List<MethodCall>>>();
         List<BytecodeInstruction> bcList = cfg.determineMethodCalls();
-
         for (BytecodeInstruction bc : bcList) {
             LOG.debug("analyzing byteCode " + bc.explain());
             String calledMethodsClass = bc.getCalledMethodsClass();
             if (!calledMethodsClass.equals(className) && !bc.toString().contains("evosuite")) {// Filter the internal method calls
+
+                if (isTest){
+                    if (!objectsTests.containsKey(calledMethodsClass)){
+                        objectsTests.put(calledMethodsClass,new LinkedList<String>());
+                    }
+                    if (!objectsTests.get(calledMethodsClass).contains(className)){
+                        objectsTests.get(calledMethodsClass).add(className);
+                    }
+                }
+
                 if (bc.isConstructorInvocation()) {
                     // Here, we should instantiate a new call sequence
                     handleConstructorInvocation(bc, cfg, callSequencesOfCurrentMethod);
@@ -125,7 +155,7 @@ public class StaticAnalyser {
             if (sequences.containsKey(branch)) {
                 // We found our type. We must achieve to this branch
                 parentType = CSEntry.getKey();
-                LOG.info("parent type " + parentType);
+//                LOG.info("parent type " + parentType);
                 break;
             }
         }
@@ -203,7 +233,11 @@ public class StaticAnalyser {
     }
 
 
-//    public Map<String, List<List<MethodCall>>> getExportedCallsequences() {
-//        return exportedMethodCalls;
-//    }
+    public LinkedList<String> getTestSuite(){
+        return this.testSuite;
+    }
+
+    public Map<String,List<String>> getObjectsTests(){
+        return this.objectsTests;
+    }
 }
