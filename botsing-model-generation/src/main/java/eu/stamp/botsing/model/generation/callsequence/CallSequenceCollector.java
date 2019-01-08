@@ -53,7 +53,7 @@ public class CallSequenceCollector {
     StaticAnalyser staticAnalyser =  new StaticAnalyser();
     DynamicAnalyser dynamicAnalyser =  new DynamicAnalyser();
 
-    public void collect(String targetClassIndicator, String outputFolder, Boolean isPrefix){
+    public void collect(String targetClassIndicator, String outputFolder,ArrayList<String> involvedObejcts, Boolean isPrefix){
 
         //pre-processes before starting the analysis
         if(projectClassPaths == null){
@@ -68,7 +68,7 @@ public class CallSequenceCollector {
         staticAnalyser.analyse(interestingClasses);
 
         // Dynamic Analysis
-        Map<Class<?>,List<TestCase>> carvedTests = dynamicAnalyser.analyse(staticAnalyser.getTestSuite());
+        Map<Class<?>,List<TestCase>> carvedTests = dynamicAnalyser.analyse(staticAnalyser.getObjectsTests(),involvedObejcts);
         if (carvedTests != null){
             savingTestsUsages(carvedTests,Paths.get(outputFolder,"carvedTests").toString());
         }

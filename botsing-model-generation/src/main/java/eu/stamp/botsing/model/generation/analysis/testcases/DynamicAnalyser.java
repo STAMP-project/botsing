@@ -8,6 +8,8 @@ import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.statements.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +18,17 @@ import java.util.Map;
 public class DynamicAnalyser {
     private static final Logger LOG = LoggerFactory.getLogger(DynamicAnalyser.class);
 
-    public Map<Class<?>,List<TestCase>> analyse(List<String> testSuites){
-//        List<String> testSuites = detectTestSuites(interestingClasses);
+    public Map<Class<?>,List<TestCase>> analyse(Map<String, List<String>> objectsTests, ArrayList<String> involvedObjects){
+        List<String> testSuites =  new ArrayList<String>();
+        for(String involvedObj: involvedObjects){
+            LOG.info("inv: {}",involvedObj);
+            if(objectsTests.containsKey(involvedObj)){
+                for(String candidateTS: objectsTests.get(involvedObj)){
+                    testSuites.add(candidateTS);
+                }
+            }
+        }
+
         if(testSuites.size()>0){
             CarvingManager manager = CarvingManager.getInstance();
             Properties.SELECTED_JUNIT = String.join(":", testSuites);

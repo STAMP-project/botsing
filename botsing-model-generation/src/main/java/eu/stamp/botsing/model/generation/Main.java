@@ -1,18 +1,18 @@
 package eu.stamp.botsing.model.generation;
 
 import be.yami.exception.SessionBuildException;
+import com.google.gson.Gson;
 import eu.stamp.botsing.model.generation.callsequence.CallSequenceCollector;
 import eu.stamp.botsing.model.generation.callsequence.CallSequencesPoolManager;
+import eu.stamp.botsing.model.generation.helper.LogReader;
 import eu.stamp.botsing.model.generation.model.ModelGenerator;
 import org.apache.commons.cli.*;
-import org.evosuite.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class Main {
 
@@ -46,12 +46,21 @@ public class Main {
 
             String outputFolder = commands.hasOption(CommandLineParameters.OUTPUT_FOLDER)?commands.getOptionValue(CommandLineParameters.OUTPUT_FOLDER):"generated_results";
 
+            ArrayList<String> involvedObejcts =  new ArrayList<>();
+            if(commands.hasOption(CommandLineParameters.CRASHES)){
+                Gson gson = new Gson();
+                ArrayList<String> crashes = gson.fromJson(commands.getOptionValue(CommandLineParameters.CRASHES), ArrayList.class);
+                LOG.info("scratch: {}",crashes);
+                LogReader logReader= new LogReader(crashes);
+                involvedObejcts = logReader.collectInvolvedObjects();
+            }
+
             // set project prefix
             if (commands.hasOption(CommandLineParameters.PROJECT_PREFIX) ^ commands.hasOption(CommandLineParameters.PROJECT_PACKAGE)) {
                 if(commands.hasOption(CommandLineParameters.PROJECT_PREFIX)){
-                    callSequenceCollector.collect(commands.getOptionValue(CommandLineParameters.PROJECT_PREFIX), outputFolder, true);
+                    callSequenceCollector.collect(commands.getOptionValue(CommandLineParameters.PROJECT_PREFIX), outputFolder, involvedObejcts, true);
                 }else{
-                    callSequenceCollector.collect(commands.getOptionValue(CommandLineParameters.PROJECT_PACKAGE), outputFolder, false);
+                    callSequenceCollector.collect(commands.getOptionValue(CommandLineParameters.PROJECT_PACKAGE), outputFolder,involvedObejcts, false);
                 }
 
                 // Here, we have the list of call sequences. We just need to pass it to the yami tool

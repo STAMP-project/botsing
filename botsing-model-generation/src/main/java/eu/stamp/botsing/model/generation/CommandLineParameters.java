@@ -30,6 +30,7 @@ public class CommandLineParameters {
     public static final String PROJECT_PREFIX = "projectPrefix";
     public static final String OUTPUT_FOLDER = "outDir";
     public static final String PROJECT_PACKAGE = "projectPackage";
+    public static final String CRASHES = "crashes";
 
     public static Options getCommandLineOptions() {
         Options options = new Options();
@@ -56,6 +57,12 @@ public class CommandLineParameters {
                 .build());
 
         // note: Either projectPrefix or projectPackage should be set.
+
+        // User can limit the number of tests for dynamic analysis by passing the crashes
+        options.addOption(Option.builder(CRASHES)
+                .hasArg()
+                .desc("Limiting the number of tests for dynamic analysis by passing the crashes. The format of this parameter should be a list off crash logs addresses with JSON format.")
+                .build());
 
         options.addOption(Option.builder(OUTPUT_FOLDER)
                 .hasArg()
