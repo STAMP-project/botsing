@@ -1,17 +1,13 @@
 package eu.stamp.botsing.model.generation.analysis.testcases;
 
-import eu.stamp.botsing.model.generation.BotsingTestGenerationContext;
 import eu.stamp.botsing.model.generation.callsequence.CallSequencesPoolManager;
 import eu.stamp.botsing.model.generation.callsequence.MethodCall;
 import eu.stamp.botsing.model.generation.testcase.carving.CarvingManager;
 import org.evosuite.Properties;
-import org.evosuite.junit.CoverageAnalysis;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.statements.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,15 +16,17 @@ import java.util.Map;
 public class DynamicAnalyser {
     private static final Logger LOG = LoggerFactory.getLogger(DynamicAnalyser.class);
 
-    public void analyse(List<String> interestingClasses){
-        List<String> testSuites = detectTestSuites(interestingClasses);
+    public Map<Class<?>,List<TestCase>> analyse(List<String> testSuites){
+//        List<String> testSuites = detectTestSuites(interestingClasses);
         if(testSuites.size()>0){
             CarvingManager manager = CarvingManager.getInstance();
             Properties.SELECTED_JUNIT = String.join(":", testSuites);
             Map<Class<?>, List<TestCase>> carvedTestCases = manager.getCarvedTestCases();
             savingMethodCallSequences(carvedTestCases);
+            return  carvedTestCases;
         }else{
             LOG.info("No test suite detected for dynamic analysis!");
+            return null;
         }
         // Execute the test cases in the detected test suite, and run the dynamic analysis on them.
     }
@@ -72,24 +70,6 @@ public class DynamicAnalyser {
 
     private boolean validForCallSequence(Statement statement) {
         return statement.getClass().getSimpleName().equals("MethodStatement") || statement.getClass().getSimpleName().equals("ConstructorStatement");
-    }
-
-    private List<String> detectTestSuites(List<String> interestingClasses) {
-        List<String> result = new LinkedList<>();
-        for(String clazz: interestingClasses){
-            Class<?> cls = null;
-            try {
-                cls = Class.forName(clazz,false, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                if(CoverageAnalysis.isTest(cls)){
-                    result.add(clazz);
-                }
-            } catch (ClassNotFoundException | NoClassDefFoundError e) {
-//                e.printStackTrace();
-                LOG.warn("error in loading {}",clazz);
-            }
-        }
-
-        return result;
     }
 
 }

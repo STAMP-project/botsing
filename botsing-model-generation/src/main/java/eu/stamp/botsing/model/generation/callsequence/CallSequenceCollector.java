@@ -1,6 +1,8 @@
 package eu.stamp.botsing.model.generation.callsequence;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import eu.stamp.botsing.model.generation.analysis.classpath.CPAnalysor;
 import eu.stamp.botsing.model.generation.analysis.sourcecode.StaticAnalyser;
 import eu.stamp.botsing.model.generation.analysis.testcases.DynamicAnalyser;
@@ -10,6 +12,7 @@ import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.setup.InheritanceTree;
 import org.evosuite.testcase.DefaultTestCase;
+import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.execution.EvosuiteError;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.statements.MethodStatement;
@@ -22,8 +25,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.nio.file.Paths;
 import java.util.*;
 
 
@@ -47,7 +53,7 @@ public class CallSequenceCollector {
     StaticAnalyser staticAnalyser =  new StaticAnalyser();
     DynamicAnalyser dynamicAnalyser =  new DynamicAnalyser();
 
-    public void collect(String targetClassIndicator, Boolean isPrefix){
+    public void collect(String targetClassIndicator, String outputFolder, Boolean isPrefix){
 
         //pre-processes before starting the analysis
         if(projectClassPaths == null){
@@ -62,12 +68,27 @@ public class CallSequenceCollector {
         staticAnalyser.analyse(interestingClasses);
 
         // Dynamic Analysis
-        dynamicAnalyser.analyse(interestingClasses);
-
+        Map<Class<?>,List<TestCase>> carvedTests = dynamicAnalyser.analyse(staticAnalyser.getTestSuite());
+        if (carvedTests != null){
+            savingTestsUsages(carvedTests,Paths.get(outputFolder,"carvedTests").toString());
+        }
         // Checking the exported call sequences <TEMP>
         CallSequencesPoolManager.getInstance().report();
     }
 
+    private void savingTestsUsages(Map<Class<?>,List<TestCase>> carvedTestCases, String outputPath) {
+        Gson gson = new GsonBuilder().create();
+        String json = gson.toJson(carvedTestCases);
+        File outDirectory = new File(outputPath);
+        if (!outDirectory.exists()) {
+            outDirectory.mkdirs();
+        }
+        try (PrintWriter out = new PrintWriter(Paths.get(outputPath,"tests.xml").toString())) {
+            out.println(json);
+        } catch (FileNotFoundException e) {
+            LOG.error("The output directory for carved tests is not valid.");
+        }
+    }
     private void handleClassPath() {
         ClassPathHandler.getInstance().changeTargetClassPath(projectClassPaths);
         List<String> cpList = Arrays.asList(projectClassPaths);

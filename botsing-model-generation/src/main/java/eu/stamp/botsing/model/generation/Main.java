@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 public class Main {
 
@@ -43,19 +44,21 @@ public class Main {
                 callSequenceCollector =  new CallSequenceCollector(commands.getOptionValue(CommandLineParameters.PROJECT_CP_OPT));
             }
 
+            String outputFolder = commands.hasOption(CommandLineParameters.OUTPUT_FOLDER)?commands.getOptionValue(CommandLineParameters.OUTPUT_FOLDER):"generated_results";
+
             // set project prefix
             if (commands.hasOption(CommandLineParameters.PROJECT_PREFIX) ^ commands.hasOption(CommandLineParameters.PROJECT_PACKAGE)) {
                 if(commands.hasOption(CommandLineParameters.PROJECT_PREFIX)){
-                    callSequenceCollector.collect(commands.getOptionValue(CommandLineParameters.PROJECT_PREFIX),true);
+                    callSequenceCollector.collect(commands.getOptionValue(CommandLineParameters.PROJECT_PREFIX), outputFolder, true);
                 }else{
-                    callSequenceCollector.collect(commands.getOptionValue(CommandLineParameters.PROJECT_PACKAGE),false);
+                    callSequenceCollector.collect(commands.getOptionValue(CommandLineParameters.PROJECT_PACKAGE), outputFolder, false);
                 }
 
                 // Here, we have the list of call sequences. We just need to pass it to the yami tool
                 ModelGenerator modelGenerator =  new ModelGenerator();
-                String outputFolder = commands.hasOption(CommandLineParameters.OUTPUT_FOLDER)?commands.getOptionValue(CommandLineParameters.OUTPUT_FOLDER):"generated_model";
+
                 try {
-                    modelGenerator.generate(CallSequencesPoolManager.getInstance().getPool(),outputFolder);
+                    modelGenerator.generate(CallSequencesPoolManager.getInstance().getPool(),Paths.get(outputFolder, "models").toString());
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (SessionBuildException e) {

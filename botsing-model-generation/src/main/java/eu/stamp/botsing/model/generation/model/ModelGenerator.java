@@ -53,7 +53,7 @@ public class ModelGenerator {
         File outFolder = new File(outputFolder.replace(".JSON", "").replace(".Json", ""));
         LOG.info("Printing models in folder {}", outFolder);
         if (!outFolder.exists()) {
-            outFolder.mkdir();
+            outFolder.mkdirs();
         }
         processor.getNGrams().forEach((ngram) -> {
             try {
