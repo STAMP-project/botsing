@@ -44,9 +44,13 @@ public class Main {
             }
 
             // set project prefix
-            if (commands.hasOption(CommandLineParameters.PROJECT_PREFIX)) {
-                Properties.TARGET_CLASS_PREFIX = commands.getOptionValue(CommandLineParameters.PROJECT_PREFIX);
-                callSequenceCollector.collect();
+            if (commands.hasOption(CommandLineParameters.PROJECT_PREFIX) ^ commands.hasOption(CommandLineParameters.PROJECT_PACKAGE)) {
+                if(commands.hasOption(CommandLineParameters.PROJECT_PREFIX)){
+                    callSequenceCollector.collect(commands.getOptionValue(CommandLineParameters.PROJECT_PREFIX),true);
+                }else{
+                    callSequenceCollector.collect(commands.getOptionValue(CommandLineParameters.PROJECT_PACKAGE),false);
+                }
+
                 // Here, we have the list of call sequences. We just need to pass it to the yami tool
                 ModelGenerator modelGenerator =  new ModelGenerator();
                 String outputFolder = commands.hasOption(CommandLineParameters.OUTPUT_FOLDER)?commands.getOptionValue(CommandLineParameters.OUTPUT_FOLDER):"generated_model";
@@ -59,7 +63,7 @@ public class Main {
                 }
 
             }else{
-                LOG.error("Project prefix should be passed as an input. For more information -> help");
+                LOG.error("Either project prefix or project package name should be passed as an input. For more information -> help");
             }
         }else{
             LOG.error("Project classpath should be passed as an input. For more information -> help");

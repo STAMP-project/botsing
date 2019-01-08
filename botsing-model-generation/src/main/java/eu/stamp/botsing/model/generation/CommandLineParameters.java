@@ -29,6 +29,7 @@ public class CommandLineParameters {
     public static final String HELP_OPT = "help";
     public static final String PROJECT_PREFIX = "projectPrefix";
     public static final String OUTPUT_FOLDER = "outDir";
+    public static final String PROJECT_PACKAGE = "projectPackage";
 
     public static Options getCommandLineOptions() {
         Options options = new Options();
@@ -42,11 +43,19 @@ public class CommandLineParameters {
                 .desc("Prints this help message.")
                 .build());
 
+        //if all of the interesting classes has the same prefix, the user can use this option
         options.addOption(Option.builder(PROJECT_PREFIX)
                 .hasArg()
                 .desc("Prefix of the classes that we want to use for manual/dynamic analysis")
                 .build());
 
+        //if all of the interesting classes has the same package name, the user can use this option
+        options.addOption(Option.builder(PROJECT_PACKAGE)
+                .hasArg()
+                .desc("Package name of the classes that we want to use for manual/dynamic analysis")
+                .build());
+
+        // note: Either projectPrefix or projectPackage should be set.
 
         options.addOption(Option.builder(OUTPUT_FOLDER)
                 .hasArg()

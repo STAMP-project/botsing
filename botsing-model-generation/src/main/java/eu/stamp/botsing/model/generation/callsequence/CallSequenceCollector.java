@@ -47,7 +47,7 @@ public class CallSequenceCollector {
     StaticAnalyser staticAnalyser =  new StaticAnalyser();
     DynamicAnalyser dynamicAnalyser =  new DynamicAnalyser();
 
-    public void collect(){
+    public void collect(String targetClassIndicator, Boolean isPrefix){
 
         //pre-processes before starting the analysis
         if(projectClassPaths == null){
@@ -57,7 +57,7 @@ public class CallSequenceCollector {
         handleClassPath();
 
         // Static Analysis
-        detectInterestingClasses();
+        detectInterestingClasses(targetClassIndicator,isPrefix);
         generateCFGS();
         staticAnalyser.analyse(interestingClasses);
 
@@ -99,11 +99,19 @@ public class CallSequenceCollector {
         }
     }
 
-    private void detectInterestingClasses() {
+    private void detectInterestingClasses(String targetClassIndicator,Boolean isPrefix) {
         InheritanceTree projectTree = CPAnalysor.getInheritanceTree();
-        for (String clazz:  projectTree.getAllClasses()){
-            if (clazz.startsWith(Properties.TARGET_CLASS_PREFIX)){
-                interestingClasses.add(clazz);
+        if(isPrefix){
+            for (String clazz:  projectTree.getAllClasses()){
+                if (clazz.startsWith(targetClassIndicator)){
+                    interestingClasses.add(clazz);
+                }
+            }
+        }else{
+            for (String clazz:  projectTree.getAllClasses()){
+                if (clazz.contains("."+targetClassIndicator+".")){
+                    interestingClasses.add(clazz);
+                }
             }
         }
     }
