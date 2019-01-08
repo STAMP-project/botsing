@@ -63,7 +63,13 @@ public class BotsingBytecodeInstrumentation {
         }
 
         reader.accept(cv, ClassReader.SKIP_FRAMES);
-        return writer.toByteArray();
+        try{
+            return writer.toByteArray();
+        }catch (RuntimeException e){
+            LOG.warn("Method code is too large");
+            return new byte[0];
+        }
+
     }
 
     private static ClassVisitor handleStaticReset(String className, ClassVisitor cv) {

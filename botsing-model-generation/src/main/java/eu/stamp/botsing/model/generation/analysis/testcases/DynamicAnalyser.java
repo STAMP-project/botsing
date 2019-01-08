@@ -83,8 +83,9 @@ public class DynamicAnalyser {
                 if(CoverageAnalysis.isTest(cls)){
                     result.add(clazz);
                 }
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+            } catch (ClassNotFoundException | NoClassDefFoundError e) {
+//                e.printStackTrace();
+                LOG.warn("error in loading {}",clazz);
             }
         }
 

@@ -58,11 +58,19 @@ public class InstrumentingClassLoader extends ClassLoader {
             }
             byte[] byteBuffer = getTransformedBytes(className,is);
             createPackageDefinition(fullyQualifiedTargetClass);
-            Class<?> result = defineClass(fullyQualifiedTargetClass, byteBuffer, 0,byteBuffer.length);
-            visitedClasses.put(fullyQualifiedTargetClass, result);
+            try{
+                Class<?> result = defineClass(fullyQualifiedTargetClass, byteBuffer, 0,byteBuffer.length);
+                visitedClasses.put(fullyQualifiedTargetClass, result);
+                LOG.info("Loaded class: " + fullyQualifiedTargetClass);
+                return result;
+            }catch(ClassFormatError cfe){
+                return null;
+            }
 
-			LOG.info("Loaded class: " + fullyQualifiedTargetClass);
-            return result;
+
+
+
+
         } catch (Throwable t) {
             LOG.error("Error while loading class: "+t);
             throw new ClassNotFoundException(t.getMessage(), t);
