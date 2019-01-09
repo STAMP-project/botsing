@@ -55,7 +55,9 @@ public class CarvingManager {
             String classNameWithDots = ResourceList.getClassNameFromResourcePath(testSuiteName);
             try {
                 final Class<?> junitClass = classLoader.loadClass(classNameWithDots);
-                junitTestClasses.add(junitClass);
+                if(junitClass != null){
+                    junitTestClasses.add(junitClass);
+                }
             } catch (ClassNotFoundException e) {
                 LOG.error("Failed to load JUnit test class {}: {}", classNameWithDots, e);
             }
@@ -82,7 +84,7 @@ public class CarvingManager {
         List<String> testSuites = new LinkedList<>();
         String selectedJunitProp = Properties.SELECTED_JUNIT;
         if (selectedJunitProp == null || selectedJunitProp.trim().isEmpty()){
-            throw new IllegalStateException(
+            LOG.warn(
                     "Properties.SELECTED_JUNIT is empty. test carving is failed.");
         }
         for (String testSuiteCP: selectedJunitProp.split(":")){

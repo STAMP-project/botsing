@@ -54,7 +54,8 @@ public class InstrumentingClassLoader extends ClassLoader {
         try {
             is = ResourceList.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getClassAsStream(fullyQualifiedTargetClass);
             if (is == null) {
-                throw new ClassNotFoundException("Class '" + className + ".class" + "' should be in target project!");
+                LOG.warn("Class '" + className + ".class" + "' should be in target project!");
+//                throw new ClassNotFoundException("Class '" + className + ".class" + "' should be in target project!");
             }
             byte[] byteBuffer = getTransformedBytes(className,is);
             createPackageDefinition(fullyQualifiedTargetClass);
@@ -73,13 +74,15 @@ public class InstrumentingClassLoader extends ClassLoader {
 
         } catch (Throwable t) {
             LOG.error("Error while loading class: "+t);
-            throw new ClassNotFoundException(t.getMessage(), t);
+//            throw new ClassNotFoundException(t.getMessage(), t);
+            return null;
         } finally {
             if(is != null){
                 try {
                     is.close();
                 } catch (IOException e) {
-                    throw new Error(e);
+                    LOG.warn(e.getMessage());
+                    return null;
                 }
             }
         }

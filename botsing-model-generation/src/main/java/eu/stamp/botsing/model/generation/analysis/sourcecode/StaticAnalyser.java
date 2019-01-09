@@ -118,8 +118,8 @@ public class StaticAnalyser {
                     String parentType = detectParentType(variableName, callSequencesOfCurrentMethod);
                     recordRegularInvocation(bc, parentType, variableName, callSequencesOfCurrentMethod);
                 } else {
-                    LOG.error("The variable name is empty: {} ", bc);
-                    throw new IllegalStateException("Variable with empty name discovered during static analysis for instruction: " + bc);
+                    LOG.warn("The variable name is empty: {} ", bc);
+//                    throw new IllegalStateException("Variable with empty name discovered during static analysis for instruction: " + bc);
                 }
 
             } else {
@@ -144,7 +144,7 @@ public class StaticAnalyser {
             recordInvocation(bc, parentType, variableName, callSequencesOfCurrentMethod);
         } else {
             LOG.error("Cannot detect the right call sequence for recording: {}", bc);
-            throw new IllegalStateException("Could not detect the right call sequence ofr recording " + bc);
+//            throw new IllegalStateException("Could not detect the right call sequence ofr recording " + bc);
         }
     }
 

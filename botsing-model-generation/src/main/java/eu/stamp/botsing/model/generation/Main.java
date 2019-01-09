@@ -50,7 +50,6 @@ public class Main {
             if(commands.hasOption(CommandLineParameters.CRASHES)){
                 Gson gson = new Gson();
                 ArrayList<String> crashes = gson.fromJson(commands.getOptionValue(CommandLineParameters.CRASHES), ArrayList.class);
-                LOG.info("scratch: {}",crashes);
                 LogReader logReader= new LogReader(crashes);
                 involvedObejcts = logReader.collectInvolvedObjects();
             }

@@ -31,7 +31,7 @@ public class LogReader {
 
                 while(true) {
                     String tempFrame = reader.readLine();
-                    if (tempFrame == null) {
+                    if (!tempFrame.contains("at")) {
                         break;
                     }
                     String detectedObj = fetchObject(tempFrame);
@@ -41,10 +41,12 @@ public class LogReader {
                 }
 
             }catch (FileNotFoundException e) {
-                LOG.debug("Stack trace file not found!", e);
-                throw new IllegalArgumentException("Stack trace file not found!", e);
+                LOG.warn("Stack trace file not found!", e);
+//                throw new IllegalArgumentException("Stack trace file not found!", e);
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.info("IO Exception", e);
+            } catch (Exception e){
+                LOG.info("Other exceptions happened", e);
             }
         }
     }

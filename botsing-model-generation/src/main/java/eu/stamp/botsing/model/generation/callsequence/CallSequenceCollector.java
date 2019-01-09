@@ -90,16 +90,15 @@ public class CallSequenceCollector {
         for(String clazz: interestingClasses){
             LOG.info("Analyzing class "+ clazz);
             DefaultTestCase test = buildLoadClassTestCase(clazz);
-            ExecutionResult execResult = TestExecutor.getInstance().execute(test, Integer.MAX_VALUE);
-            if (!execResult.getAllThrownExceptions().isEmpty()) {
-                Throwable t = execResult.getAllThrownExceptions().iterator().next();
-                try {
-                    throw t;
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
+            if (test != null){
+                ExecutionResult execResult = TestExecutor.getInstance().execute(test, Integer.MAX_VALUE);
+                if (!execResult.getAllThrownExceptions().isEmpty()) {
+                    Throwable t = execResult.getAllThrownExceptions().iterator().next();
+                    LOG.warn("analyzing class {} failed",clazz);
+
                 }
+                LOG.info("The process of generating CFG for class {} is finished.",clazz);
             }
-            LOG.info("The process of generating CFG for class {} is finished.",clazz);
         }
     }
 
@@ -156,7 +155,8 @@ public class CallSequenceCollector {
             test.addStatement(forNameStmt);
             return test;
         } catch (NoSuchMethodException | SecurityException e) {
-            throw new EvosuiteError("Unexpected exception while creating test for instrumenting class "+className );
+            LOG.warn("Unexpected exception while creating test for instrumenting class "+className );
+            return null;
         }
 
     }
