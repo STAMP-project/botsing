@@ -18,11 +18,10 @@ import java.util.Map;
 public class DynamicAnalyser {
     private static final Logger LOG = LoggerFactory.getLogger(DynamicAnalyser.class);
 
-    public Map<Class<?>,List<TestCase>> analyse(Map<String, List<String>> objectsTests, ArrayList<String> involvedObjects){
+    public void analyse(Map<String, List<String>> objectsTests, ArrayList<String> involvedObjects){
         List<String> testSuites =  new ArrayList<String>();
         if(involvedObjects.size()>0){
             for(String involvedObj: involvedObjects){
-                LOG.info("inv: {}",involvedObj);
                 if(objectsTests.containsKey(involvedObj)){
                     for(String candidateTS: objectsTests.get(involvedObj)){
                         testSuites.add(candidateTS);
@@ -47,10 +46,8 @@ public class DynamicAnalyser {
             LOG.info("Test carving is finished.");
             LOG.info("Collecting the call sequences.");
             savingMethodCallSequences(carvedTestCases);
-            return  carvedTestCases;
         }else{
             LOG.info("No test suite detected for dynamic analysis!");
-            return null;
         }
         // Execute the test cases in the detected test suite, and run the dynamic analysis on them.
     }

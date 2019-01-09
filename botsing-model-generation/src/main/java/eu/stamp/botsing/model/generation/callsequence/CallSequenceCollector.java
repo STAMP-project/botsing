@@ -1,12 +1,11 @@
 package eu.stamp.botsing.model.generation.callsequence;
 
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import eu.stamp.botsing.model.generation.analysis.classpath.CPAnalysor;
 import eu.stamp.botsing.model.generation.analysis.sourcecode.StaticAnalyser;
 import eu.stamp.botsing.model.generation.analysis.testcases.DynamicAnalyser;
 import eu.stamp.botsing.model.generation.testcase.execution.TestExecutor;
+import eu.stamp.botsing.model.generation.testusage.TestUsagePoolManager;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.setup.InheritanceTree;
@@ -24,9 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.*;
@@ -67,27 +64,15 @@ public class CallSequenceCollector {
         staticAnalyser.analyse(interestingClasses);
 
         // Dynamic Analysis
-        Map<Class<?>,List<TestCase>> carvedTests = dynamicAnalyser.analyse(staticAnalyser.getObjectsTests(),involvedObejcts);
-        if (carvedTests != null){
-            savingTestsUsages(carvedTests,Paths.get(outputFolder,"carvedTests").toString());
-        }
-        // Checking the exported call sequences <TEMP>
+        dynamicAnalyser.analyse(staticAnalyser.getObjectsTests(),involvedObejcts);
+
+        // Storing the object usage of test suites to the output directory
+        TestUsagePoolManager.getInstance().savingTestsUsages(Paths.get(outputFolder,"carvedTests").toString());
+        // Storing the collected call sequences
         CallSequencesPoolManager.getInstance().report();
     }
 
-    private void savingTestsUsages(Map<Class<?>,List<TestCase>> carvedTestCases, String outputPath) {
-        Gson gson = new GsonBuilder().create();
-        String json = gson.toJson(carvedTestCases);
-        File outDirectory = new File(outputPath);
-        if (!outDirectory.exists()) {
-            outDirectory.mkdirs();
-        }
-        try (PrintWriter out = new PrintWriter(Paths.get(outputPath,"tests.xml").toString())) {
-            out.println(json);
-        } catch (FileNotFoundException e) {
-            LOG.error("The output directory for carved tests is not valid.");
-        }
-    }
+
     private void handleClassPath() {
         ClassPathHandler.getInstance().changeTargetClassPath(projectClassPaths);
         List<String> cpList = Arrays.asList(projectClassPaths);

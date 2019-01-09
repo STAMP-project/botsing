@@ -2,6 +2,7 @@ package eu.stamp.botsing.model.generation.testcase.carving;
 
 import eu.stamp.botsing.model.generation.BotsingTestGenerationContext;
 import eu.stamp.botsing.model.generation.instrumentation.BotsingBytecodeInstrumentation;
+import eu.stamp.botsing.model.generation.testusage.TestUsagePoolManager;
 import org.evosuite.Properties;
 import org.evosuite.testcarver.capture.CaptureLog;
 import org.evosuite.testcarver.capture.Capturer;
@@ -13,7 +14,6 @@ import org.evosuite.utils.generic.GenericTypeInference;
 import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
 
 public class CarvingRunListener extends org.evosuite.testcarver.extraction.CarvingRunListener {
@@ -23,12 +23,16 @@ public class CarvingRunListener extends org.evosuite.testcarver.extraction.Carvi
     public void testFinished(Description description) throws Exception {
         final CaptureLog log = Capturer.stopCapture();
         LOG.info("Carving test {}.{}", description.getClassName(), description.getMethodName());
-        this.processLog(description, log);
+        List<Class<?>> observedClasses = this.processLog(description, log);
+        for(Class<?> clazz : observedClasses){
+            TestUsagePoolManager.getInstance().addTest(clazz.getName(), description.getClassName());
+        }
+
         Capturer.clear();
     }
 
 
-    private void processLog(Description description, final CaptureLog log) {
+    private List<Class<?>> processLog(Description description, final CaptureLog log) {
         LOG.debug("Current log: "+log);
         List<Class<?>> observedClasses = getObservedClasses(log);
 
@@ -67,6 +71,7 @@ public class CarvingRunListener extends org.evosuite.testcarver.extraction.Carvi
             }
             codeGen.clear();
         }
+        return observedClasses;
     }
 
 
