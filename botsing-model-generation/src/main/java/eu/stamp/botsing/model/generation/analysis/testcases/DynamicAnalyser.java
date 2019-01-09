@@ -44,6 +44,8 @@ public class DynamicAnalyser {
             CarvingManager manager = CarvingManager.getInstance();
             Properties.SELECTED_JUNIT = String.join(":", testSuites);
             Map<Class<?>, List<TestCase>> carvedTestCases = manager.getCarvedTestCases();
+            LOG.info("Test carving is finished.");
+            LOG.info("Collecting the call sequences.");
             savingMethodCallSequences(carvedTestCases);
             return  carvedTestCases;
         }else{
@@ -58,9 +60,6 @@ public class DynamicAnalyser {
             String className = targetClass.getName();
             for (TestCase test : carvedTestCases.get(targetClass)) {
                 for (List<MethodCall> callSequence : getCallSequences(test)){
-                    for (MethodCall mc: callSequence){
-                        LOG.info(mc.getMethodName());
-                    }
                     CallSequencesPoolManager.getInstance().addSequence(className,callSequence);
                 }
             }
