@@ -49,5 +49,5 @@ Thumbs.db
 
 # local test directory
 **/test/**/botsing/local/
-**/test/**/botsing_model_generation/local/
+**/test/**/botsing/model/generation/local/
 
