@@ -59,7 +59,7 @@ public class CallSequenceCollector {
 
         // Static Analysis
         detectInterestingClasses(targetClassIndicator,isPrefix);
-        generateCFGS();
+//        generateCFGS();
         staticAnalyser.analyse(interestingClasses);
 
         // Dynamic Analysis
