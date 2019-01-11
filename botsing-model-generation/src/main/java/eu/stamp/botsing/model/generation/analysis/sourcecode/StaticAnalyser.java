@@ -30,32 +30,40 @@ public class StaticAnalyser {
     public void analyse(List<String> interestingClasses) {
         int counter = 0;
         for (String clazz : interestingClasses) {
-            counter++;
-            LOG.info("Analyzing methods of class " + clazz + " ("+counter+"/"+interestingClasses.size()+")");
-            boolean isTest = false;
-            Class<?> cls = null;
-            try {
-                cls = Class.forName(clazz,false, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                if(CoverageAnalysis.isTest(cls)){
-                    LOG.info("The class {} is a testSuite",clazz);
-                    isTest=true;
-                    testSuite.add(clazz);
+            try{
+                if (clazz.startsWith("org.xwiki.rendering.wikimodel.internal.common.javacc")){
+                    continue;
                 }
-            } catch (ClassNotFoundException | NoClassDefFoundError e) {
-//                e.printStackTrace();
-                LOG.warn("error in loading {}",clazz);
-            }
+                    counter++;
+                    LOG.info("Analyzing methods of class " + clazz + " ("+counter+"/"+interestingClasses.size()+")");
+                    boolean isTest = false;
+                    Class<?> cls = null;
+                    try {
+                        cls = Class.forName(clazz,false, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+                        if(CoverageAnalysis.isTest(cls)){
+                            LOG.info("The class {} is a testSuite",clazz);
+                            isTest=true;
+                            testSuite.add(clazz);
+                        }
+                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+        //                e.printStackTrace();
+                        LOG.warn("error in loading {}",clazz);
+                    }
 
 
-            GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-            Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(clazz);
-            if (methodsGraphs != null) {
-                for (Map.Entry<String, RawControlFlowGraph> entry : methodsGraphs.entrySet()) {
-                    Map<String, Map<String, List<MethodCall>>> collectedCallSequencesForCurrentMethod = analyseMethod(clazz, entry.getKey(), entry.getValue(),isTest);
-                    savingMethodCallSequences(collectedCallSequencesForCurrentMethod);
-                }
-            } else {
-                LOG.warn("The generated control flow graphs for class {} was empty. We cannot execute manual analysis withour the control flow graph.", clazz);
+                    GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+                    Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(clazz);
+                    if (methodsGraphs != null) {
+                        for (Map.Entry<String, RawControlFlowGraph> entry : methodsGraphs.entrySet()) {
+                            Map<String, Map<String, List<MethodCall>>> collectedCallSequencesForCurrentMethod = analyseMethod(clazz, entry.getKey(), entry.getValue(),isTest);
+                            savingMethodCallSequences(collectedCallSequencesForCurrentMethod);
+                        }
+                    } else {
+                        LOG.warn("The generated control flow graphs for class {} was empty. We cannot execute manual analysis withour the control flow graph.", clazz);
+                    }
+            }catch(Exception e){
+                LOG.warn("Error in analyzing class {}",clazz);
+                LOG.warn(e.toString());
             }
         }
     }

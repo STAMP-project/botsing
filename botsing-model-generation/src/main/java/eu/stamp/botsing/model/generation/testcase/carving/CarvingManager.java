@@ -52,28 +52,35 @@ public class CarvingManager {
         FieldRegistry.carvingClassLoader = classLoader;
 
         for (String testSuiteName : testSuites) {
-            String classNameWithDots = ResourceList.getClassNameFromResourcePath(testSuiteName);
+
             try {
+                String classNameWithDots = ResourceList.getClassNameFromResourcePath(testSuiteName);
                 final Class<?> junitClass = classLoader.loadClass(classNameWithDots);
                 if(junitClass != null){
                     junitTestClasses.add(junitClass);
                 }
-            } catch (ClassNotFoundException e) {
-                LOG.error("Failed to load JUnit test class {}: {}", classNameWithDots, e);
+            } catch (Exception e) {
+                LOG.error("Failed to load JUnit test class {}: {}", testSuiteName, e);
             }
         }
+        try{
+            final Class<?>[] classes = new Class<?>[junitTestClasses.size()];
+            junitTestClasses.toArray(classes);
+            Result result = runner.run(classes);
+            carvedTestCases = listener.getTestCases();
 
-        final Class<?>[] classes = new Class<?>[junitTestClasses.size()];
-        junitTestClasses.toArray(classes);
-        Result result = runner.run(classes);
-        carvedTestCases = listener.getTestCases();
 
-
-        LOG.info("Result: {}/{}", result.getFailureCount(), result.getRunCount());
-        for(Failure failure : result.getFailures()) {
-            LOG.info("Failure: {}", failure.getMessage());
-            LOG.info("Exception: {}", failure.getException());
+            LOG.info("Result: {}/{}", result.getFailureCount(), result.getRunCount());
+            for(Failure failure : result.getFailures()) {
+                LOG.info("Failure: {}", failure.getMessage());
+                LOG.info("Exception: {}", failure.getException());
+            }
+        }catch (Exception e){
+            LOG.warn("exception in final step of carving: {}",e.toString());
+        }catch (Error e){
+            LOG.warn("error in final step of carving: {}",e.toString());
         }
+
 
 
 

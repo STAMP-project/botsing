@@ -11,7 +11,7 @@ public class TestUsagePool {
     protected Map<String, List<String>> pool = new HashMap<String, List<String>>();
 
     public void addTest(String usedClass,String testName){
-        LOG.info("Adding test {} to class {}.",testName,usedClass);
+        LOG.info("Adding test {} to class {}",testName,usedClass);
         if(!this.pool.containsKey(usedClass)){
             this.pool.put(usedClass,new ArrayList<>());
         }

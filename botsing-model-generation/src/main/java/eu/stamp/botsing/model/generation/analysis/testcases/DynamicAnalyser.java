@@ -21,18 +21,28 @@ public class DynamicAnalyser {
     public void analyse(Map<String, List<String>> objectsTests, ArrayList<String> involvedObjects){
         List<String> testSuites =  new ArrayList<String>();
         if(involvedObjects.size()>0){
-            for(String involvedObj: involvedObjects){
-                if(objectsTests.containsKey(involvedObj)){
-                    for(String candidateTS: objectsTests.get(involvedObj)){
-                        testSuites.add(candidateTS);
+                for(String involvedObj: involvedObjects){
+                    if(objectsTests.containsKey(involvedObj)){
+                        for(String candidateTS: objectsTests.get(involvedObj)){
+                            try {
+                            testSuites.add(candidateTS);
+                            }catch (Exception e){
+                                LOG.warn("Error in adding testsuite {}",candidateTS);
+                                LOG.warn(e.toString());
+                            }
+                        }
                     }
                 }
-            }
         }else{
             for (Map.Entry<String, List<String>> entry : objectsTests.entrySet()){
                 for(String test: entry.getValue()){
                     if(!testSuites.contains(test)){
-                        testSuites.add(test);
+                        try{
+                            testSuites.add(test);
+                        }catch (Exception e){
+                        LOG.warn("Error in adding testsuite {}",test);
+                        LOG.warn(e.toString());
+                        }
                     }
                 }
             }

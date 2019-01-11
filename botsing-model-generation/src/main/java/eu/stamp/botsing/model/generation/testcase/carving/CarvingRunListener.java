@@ -20,15 +20,20 @@ public class CarvingRunListener extends org.evosuite.testcarver.extraction.Carvi
     private static final Logger LOG = LoggerFactory.getLogger(CarvingRunListener.class);
     private final Map<Class<?>, List<TestCase>> carvedTests = new LinkedHashMap<>();
     @Override
-    public void testFinished(Description description) throws Exception {
-        final CaptureLog log = Capturer.stopCapture();
-        LOG.info("Carving test {}.{}", description.getClassName(), description.getMethodName());
-        List<Class<?>> observedClasses = this.processLog(description, log);
-        for(Class<?> clazz : observedClasses){
-            TestUsagePoolManager.getInstance().addTest(clazz.getName(), description.getClassName());
+    public void testFinished(Description description) {
+        try{
+            final CaptureLog log = Capturer.stopCapture();
+            LOG.info("Carving test {}.{}", description.getClassName(), description.getMethodName());
+            List<Class<?>> observedClasses = this.processLog(description, log);
+            for(Class<?> clazz : observedClasses){
+                TestUsagePoolManager.getInstance().addTest(clazz.getName(), description.getClassName());
+            }
+
+            Capturer.clear();
+        }catch (Exception e){
+            LOG.warn("error in capturing log: {}",e.toString());
         }
 
-        Capturer.clear();
     }
 
 
