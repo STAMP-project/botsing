@@ -31,7 +31,7 @@ public class LogReader {
 
                 while(true) {
                     String tempFrame = reader.readLine();
-                    if (!tempFrame.contains("at")) {
+                    if (tempFrame== null || !tempFrame.contains("at")) {
                         break;
                     }
                     String detectedObj = fetchObject(tempFrame);
@@ -52,6 +52,7 @@ public class LogReader {
     }
 
     private String fetchObject(String tempFrame) {
+        LOG.info(tempFrame);
         int startPoint = tempFrame.indexOf("at ") + 3;
         String usefulPart = tempFrame.substring(startPoint);
         int splitPoint = usefulPart.indexOf("(");
