@@ -36,6 +36,7 @@ public class StackTrace {
     private ArrayList<StackTraceElement> frames;
     private int targetFrameLevel;
     private String targetClass;
+    private ArrayList<StackTraceElement> allFrames;
 
     /**
      * Sets up this object with the stack trace read from the given file and having the given target frame.
@@ -56,8 +57,10 @@ public class StackTrace {
             // clear the frames in this.frames (if any)
             if (frames == null) {
                 frames = new ArrayList<StackTraceElement>();
+                allFrames = new ArrayList<StackTraceElement>();
             } else {
                 frames.clear();
+                allFrames.clear();
             }
 
             // Parse frames
@@ -67,6 +70,11 @@ public class StackTrace {
                     break;
                 }
                 frames.add(stringToStackTraceElement(tempFrame));
+                allFrames.add(stringToStackTraceElement(tempFrame));
+            }
+            String tempFrame="";
+            while((tempFrame=reader.readLine())!=null && tempFrame.length()!=0 && tempFrame.contains("at")){
+                allFrames.add(stringToStackTraceElement(tempFrame));
             }
             LOG.info("Target frame is set to: " + frames.get(frameLevel - 1).toString());
 
@@ -136,6 +144,10 @@ public class StackTrace {
 
     public ArrayList<StackTraceElement> getFrames() {
         return frames;
+    }
+
+    public ArrayList<StackTraceElement> getAllFrames() {
+        return allFrames;
     }
 
     public BufferedReader readFromFile(String filePath) throws FileNotFoundException {
