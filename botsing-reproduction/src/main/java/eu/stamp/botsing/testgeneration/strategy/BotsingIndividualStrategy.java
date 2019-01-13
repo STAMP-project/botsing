@@ -25,6 +25,7 @@ import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.RootMethodTestChromosomeFactory;
 import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
+import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -32,6 +33,8 @@ import org.evosuite.ga.stoppingconditions.GlobalTimeStoppingCondition;
 import org.evosuite.ga.stoppingconditions.MaxTimeStoppingCondition;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.evosuite.ga.stoppingconditions.ZeroFitnessStoppingCondition;
+import org.evosuite.seeding.ObjectPool;
+import org.evosuite.seeding.ObjectPoolManager;
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
@@ -78,6 +81,14 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         }
         TestFitnessFunction ff = getFF();
         ga.addFitnessFunction(ff);
+
+        // prepare model seeding before generating the solution
+        if(CrashProperties.getInstance().MODEL_PATH != null){
+            ModelSeedingHelper modelSeedingHelper = new ModelSeedingHelper(CrashProperties.getInstance().MODEL_PATH);
+            ObjectPool pool = modelSeedingHelper.generatePool();
+            ObjectPoolManager.getInstance().addPool(pool);
+
+        }
         ga.generateSolution();
 
 

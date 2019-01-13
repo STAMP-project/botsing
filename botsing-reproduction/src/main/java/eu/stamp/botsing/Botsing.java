@@ -54,17 +54,31 @@ public class Botsing {
         if (commands.hasOption(HELP_OPT)) {
             printHelpMessage(options);
         } else if(!(commands.hasOption(PROJECT_CP_OPT) && commands.hasOption(CRASH_LOG_OPT) && commands.hasOption(TARGET_FRAME_OPT))) { // Check the required options are there
-            LOG.error("A mandatory options -{} -{} -{} is missing!", PROJECT_CP_OPT, CRASH_LOG_OPT, TARGET_FRAME_OPT);
+            LOG.error("A mandatory option -{} -{} -{} is missing!", PROJECT_CP_OPT, CRASH_LOG_OPT, TARGET_FRAME_OPT);
             printHelpMessage(options);
         } else {// Otherwise, proceed to crash reproduction
             java.util.Properties properties = commands.getOptionProperties(D_OPT);
             updateProperties(properties);
             setupStackTrace(crashProperties, commands);
             setupProjectClasspath(crashProperties, commands);
+            if(commands.hasOption(MODEL_PATH_OPT)){
+                if(!commands.hasOption(PROJECT_PACKAGE)){
+                    LOG.error(" {} is a mandatory option for model seeding", PROJECT_PACKAGE);
+                    printHelpMessage(options);
+                }
+                setupModelSeedingRelatedProperties(commands);
+            }
             return CrashReproduction.execute();
         }
         return null;
 
+    }
+
+    private void setupModelSeedingRelatedProperties( CommandLine commands) {
+        String modelPath = commands.getOptionValue(MODEL_PATH_OPT);
+        CrashProperties.getInstance().MODEL_PATH = modelPath;
+        String projectPackage = commands.getOptionValue(PROJECT_PACKAGE);
+        CrashProperties.getInstance().PROJECT_PACKAGE = projectPackage;
     }
 
     protected CommandLine parseCommands(String[] args, Options options){
