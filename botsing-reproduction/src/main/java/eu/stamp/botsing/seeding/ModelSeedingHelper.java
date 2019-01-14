@@ -81,9 +81,9 @@ public class ModelSeedingHelper {
         for (File file : listOfModels) {
             if (file.isFile() && !file.getName().startsWith(".") && file.getName().endsWith(".xml") ) {
                 String xmlClassName = file.getName().substring(0, file.getName().length() - 4);
-//                if (xmlClassName.indexOf('.')== -1 || !xmlClassName.contains(CrashProperties.getInstance().PROJECT_PACKAGE) || seedingClasses.contains(xmlClassName)){
-                if (xmlClassName.indexOf('.')== -1 || seedingClasses.contains(xmlClassName)){
-                    LOG.info("working on callSequences of " + file.getName());
+//                if (xmlClassName.indexOf('.')== -1 || seedingClasses.contains(xmlClassName)){
+                if (seedingClasses.contains(xmlClassName)){
+                    LOG.info("working on model of " + xmlClassName);
                     try {
                         UsageModel um = Xml.loadUsageModel(Paths.get(folder.getAbsolutePath(), file.getName()).toString());
                         TestSet ts = Dissimilar.from(um).withGlobalMaxDistance(Dissimilar.jaccard()).during(5000).generate(Properties.POPULATION);
@@ -111,7 +111,7 @@ public class ModelSeedingHelper {
                                     try {
                                         sequenceClass = Class.forName(className, true, TestGenerationContext.getInstance().getClassLoaderForSUT());
                                     } catch (ClassNotFoundException | ExceptionInInitializerError | NoClassDefFoundError e) {
-                                        LOG.info("could not load " + className);
+                                        LOG.debug("could not load " + className);
                                     }
                                     if (sequenceClass != null) {
                                         Set<Method> methods = TestClusterUtils.getMethods(sequenceClass);
@@ -145,7 +145,7 @@ public class ModelSeedingHelper {
                                 try {
                                     sequenceClass = Class.forName(className, true, TestGenerationContext.getInstance().getClassLoaderForSUT());
                                 } catch (ClassNotFoundException | ExceptionInInitializerError | NoClassDefFoundError e) {
-                                    LOG.info("could not load " + className);
+                                    LOG.debug("could not load " + className);
                                 }
                                 if (sequenceClass != null) {
                                     Set<Constructor<?>> constructors = TestClusterUtils.getConstructors(sequenceClass);
@@ -162,9 +162,9 @@ public class ModelSeedingHelper {
                                     GenericConstructor genericConstructor = new GenericConstructor(chosenConstructor, sequenceClass);
                                     try {
                                         TestFactory.getInstance().addConstructor(newTestCase, genericConstructor, newTestCase.size(), 0);
-                                        LOG.info("constructor {} is added", genericConstructor.getName());
+                                        LOG.debug("constructor {} is added", genericConstructor.getName());
                                     } catch (Exception e) {
-                                        LOG.info("Error in addidng " + genericConstructor.getName() + "  " + e.getMessage());
+                                        LOG.debug("Error in addidng " + genericConstructor.getName() + "  " + e.getMessage());
                                     }
                                 }
                             }
@@ -188,7 +188,7 @@ public class ModelSeedingHelper {
                                     try {
                                         sequenceClass = Class.forName(className, true, TestGenerationContext.getInstance().getClassLoaderForSUT());
                                     } catch (ClassNotFoundException | ExceptionInInitializerError | NoClassDefFoundError e) {
-                                        LOG.info("coulds not load " + className);
+                                        LOG.debug("could not load " + className);
                                     }
                                     if (sequenceClass != null) {
                                         genericClass = new GenericClass(sequenceClass);
@@ -231,21 +231,21 @@ public class ModelSeedingHelper {
                                             GenericMethod genericMethod = new GenericMethod(target, sequenceClass);
                                             try {
                                                 TestFactory.getInstance().addMethod(newTestCase, genericMethod, newTestCase.size(), 0);
-                                                LOG.info("method call {} is added", genericMethod.getName());
+                                                LOG.debug("method call {} is added", genericMethod.getName());
                                             } catch (Exception e) {
-                                                LOG.info("Error in addidng " + genericMethod.getName() + "  " + e.getMessage());
+                                                LOG.debug("Error in addidng " + genericMethod.getName() + "  " + e.getMessage());
                                             }
                                         } else if (targetC != null) {
                                             GenericConstructor genericConstructor = new GenericConstructor(targetC, sequenceClass);
                                             try {
                                                 TestFactory.getInstance().addConstructor(newTestCase, genericConstructor, newTestCase.size(), 0);
-                                                LOG.info("constructor {} is added", genericConstructor.getName());
+                                                LOG.debug("constructor {} is added", genericConstructor.getName());
                                             } catch (Exception e) {
-                                                LOG.info("Error in addidng " + genericConstructor.getName() + "  " + e.getMessage());
+                                                LOG.debug("Error in addidng " + genericConstructor.getName() + "  " + e.getMessage());
                                             }
 
                                         } else {
-                                            LOG.error("Fail to add the call to add!");
+                                            LOG.debug("Fail to add the call to add!");
                                         }
                                     }
                                 }
@@ -254,14 +254,13 @@ public class ModelSeedingHelper {
 
                             // Add test case to pool
                             if (genericClass != null){
+                                LOG.debug("New test case added for class {}",genericClass.getClassName());
                                 objectPool.addSequence(genericClass,newTestCase);
-//                                LOG.info("new test is:");
-//                                LOG.info(newTestCase.toCode());
                             }
 
                         }
                     }catch (Exception e) {
-                        LOG.error("Could not load model " + file.getName());
+                        LOG.debug("Could not load model " + file.getName());
                     }
                 }
             }

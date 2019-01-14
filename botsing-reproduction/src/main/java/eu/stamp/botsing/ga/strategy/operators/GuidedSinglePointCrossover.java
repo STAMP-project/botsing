@@ -27,7 +27,7 @@ public class GuidedSinglePointCrossover extends CrossOverFunction {
 
         try{
             singlePointCrossover(parent1, parent2);
-        } catch (ConstructionFailedException e){
+        } catch (ConstructionFailedException | Error e){
             LOG.debug("construction failed when doing crossover!");
         } catch (Exception e) {
             LOG.warn("Exception during the crossover!");

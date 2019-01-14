@@ -62,10 +62,6 @@ public class Botsing {
             setupStackTrace(crashProperties, commands);
             setupProjectClasspath(crashProperties, commands);
             if(commands.hasOption(MODEL_PATH_OPT)){
-                if(!commands.hasOption(PROJECT_PACKAGE)){
-                    LOG.error(" {} is a mandatory option for model seeding", PROJECT_PACKAGE);
-                    printHelpMessage(options);
-                }
                 setupModelSeedingRelatedProperties(commands);
             }
             return CrashReproduction.execute();
@@ -77,8 +73,6 @@ public class Botsing {
     private void setupModelSeedingRelatedProperties( CommandLine commands) {
         String modelPath = commands.getOptionValue(MODEL_PATH_OPT);
         CrashProperties.getInstance().MODEL_PATH = modelPath;
-        String projectPackage = commands.getOptionValue(PROJECT_PACKAGE);
-        CrashProperties.getInstance().PROJECT_PACKAGE = projectPackage;
     }
 
     protected CommandLine parseCommands(String[] args, Options options){

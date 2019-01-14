@@ -127,7 +127,7 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 //					else {
 //						assert (false) : "Found test call that is neither method nor constructor";
 //					}
-                } catch (ConstructionFailedException e) {
+                } catch (ConstructionFailedException | Error e) {
                     if (injecting) {
                         prob = 1 / (length - test.size() + 1);
                     }
