@@ -255,7 +255,14 @@ public class ModelSeedingHelper {
                             // Add test case to pool
                             if (genericClass != null){
                                 LOG.debug("New test case added for class {}",genericClass.getClassName());
-                                objectPool.addSequence(genericClass,newTestCase);
+                                try{
+                                    String testCode = newTestCase.toCode();
+                                    LOG.debug("Add the following tests case to the object pool of class {}: {}",genericClass.getClassName(),testCode);
+                                    objectPool.addSequence(genericClass,newTestCase);
+                                }catch (Exception e){
+                                    LOG.debug("The generated test case is not valid.");
+                                }
+
                             }
 
                         }
