@@ -90,8 +90,6 @@ public class CrashProperties {
     @Properties.Parameter(key = "model_path", group = "SUT Modelling", description = "path of the directory which contains SUT models")
     public static String MODEL_PATH = null;
 
-    @Properties.Parameter(key = "project_package", group = "SUT Modelling", description = "project package name")
-    public static String PROJECT_PACKAGE = null;
 
 
     /**
@@ -198,9 +196,6 @@ public class CrashProperties {
         projectClassPaths = projectClassPath;
     }
 
-    public String getProjectPackageName() {
-        return PROJECT_PACKAGE;
-    }
 
     public String[] getProjectClassPaths() {
         return projectClassPaths;
