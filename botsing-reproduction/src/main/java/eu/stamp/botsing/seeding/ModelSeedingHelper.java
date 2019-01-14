@@ -86,7 +86,7 @@ public class ModelSeedingHelper {
                     LOG.info("working on model of " + xmlClassName);
                     try {
                         UsageModel um = Xml.loadUsageModel(Paths.get(folder.getAbsolutePath(), file.getName()).toString());
-                        TestSet ts = Dissimilar.from(um).withGlobalMaxDistance(Dissimilar.jaccard()).during(2000).generate(Properties.POPULATION);
+                        TestSet ts = Dissimilar.from(um).withGlobalMaxDistance(Dissimilar.jaccard()).during(5000).generate(Properties.POPULATION);
                         for (be.vibes.ts.TestCase abstractTestCase : ts) {
                             TestCase newTestCase = new DefaultTestCase();
                             GenericClass genericClass = null;
