@@ -70,7 +70,16 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
 
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
-        initializePopulation();
+        Boolean initilized = false;
+        while (!initilized){
+            try {
+                initializePopulation();
+                initilized=true;
+            }catch (Exception |Error e){
+                LOG.warn("Botsing was unsuccessful in generating the initial population. cause: {}",e.getMessage());
+            }
+        }
+
 
         int starvationCounter = 0;
         double bestFitness = getBestFitness();
@@ -83,8 +92,18 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
         int generationCounter = 1;
         while (!isFinished()){
             // Create next generation
-            evolve();
-            sortPopulation();
+            Boolean newGen = false;
+            while (!newGen){
+                try{
+                    evolve();
+                    sortPopulation();
+                    newGen=true;
+                }catch (Error | Exception e){
+                    LOG.warn("Botsing was unsuccessful in generating new generation. cause: {}",e.getMessage());
+                }
+            }
+
+
             generationCounter++;
             bestFitness = getBestFitness();
             LOG.info("Best fitness in the current population: {} | {}", bestFitness,Properties.POPULATION *generationCounter);
