@@ -12,6 +12,7 @@
 
 # Package Files #
 *.jar
+!evosuite-client-botsing-*.jar
 !*projectA*.jar
 *.war
 *.nar
