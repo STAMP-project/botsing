@@ -24,7 +24,11 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.Properties;
 import org.evosuite.ga.ConstructionFailedException;
+import org.evosuite.rmi.ClientServices;
+import org.evosuite.rmi.service.ClientNodeLocal;
 import org.evosuite.setup.TestCluster;
+import org.evosuite.statistics.RuntimeVariable;
+import org.evosuite.testcarver.extraction.CarvingManager;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFactory;
@@ -42,6 +46,7 @@ import java.util.*;
 public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFactory {
     private static final Logger LOG = LoggerFactory.getLogger(RootMethodTestChromosomeFactory.class);
     private GuidedSearchUtility utility;
+
     private static Set<GenericAccessibleObject<?>> publicParentCalls = new HashSet<GenericAccessibleObject<?>>();
     private static Set<GenericAccessibleObject<?>> attemptedPublicParents = new HashSet<GenericAccessibleObject<?>>();
 
@@ -57,15 +62,45 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 
     @Override
     public TestChromosome getChromosome() {
-        TestChromosome c = new TestChromosome();
+        TestChromosome chromosome = new TestChromosome();
+        if(Properties.CARVE_OBJECT_POOL && Properties.SELECTED_JUNIT != null){
+            CarvingManager manager = CarvingManager.getInstance();
+            final Class<?> targetClass = Properties.getTargetClassAndDontInitialise();
+            List<TestCase> junitTests = manager.getTestsForClass(targetClass);
+//            if (junitTests.size() > 0) {
+//                LOG.info("* Using {} carved tests from existing JUnit tests for seeding", junitTests.size());
+//            }
+            ClientNodeLocal client = ClientServices.getInstance().getClientNode();
+            client.trackOutputVariable(RuntimeVariable.CarvedTests, junitTests.size());
+            client.trackOutputVariable(RuntimeVariable.CarvedCoverage,0.0);
+
+            final int N_mutations = Properties.SEED_MUTATIONS;
+            final double P_clone = Properties.SEED_CLONE;
+            double r = Randomness.nextDouble();
+
+            if (junitTests.size() > 0 && r <= P_clone){
+                LOG.info("Cloning user test");
+                TestCase test = Randomness.choice(junitTests);
+                chromosome.setTestCase(test.clone());
+                if (N_mutations > 0) {
+                    int numMutations = Randomness.nextInt(N_mutations);
+                    logger.debug("Mutations: " + numMutations);
+                    // doing the mutations on the cloned test case
+                    for (int i = 0; i < numMutations; i++) {
+                        chromosome.mutate();
+                    }
+                }
+                return chromosome;
+            }
+        }
         try {
-            c.setTestCase(getRandomTestCase(CrashProperties.getInstance().getIntValue("chromosome_length")));
+            chromosome.setTestCase(getRandomTestCase(CrashProperties.getInstance().getIntValue("chromosome_length")));
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (Properties.NoSuchParameterException e) {
             e.printStackTrace();
         }
-        return c;
+        return chromosome;
     }
 
     private TestCase getRandomTestCase(int size) {
