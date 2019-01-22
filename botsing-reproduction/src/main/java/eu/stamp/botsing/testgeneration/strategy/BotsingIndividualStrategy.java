@@ -83,11 +83,11 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         ga.addFitnessFunction(ff);
 
         // prepare model seeding before generating the solution
-        if(CrashProperties.getInstance().MODEL_PATH != null){
-            ModelSeedingHelper modelSeedingHelper = new ModelSeedingHelper(CrashProperties.getInstance().MODEL_PATH);
+        if(Properties.MODEL_PATH != null){
+            ModelSeedingHelper modelSeedingHelper = new ModelSeedingHelper(Properties.MODEL_PATH);
             ObjectPool pool = modelSeedingHelper.generatePool();
             ObjectPoolManager.getInstance().addPool(pool);
-
+            Properties.ALLOW_OBJECT_POOL_USAGE=true;
         }
         ga.generateSolution();
 
