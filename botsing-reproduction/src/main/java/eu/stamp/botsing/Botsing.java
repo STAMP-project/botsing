@@ -26,6 +26,7 @@ import static eu.stamp.botsing.CommandLineParameters.*;
 
 import org.apache.commons.cli.*;
 import org.evosuite.Properties;
+import org.evosuite.TestGenerationContext;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.junit.writer.TestSuiteWriterUtils;
@@ -71,8 +72,17 @@ public class Botsing {
     }
 
     private void setupModelSeedingRelatedProperties( CommandLine commands) {
+        for (StackTraceElement ste: CrashProperties.getInstance().getStackTrace().getAllFrames()){
+            try {
+                Class.forName(ste.getClassName(), true,
+                        TestGenerationContext.getInstance().getClassLoaderForSUT());
+            } catch (Exception| Error e) {
+                e.printStackTrace();
+            }
+        }
+
         String modelPath = commands.getOptionValue(MODEL_PATH_OPT);
-        CrashProperties.getInstance().MODEL_PATH = modelPath;
+        Properties.MODEL_PATH = modelPath;
     }
 
     protected CommandLine parseCommands(String[] args, Options options){
