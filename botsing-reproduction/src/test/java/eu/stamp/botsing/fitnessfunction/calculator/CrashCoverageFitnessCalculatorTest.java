@@ -76,7 +76,7 @@ public class CrashCoverageFitnessCalculatorTest {
         trace[1] = new StackTraceElement("eu.stamp.ClassB", "method1", "ClassB", 21);
 
         double distance = calculator.calculateFrameSimilarity(trace, target);
-        assertEquals(1.0 / 3.0, distance, 0.000001);
+        assertEquals(0.25, distance, 0.000001);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class CrashCoverageFitnessCalculatorTest {
         StackTraceElement target = new StackTraceElement("eu.stamp.ClassB", "method2", "ClassA", 10);
 
         double distance = calculator.getFrameDistance(generated, target);
-        assertEquals(3.0, distance, 0.000001);
+        assertEquals(0.75, distance, 0.000001);
     }
 
     @Test
@@ -124,7 +124,7 @@ public class CrashCoverageFitnessCalculatorTest {
         StackTraceElement target = new StackTraceElement("eu.stamp.ClassA", "method1", "ClassA", 10);
 
         double distance = calculator.getFrameDistance(generated, target);
-        assertEquals(2.0, distance, 0.000001);
+        assertEquals(2.0 / 3.0, distance, 0.000001);
     }
 
     @Test(expected = java.lang.IllegalArgumentException.class)
