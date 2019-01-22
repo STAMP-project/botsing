@@ -53,7 +53,6 @@ public class CrashCoverageFitnessCalculator {
         String methodName = derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getMethodName(), targetFrame.getLineNumber());
         List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
         double lineCoverageFitness = 1.0;
-        Set<Integer> list = result.getTrace().getCoveredLines();
         if (result.getTrace().getCoveredLines().contains(lineNumber)) {
             lineCoverageFitness = 0.0;
         } else {
@@ -95,7 +94,7 @@ public class CrashCoverageFitnessCalculator {
 
         int numberOfFrames = targetTrace.getNumberOfFrames();
         for (int frame_level=1;frame_level<=numberOfFrames;frame_level++){
-            if (!targetTrace.getFrame(frame_level).getClassName().contains("reflect") || !targetTrace.getFrame(frame_level).getClassName().contains("invoke")){
+            if (!targetTrace.getFrame(frame_level).getClassName().contains("reflect") && !targetTrace.getFrame(frame_level).getClassName().contains("invoke")){
                 // Check the selected frame from target stack trace on The generated stack trace frames
                 StackTraceElement selectedFrame = targetTrace.getFrame(frame_level);
                 double minDistance=1;
@@ -116,15 +115,22 @@ public class CrashCoverageFitnessCalculator {
     }
 
     public double getFrameDistance(StackTraceElement targetFrame, StackTraceElement generatedFrame){
-
-        if (!targetFrame.getClassName().equals(generatedFrame.getClassName())){
-            return 3.0;
+        String className =targetFrame.getClassName();
+        if(className.contains("$") & !className.equals(generatedFrame.getClassName())){
+            className = targetFrame.getClassName().split("\\$")[0];
         }
+        double elementDistance;
 
-        if (!targetFrame.getMethodName().equals(generatedFrame.getMethodName())) {
-            return 2.0;
-        }
-        return normalize(Math.abs(targetFrame.getLineNumber() - generatedFrame.getLineNumber()));
+        if (!className.equals(generatedFrame.getClassName())){
+            elementDistance = 3.0;
+        }else if (!targetFrame.getMethodName().equals(generatedFrame.getMethodName())) {
+            elementDistance = 2.0;
+        }else{
+            elementDistance = normalize(Math.abs(targetFrame.getLineNumber() - generatedFrame.getLineNumber()));
+            }
+
+        return normalize(elementDistance);
+
 
     }
 
