@@ -47,7 +47,7 @@ public class ModelSeedingHelper {
         for(StackTraceElement frame : crash.getAllFrames()){
             if(!seedingClasses.contains(frame.getClassName())) {
                 seedingClasses.add(frame.getClassName());
-                getAccessedClasses(frame.getClassName());
+//                getAccessedClasses(frame.getClassName());
             }
         }
     }
