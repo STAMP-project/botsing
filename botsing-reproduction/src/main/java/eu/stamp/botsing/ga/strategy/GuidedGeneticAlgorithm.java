@@ -204,7 +204,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
     protected List<T>  elitism() {
         List<T> elite = new ArrayList<T>();
         LOG.debug("Cloning the best individuals to next generation");
-        for (int i = 0; i < this.eliteSize; i++) {
+        for (int i = 0; i < eliteSize; i++) {
             elite.add(population.get(i));
         }
         return elite;
@@ -236,7 +236,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
         }
     }
 
-    private void calculateFitness() {
+    protected void calculateFitness() {
         LOG.debug("Calculating fitness for " + population.size() + " individuals");
         Iterator<T> iterator = population.iterator();
         while (iterator.hasNext()) {
@@ -251,7 +251,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
         }
     }
 
-    private void calculateFitness(T chromosome){
+    protected void calculateFitness(T chromosome){
         for (FitnessFunction<T> fitnessFunction : fitnessFunctions) {
             notifyEvaluation(chromosome);
             double value = fitnessFunction.getFitness(chromosome);
