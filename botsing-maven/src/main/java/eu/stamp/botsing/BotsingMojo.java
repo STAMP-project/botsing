@@ -71,14 +71,13 @@ public class BotsingMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException {
         getLog().info("Starting Botsing to generate tests with EvoSuite");
-
         Botsing botsing = new Botsing();
         List<String> propertiesList = new ArrayList<String>();
 
-        propertiesList.add(CommandLineParameters.CRASH_LOG_OPT);
+        propertiesList.add("-"+CommandLineParameters.CRASH_LOG_OPT);
         propertiesList.add(crashLog);
 
-        propertiesList.add(CommandLineParameters.TARGET_FRAME_OPT);
+        propertiesList.add("-"+CommandLineParameters.TARGET_FRAME_OPT);
         propertiesList.add(targetFrame.toString());
 
         String dependencies = null;
@@ -89,7 +88,7 @@ public class BotsingMojo extends AbstractMojo {
         }
 
         getLog().debug("dependencies: " + dependencies);
-        propertiesList.add(CommandLineParameters.PROJECT_CP_OPT);
+        propertiesList.add("-"+CommandLineParameters.PROJECT_CP_OPT);
         propertiesList.add(dependencies);
 
         try {
