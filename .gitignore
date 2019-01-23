@@ -30,6 +30,7 @@ hs_err_pid*
 .Rapp.history
 
 # Maven
+dependency-reduced-pom.xml
 target/
 
 # OS generated files #
