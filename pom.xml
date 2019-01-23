@@ -4,7 +4,7 @@
 
     <groupId>eu.stamp-project</groupId>
     <artifactId>botsing</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Botsing</name>
@@ -46,7 +46,7 @@
         <connection>scm:git:git://github.com:STAMP-project/botsing.git</connection>
         <developerConnection>scm:git:git@github.com:STAMP-project/botsing.git</developerConnection>
         <url>https://github.com/STAMP-project/botsing</url>
-        <tag>botsing-1.0.2</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
