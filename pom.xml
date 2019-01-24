@@ -361,6 +361,7 @@
                                             <exclude>org.apache.tools.ant.taskdefs.optional.junit.JUnitResultFormatter</exclude>
                                             <exclude>org.apache.tools.ant.taskdefs.optional.junit.JUnitTest</exclude>
                                             <exclude>org.apache.tools.ant.BuildException</exclude>
+                                            <exclude>org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor</exclude>
                                         </excludes>
                                     </relocation>
                                     <relocation>
