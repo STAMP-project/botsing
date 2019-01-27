@@ -87,89 +87,10 @@ public class ModelSeedingHelper {
                     try {
                         UsageModel um = Xml.loadUsageModel(Paths.get(folder.getAbsolutePath(), file.getName()).toString());
                         TestSet ts = Dissimilar.from(um).withGlobalMaxDistance(Dissimilar.jaccard()).during(5000).generate(Properties.POPULATION);
+                        HashSet<String> alreadyConcretized = new HashSet<>();
                         for (be.vibes.ts.TestCase abstractTestCase : ts) {
                             TestCase newTestCase = new DefaultTestCase();
                             GenericClass genericClass = null;
-                            boolean addConstructor = true;
-                            for (Transition transition : abstractTestCase) {
-                                Action sequence = transition.getAction();
-                                if (sequence.getName().indexOf(".") != -1) {
-                                    // Class name:
-                                    String className = sequence.getName().substring(0, sequence.getName().indexOf("("));
-                                    className = className.substring(0, className.lastIndexOf('.'));
-                                    // Method name:
-                                    String methodName = StringUtils.substringAfterLast(sequence.getName().substring(0, sequence.getName().indexOf("(")), ".");
-                                    String paramString = sequence.getName().substring(sequence.getName().indexOf("(") + 1);
-
-                                    if (methodName.equals("<init>")) {
-                                        addConstructor = false;
-                                        break;
-                                    }
-
-                                    Method target = null;
-                                    Class<?> sequenceClass = null;
-                                    try {
-                                        sequenceClass = Class.forName(className, true, TestGenerationContext.getInstance().getClassLoaderForSUT());
-                                    } catch (ClassNotFoundException | ExceptionInInitializerError | NoClassDefFoundError e) {
-                                        LOG.debug("could not load " + className);
-                                    }
-                                    if (sequenceClass != null) {
-                                        Set<Method> methods = TestClusterUtils.getMethods(sequenceClass);
-                                        for (Method m : methods) {
-                                            if (m.getName().equals(methodName)) {
-                                                target = m;
-                                                break;
-                                            } else {
-                                                target = null;
-                                            }
-                                        }
-
-                                        if (target != null) {
-                                            GenericMethod genericMethod = new GenericMethod(target, sequenceClass);
-                                            if (!genericMethod.isStatic()) {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-
-                            }
-
-
-                            if (addConstructor) {
-                                Transition transition = abstractTestCase.getFirst();
-                                Action sequence = transition.getAction();
-                                String className = sequence.getName().substring(0, sequence.getName().indexOf("("));
-                                className = className.substring(0, className.lastIndexOf('.'));
-                                Class<?> sequenceClass = null;
-                                try {
-                                    sequenceClass = Class.forName(className, true, TestGenerationContext.getInstance().getClassLoaderForSUT());
-                                } catch (ClassNotFoundException | ExceptionInInitializerError | NoClassDefFoundError e) {
-                                    LOG.debug("could not load " + className);
-                                }
-                                if (sequenceClass != null) {
-                                    Set<Constructor<?>> constructors = TestClusterUtils.getConstructors(sequenceClass);
-                                    int i = 0;
-                                    int chosenConstructorIndex = new Random().nextInt(constructors.size());
-                                    Constructor<?> chosenConstructor = null;
-                                    for (Constructor<?> c : constructors) {
-                                        if (i == chosenConstructorIndex) {
-                                            chosenConstructor = c;
-                                            break;
-                                        }
-                                        i++;
-                                    }
-                                    GenericConstructor genericConstructor = new GenericConstructor(chosenConstructor, sequenceClass);
-                                    try {
-                                        TestFactory.getInstance().addConstructor(newTestCase, genericConstructor, newTestCase.size(), 0);
-                                        LOG.debug("constructor {} is added", genericConstructor.getName());
-                                    } catch (Exception e) {
-                                        LOG.debug("Error in addidng " + genericConstructor.getName() + "  " + e.getMessage());
-                                    }
-                                }
-                            }
-
-
                             for (Transition transition : abstractTestCase) {
                                 Action sequence = transition.getAction();
                                 if (sequence.getName().indexOf(".") != -1) {
@@ -258,7 +179,10 @@ public class ModelSeedingHelper {
                                 try{
                                     String testCode = newTestCase.toCode();
                                     LOG.debug("Add the following tests case to the object pool of class {}: {}",genericClass.getClassName(),testCode);
-                                    objectPool.addSequence(genericClass,newTestCase);
+                                    if(!alreadyConcretized.contains(testCode)) {
+                                        objectPool.addSequence(genericClass, newTestCase);
+                                        alreadyConcretized.add(testCode);
+                                    }
                                 }catch (Exception e){
                                     LOG.debug("The generated test case is not valid.");
                                 }
