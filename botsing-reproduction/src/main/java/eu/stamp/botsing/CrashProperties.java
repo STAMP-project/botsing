@@ -31,6 +31,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 public class CrashProperties {
@@ -117,7 +119,10 @@ public class CrashProperties {
 
     private void loadConfig() {
         try {
-            InputStream inputstream = getClass().getClassLoader().getResourceAsStream("config.properties");
+            String user_dir = System.getProperty("user.dir");
+            Path configDir = Paths.get(user_dir, "src","main","java","eu","stamp","botsing","config.properties");
+//            InputStream inputstream = getClass().getClassLoader().getResourceAsStream(configDir.toString());
+            InputStream inputstream = new FileInputStream(configDir.toString());
             configFile.load(inputstream);
         } catch (FileNotFoundException eta) {
             LOG.error("Default config.properties file not found in the resources of the jar file!");
