@@ -6,8 +6,11 @@
 
 Botsing is a Java framework for crash reproduction. It relies on [EvoSuite](http://www.evosuite.org) for code instrumentation.
 
-
 ## Usage
+
+### From Maven
+
+See the [documentation for the Maven Plugin](https://github.com/STAMP-project/botsing/tree/master/botsing-maven).
 
 ### Command line interface
 
