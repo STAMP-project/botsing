@@ -142,9 +142,10 @@ public class CrashCoverageFitnessCalculator {
         if(goalInstruction == null){
             return branchCoverages;
         }
-
+        // get control dependencies of the target node
         Set<ControlDependency> deps = goalInstruction.getControlDependencies();
 
+        // Add control dependencies for calculating branch distances + approach level
         for (ControlDependency cd : deps) {
             BranchCoverageTestFitness singlefitness = BranchCoverageFactory.createBranchCoverageTestFitness(cd);
             branchCoverages.add(singlefitness);
