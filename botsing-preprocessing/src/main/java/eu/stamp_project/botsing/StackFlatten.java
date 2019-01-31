@@ -6,7 +6,7 @@ import java.util.List;
 
 public class StackFlatten implements STProcessor {
 	private static final String MORE = " more";
-	static final String CAUSED_BY_PREFIX = "Caused by: ";
+	protected static final String CAUSED_BY_PREFIX = "Caused by: ";
 
 	private static StackFlatten instance = new StackFlatten();
 	public static StackFlatten get() {

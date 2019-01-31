@@ -27,13 +27,15 @@ public class Main {
 		// define options
 		Option flatten = new Option("f", "flatten", false, "use this option to flatten the stack trace");
 		Option error = new Option("e", "error_message", false, "use this option to remove the error message");
-		Option annotations = new Option("a", "annotations", false, "UNSUPPORTED: use this option to remove the frames related to annotations");
+		Option annotations = new Option("a", "annotations", false, "use this option to remove the frames related to annotations");
 		flatten.setType(Boolean.class);
 		Option crash_log = new Option("l", "crash_log", true, "path to the input stack trace");
 		Option output_log = new Option("o", "output_log", true, "path to the output stack trace after processing");
+		Option source = new Option("s", "source", true, "path to the source ZIP");
 		opt.addOption(flatten);
 		opt.addOption(crash_log);
 		opt.addOption(output_log);
+		opt.addOption(source);
 		opt.addOption(error);
 		opt.addOption(annotations);
 		return opt;
@@ -53,8 +55,10 @@ public class Main {
 			boolean a = cli.hasOption('a');
 			String input = cli.getOptionValue('l');
 			String output = cli.getOptionValue('o');
-			preprocess(f, a, e, input, output);
+			String source = cli.getOptionValue('s');
+			preprocess(f, a, e, input, output, source);
 		} catch (ParseException e) {
+			System.out.println(e.getMessage());
 			System.out.println("wrong arguments. Available options are:");
 			System.out.println(options.toString());
 			System.exit(1);
@@ -68,12 +72,16 @@ public class Main {
 	 * Performs the pre-processing on the stack trace based on the options
 	 * @param flatten
 	 * 			if true, a chained stack trace is flattened
+	 * @param annotations
+	 * 			if true, remove annotations
+	 * @param error
+	 * 			if true, remove the error message
 	 * @param input
 	 * 			input file path
 	 * @param output
 	 *          output file path
 	 */
-	public static void preprocess(boolean flatten, boolean annotations, boolean eroror, String input, String output) throws FileNotFoundException {
+	public static void preprocess(boolean flatten, boolean annotations, boolean error, String input, String output, String source) throws FileNotFoundException {
 		File inputFile = new File(input);
 		if (!inputFile.exists()) {
 			throw new FileNotFoundException("Input file does not exist! Exiting...");
@@ -86,11 +94,15 @@ public class Main {
 		if (flatten) {
 			lines = StackFlatten.get().preprocess(lines);
 		}
-		if (eroror) {
+		if (error) {
 			lines = ErrorMessage.get().preprocess(lines);
 		}
 		if (annotations) {
-			;
+			File sourceFile = new File(source);
+			if (!sourceFile.exists()) {
+				throw new FileNotFoundException("Zip source file does not exist! Exiting...");
+			}
+			lines = AnnotationMessage.get(source).preprocess(lines);
 		}
 		linesToFile(lines, outFile);
 	}
