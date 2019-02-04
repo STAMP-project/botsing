@@ -33,6 +33,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 
 public class CrashProperties {
@@ -42,6 +43,7 @@ public class CrashProperties {
     private static CrashProperties instance = null;
     private StackTrace crash = new StackTrace();
     private String[] projectClassPaths;
+
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
@@ -95,6 +97,10 @@ public class CrashProperties {
      */
     @Parameter(key = "max_target_injection_tries", group = "Runtime", description = "The maximum number of times the search tries to generate an individuals with the target method.")
     public static int max_target_injection_tries = 150;
+
+
+    @Parameter(key = "integration_testing", group = "Crash reproduction", description = "Use integration testing for reproduce the crash.")
+    public static boolean integrationTesting = false;
 
     static java.util.Properties configFile = new java.util.Properties();
 
@@ -223,5 +229,9 @@ public class CrashProperties {
         crash = new StackTrace();
     }
 
+
+    public List<String> getTargetClasses() {
+        return crash.getTargetClasses();
+    }
 
 }
