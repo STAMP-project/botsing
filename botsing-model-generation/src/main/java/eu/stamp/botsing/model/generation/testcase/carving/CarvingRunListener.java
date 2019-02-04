@@ -1,7 +1,7 @@
 package eu.stamp.botsing.model.generation.testcase.carving;
 
-import eu.stamp.botsing.model.generation.BotsingTestGenerationContext;
-import eu.stamp.botsing.model.generation.instrumentation.BotsingBytecodeInstrumentation;
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
+import eu.stamp.botsing.commons.instrumentation.BotsingBytecodeInstrumentation;
 import eu.stamp.botsing.model.generation.testusage.TestUsagePoolManager;
 import org.evosuite.Properties;
 import org.evosuite.testcarver.capture.CaptureLog;

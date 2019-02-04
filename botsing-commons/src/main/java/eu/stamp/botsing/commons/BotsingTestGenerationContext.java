@@ -1,6 +1,6 @@
-package eu.stamp.botsing.model.generation;
+package eu.stamp.botsing.commons;
 
-import eu.stamp.botsing.model.generation.instrumentation.InstrumentingClassLoader;
+import eu.stamp.botsing.commons.instrumentation.InstrumentingClassLoader;
 
 
 public class BotsingTestGenerationContext {
