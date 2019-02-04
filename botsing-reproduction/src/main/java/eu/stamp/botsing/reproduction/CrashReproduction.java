@@ -163,8 +163,6 @@ public class CrashReproduction {
 //        BotsingControlFlowGraph bcfg = new BotsingControlFlowGraph();
 //        GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerRawCFG(bcfg);
 
-        System.exit(1);
-
     }
 
     private static void postProcessTests(TestSuiteChromosome testSuite) {

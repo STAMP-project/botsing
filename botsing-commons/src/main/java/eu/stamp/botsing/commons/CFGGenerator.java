@@ -1,13 +1,9 @@
 package eu.stamp.botsing.commons;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 import org.evosuite.graphs.GraphPool;
-import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
-import org.evosuite.testcase.statements.Statement;
-import org.evosuite.testcase.statements.numeric.BooleanPrimitiveStatement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
