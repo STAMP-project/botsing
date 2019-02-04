@@ -62,6 +62,11 @@ public class Botsing {
             updateProperties(properties);
             setupStackTrace(crashProperties, commands);
             setupProjectClasspath(crashProperties, commands);
+
+            if(commands.hasOption(INTEGRATION_TESTING)){
+                crashProperties.integrationTesting = true;
+            }
+
             if(commands.hasOption(MODEL_PATH_OPT)){
                 setupModelSeedingRelatedProperties(commands);
             }
