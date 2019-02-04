@@ -102,7 +102,7 @@ public class CrashReproduction {
 
         // In the first step initialize the target class
         try{
-            analyzeClassPaths();
+//            analyzeClassPaths();
             if(CrashProperties.integrationTesting){
                 initializeMultipleTargetClasses();
             }else{
@@ -202,9 +202,8 @@ public class CrashReproduction {
     }
 
 
-    private static void initializeTargetClass() {
-
-
+    private static void initializeTargetClass() throws ClassNotFoundException {
+        String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
         DefaultTestCase test = generateTestForLoadingClass(CrashProperties.getInstance().getStackTrace().getTargetClass());
 
         // execute the test contains the target class
@@ -223,6 +222,10 @@ public class CrashReproduction {
                 throwable.printStackTrace();
             }
         }
+        List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
+        LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
+        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+        LOG.info("Analysing dependencies done!");
     }
     private static ExceptionInInitializerError getInitializerError(ExecutionResult execResult) {
         for (Throwable t : execResult.getAllThrownExceptions()) {
