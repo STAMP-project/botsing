@@ -158,6 +158,11 @@ public class CrashReproduction {
             LOG.info("CFG {} is: {}",cfg.getClassName(),cfg.toString());
         }
 
+        // Build our own graph with BotsingControlFlowGraph and pass it to the GraphPool
+
+//        BotsingControlFlowGraph bcfg = new BotsingControlFlowGraph();
+//        GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerRawCFG(bcfg);
+
         System.exit(1);
 
     }
