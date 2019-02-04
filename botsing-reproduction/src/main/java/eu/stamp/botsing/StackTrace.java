@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.StringTokenizer;
 
 public class StackTrace {
@@ -154,5 +155,14 @@ public class StackTrace {
         File file = new File(filePath);
         BufferedReader br = new BufferedReader(new FileReader(file));
         return br;
+    }
+
+    public List<String> getTargetClasses() {
+        List<String> classes = new ArrayList<>();
+        for(StackTraceElement frame: allFrames){
+            classes.add(frame.getClassName());
+            LOG.info(frame.getClassName());
+        }
+        return classes;
     }
 }

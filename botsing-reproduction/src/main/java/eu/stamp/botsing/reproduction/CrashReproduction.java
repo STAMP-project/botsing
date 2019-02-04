@@ -26,6 +26,7 @@ import org.evosuite.TimeController;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.contracts.FailingTestSet;
 import org.evosuite.coverage.TestFitnessFactory;
+import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.evosuite.junit.JUnitAnalyzer;
 import org.evosuite.junit.writer.TestSuiteWriter;
 import org.evosuite.result.TestGenerationResult;
@@ -56,6 +57,7 @@ import org.evosuite.testsuite.TestSuiteMinimizer;
 import org.evosuite.utils.generic.GenericMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import eu.stamp.botsing.commons.CFGGenerator;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -100,7 +102,12 @@ public class CrashReproduction {
 
         // In the first step initialize the target class
         try{
-            initializeTargetClass();
+            analyzeClassPaths();
+            if(CrashProperties.integrationTesting){
+                initializeMultipleTargetClasses();
+            }else{
+                initializeTargetClass();
+            }
         }catch (Exception e){
             LOG.error("Error in target initialization:");
             e.printStackTrace();
@@ -132,6 +139,26 @@ public class CrashReproduction {
         LOG.info("The solution test is saved!");
 
         return writingTest;
+
+    }
+
+    private static void analyzeClassPaths() throws ClassNotFoundException{
+        String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
+        List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
+        LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
+        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+        LOG.info("Analysing dependencies done!");
+    }
+
+    private static void initializeMultipleTargetClasses() {
+        CFGGenerator cfgGenerator = new CFGGenerator();
+        List<String> targetClasses = CrashProperties.getInstance().getTargetClasses();
+        cfgGenerator.generateCFGS(targetClasses);
+        for(RawControlFlowGraph cfg: cfgGenerator.getCfgs()){
+            LOG.info("CFG {} is: {}",cfg.getClassName(),cfg.toString());
+        }
+
+        System.exit(1);
 
     }
 
@@ -175,8 +202,9 @@ public class CrashReproduction {
     }
 
 
-    private static void initializeTargetClass() throws ClassNotFoundException {
-        String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
+    private static void initializeTargetClass() {
+
+
         DefaultTestCase test = generateTestForLoadingClass(CrashProperties.getInstance().getStackTrace().getTargetClass());
 
         // execute the test contains the target class
@@ -195,10 +223,6 @@ public class CrashReproduction {
                 throwable.printStackTrace();
             }
         }
-        List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
-        LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
-        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
-        LOG.info("Analysing dependencies done!");
     }
     private static ExceptionInInitializerError getInitializerError(ExecutionResult execResult) {
         for (Throwable t : execResult.getAllThrownExceptions()) {
