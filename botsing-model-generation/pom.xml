@@ -52,6 +52,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>eu.stamp-project</groupId>
+            <artifactId>botsing-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 
