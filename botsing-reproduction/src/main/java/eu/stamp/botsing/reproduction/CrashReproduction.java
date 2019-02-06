@@ -21,12 +21,12 @@ package eu.stamp.botsing.reproduction;
  */
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.graphs.cfg.CFGGenerator;
 import org.evosuite.Properties;
 import org.evosuite.TimeController;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.contracts.FailingTestSet;
 import org.evosuite.coverage.TestFitnessFactory;
-import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.evosuite.junit.JUnitAnalyzer;
 import org.evosuite.junit.writer.TestSuiteWriter;
 import org.evosuite.result.TestGenerationResult;
@@ -57,7 +57,6 @@ import org.evosuite.testsuite.TestSuiteMinimizer;
 import org.evosuite.utils.generic.GenericMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import eu.stamp.botsing.commons.CFGGenerator;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -65,6 +64,7 @@ import java.util.*;
 
 public class CrashReproduction {
     private static final Logger LOG = LoggerFactory.getLogger(CrashReproduction.class);
+
 
     public static List<TestGenerationResult> execute(){
         CrashProperties crashProperties = CrashProperties.getInstance();
@@ -152,17 +152,7 @@ public class CrashReproduction {
 
     private static void initializeMultipleTargetClasses() {
         CFGGenerator cfgGenerator = new CFGGenerator();
-        List<String> targetClasses = CrashProperties.getInstance().getTargetClasses();
-        cfgGenerator.generateCFGS(targetClasses);
-        for(RawControlFlowGraph cfg: cfgGenerator.getCfgs()){
-            LOG.info("CFG {} is: {}",cfg.getClassName(),cfg.toString());
-        }
-
-        // Build our own graph with BotsingControlFlowGraph and pass it to the GraphPool
-
-//        BotsingControlFlowGraph bcfg = new BotsingControlFlowGraph();
-//        GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerRawCFG(bcfg);
-
+        cfgGenerator.generateInterProceduralCFG();
     }
 
     private static void postProcessTests(TestSuiteChromosome testSuite) {
