@@ -39,7 +39,6 @@ public class BotsingControlFlowGraph extends RawControlFlowGraph {
     }
 
     public void addInterProceduralEdge(BytecodeInstruction src, BytecodeInstruction target){
-        this.addVertex(target);
         this.addEdge(src,target,false);
     }
 }

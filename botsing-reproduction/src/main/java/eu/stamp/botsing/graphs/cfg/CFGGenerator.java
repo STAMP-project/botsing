@@ -1,11 +1,13 @@
 package eu.stamp.botsing.graphs.cfg;
 
+import com.google.common.collect.Lists;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
+import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +18,8 @@ public class CFGGenerator {
 
     ClassInstrumentation classInstrumenter = new ClassInstrumentation();
     private Map<String,List<RawControlFlowGraph>> cfgs = new HashMap<>();
-    private Map<String,List<RawControlFlowGraph>> interestingCFGs = new HashMap<>();
+    private List<FrameControlFlowGraph> frameCFGs =  new LinkedList<>();
+    private BotsingControlFlowGraph InterProceduralGraph;
 
     public void generateInterProceduralCFG() {
         List<String> interestingClasses = CrashProperties.getInstance().getTargetClasses();
@@ -47,47 +50,92 @@ public class CFGGenerator {
     }
 
     private void generateGraph(){
-        // Collect interesting method's cfgs.
-        // Start the loop from the higher frames to the deeper one:
-        //      - Find the target frame (Including checking the public/private target method)
-        //      - Get the target method's cfg, and find the BCinst that we should set as the new graph's source
-        //      - Get the target method of the one-level deeper cfg and set its entry point as the target of new edge.
-        //      - continue 2 last jobs for all of the frames
-        // [?] What should we do for the missing frames?
+        // Collect interesting method's cfgs
+        if(frameCFGs.size() != CrashProperties.getInstance().getStackTrace().getNumberOfFrames()){
+            frameCFGs.clear();
+            CollectInterestingCFGs();
 
+            BytecodeInstruction src = null;
+            int cfgCounter = 0;
+            for(FrameControlFlowGraph fcfg: Lists.reverse(frameCFGs)){
 
-        int counter = 0;
-        for (Map.Entry<String, List<RawControlFlowGraph>> entry : cfgs.entrySet()) {
-            String className = entry.getKey();
-            List<RawControlFlowGraph> rcfgs = entry.getValue();
-            BotsingControlFlowGraph bcfg = null;
-            for(RawControlFlowGraph cfg: rcfgs){
-                if(counter == 0){
-                    LOG.info("CFG of class {}, method {} is: {}",cfg.getClassName(),cfg.getMethodName(),cfg.toString());
-                    bcfg = new BotsingControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),cfg.getClassName(),cfg.getMethodName(),cfg.getMethodAccess());
-                    bcfg.clone(cfg);
-                    LOG.info("BCFG: {}",bcfg.toString());
-                } else if (counter == 1 && bcfg != null){
-                    BytecodeInstruction target = cfg.determineEntryPoint();
-                    BytecodeInstruction src = null;
-//                    BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getFirstInstructionAtLineNumber()
-                    Set<BytecodeInstruction> exitPoints = bcfg.determineExitPoints();
-                    for (BytecodeInstruction ep: exitPoints){
-                        src = ep;
-                        break;
-                    }
-                    if (src != null) {
-                        bcfg.addInterProceduralEdge(src,target);
-                    }else{
-                        LOG.warn("SOURCE is empty");
-                    }
-                    LOG.info("BCFG2: {}",bcfg.toString());
+                LOG.info("Class: {}",fcfg.getRcfg().getClassName());
+                LOG.info("Method: {}",fcfg.getRcfg().getMethodName());
+                LOG.info("CFG: {}",fcfg.getRcfg().toString());
+                LOG.info("Linking point: {}",(fcfg.getExitingBCInst()==null)?"NULL":fcfg.getExitingBCInst().toString());
+                LOG.info("~~~~~~~~~~~~~~~~");
+
+                if(cfgCounter == 0){
+                    InterProceduralGraph = new BotsingControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"InterPro","multiple",fcfg.getRcfg().getMethodAccess());
+                    InterProceduralGraph.clone(fcfg.getRcfg());
+                }else if (src != null){
+                    BytecodeInstruction target = fcfg.getRcfg().determineEntryPoint();
+                    InterProceduralGraph.clone(fcfg.getRcfg());
+                    InterProceduralGraph.addInterProceduralEdge(src,target);
                 }
-                counter++;
+                src=fcfg.getExitingBCInst();
+                cfgCounter++;
             }
 
+            LOG.info("FINAL Result: {}",InterProceduralGraph.toString());
+
+
+        }
+
+        // TODO: Handling missing frames?
+
+    }
+
+    private void CollectInterestingCFGs() {
+        ArrayList<StackTraceElement> frames = CrashProperties.getInstance().getStackTrace().getAllFrames();
+        int targetFrameLevel = CrashProperties.getInstance().getStackTrace().getTargetFrameLevel();
+        int frameCounter = 1;
+        boolean lastMethodWasPrivate=false;
+        for (StackTraceElement f: frames){
+            if (frameCounter > targetFrameLevel && !lastMethodWasPrivate){
+                break;
+            }
+            // Each frame should have a particular CFG
+            String className = f.getClassName();
+            String methodName = f.getMethodName();
+            int lineNumber = f.getLineNumber();
+            LOG.info(""+className);
+
+            // Find the cfg
+            boolean cfgFound = false;
+            for (RawControlFlowGraph classCFG: cfgs.get(className)){
+                if(cfgFound){
+                    break;
+                }
+                if(classCFG.getMethodName().contains(methodName)){
+                    LOG.info("Method signature: {}",classCFG.getMethodName());
+                    List<BytecodeInstruction> bytecodeInstructions;
+                    if(frameCounter==1){
+                        bytecodeInstructions = new ArrayList(classCFG.vertexSet());
+                    }else{
+                        bytecodeInstructions =  classCFG.determineMethodCalls();
+                    }
+                    for (BytecodeInstruction instruction: bytecodeInstructions){
+                        if(lineNumber==instruction.getLineNumber() && ((frameCounter==1) || (frameCounter!= 1 && instruction.getCalledMethod().contains(frames.get(frameCounter-2).getMethodName())))){
+                            LOG.info("The following cfg is the right one for class {}, method {}, and line number {}: {}",className,methodName,lineNumber,classCFG.toString());
+                            frameCFGs.add(new FrameControlFlowGraph(classCFG,(frameCounter==1)?null:instruction));
+                            cfgFound=true;
+                            lastMethodWasPrivate = isPrivateMethod(classCFG);
+                            break;
+                        }
+                    }
+                }
+            }
+            if(!cfgFound){
+                LOG.error("Could not find the cfg of class {}, method {}, and line number {}.",className,methodName,lineNumber);
+            }
+            frameCounter++;
         }
     }
 
+
+    private boolean isPrivateMethod(RawControlFlowGraph acfg){
+        return (acfg.getMethodAccess() & Opcodes.ACC_PRIVATE) == Opcodes.ACC_PRIVATE;
+    }
 
 }
