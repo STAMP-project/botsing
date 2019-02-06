@@ -12,7 +12,7 @@ public class ClassInstrumentation {
     public List<Class> instrumentClasses(List<String> interestingClasses){
         List<Class> instrumentedClasses = new ArrayList<>();
         for(String clazz: interestingClasses){
-            LOG.info("Instrumenting class "+ clazz);
+            LOG.debug("Instrumenting class "+ clazz);
             Class<?> cls;
             try {
                 cls = Class.forName(clazz,false, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());

@@ -161,7 +161,7 @@ public class StackTrace {
         List<String> classes = new ArrayList<>();
         for(StackTraceElement frame: allFrames){
             classes.add(frame.getClassName());
-            LOG.info(frame.getClassName());
+            LOG.debug(frame.getClassName());
         }
         return classes;
     }

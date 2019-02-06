@@ -62,7 +62,7 @@ public class InstrumentingClassLoader extends ClassLoader {
             try{
                 Class<?> result = defineClass(fullyQualifiedTargetClass, byteBuffer, 0,byteBuffer.length);
                 visitedClasses.put(fullyQualifiedTargetClass, result);
-                LOG.info("Loaded class: " + fullyQualifiedTargetClass);
+                LOG.debug("Loaded class: " + fullyQualifiedTargetClass);
                 return result;
             }catch(ClassFormatError cfe){
                 return null;
@@ -103,7 +103,7 @@ public class InstrumentingClassLoader extends ClassLoader {
             if(pkg==null){
                 // If it is not loadeed we will define it to the classloder
                 definePackage(packageName, null, null, null, null, null, null, null);
-                LOG.info("Defined package (3): "+getPackage(packageName)+", "+getPackage(packageName).hashCode());
+                LOG.debug("Defined package (3): "+getPackage(packageName)+", "+getPackage(packageName).hashCode());
             }
         }
     }
