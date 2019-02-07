@@ -64,7 +64,7 @@ public class StackTracesCollectorListener extends StackTracesParserBaseListener 
         StackTrace cause = new StackTrace();
         current.setCause(cause);
         current = cause;
-    } 
+    }
 
     @Override
     public void exitMessageLine(StackTracesParser.MessageLineContext ctx) {
