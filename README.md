@@ -55,6 +55,18 @@ Botsing is licensed under Apache-2.0, pull request as are welcome.
 
 The coding style is described in [`checkstyle.xml`](checkstyle.xml). Please (successfully) run the command `mvn checkstyle:check` before submitting a pull request.
 
+### Building Botsing
+
+Currently, Botsing using a customized version of the EvoSuite-client. Hence, the building process contains two steps:
+1- Installing the customized version of EvoSuite-client:
+```
+mvn install:install-file -Dfile=botsing-reproduction/evosuite-client-botsing-1.0.6.jar -DgroupId=org.evosuite -DartifactId=evosuite-client-botsing -Dversion=1.0.6 -Dpackaging=jar
+```
+2- Build the Botsing project:
+
+```
+mvn package
+```
 
 ### Adding a dependency
 
