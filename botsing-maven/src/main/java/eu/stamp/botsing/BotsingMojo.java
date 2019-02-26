@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -14,7 +15,12 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -54,6 +60,39 @@ public class BotsingMojo extends AbstractMojo {
     private Integer targetFrame;
 
     /**
+    * the size of the population that evolves during the search with a default value of 100
+    */
+    @Parameter(defaultValue = "100", property = "population")
+    private Integer population;
+
+    /**
+    * the search budget in seconds with a default value of 1800
+    */
+    @Parameter(defaultValue = "1800", property = "search_budget")
+    private Integer searchBudget;
+
+    /**
+    * the global timeout in seconds, after which the execution stops if the search is
+    * stuck with a default value of 1800 (the timeout is only reached if the search does not improve after 1800 seconds)
+    */
+    @Parameter(defaultValue = "1800", property = "global_timeout")
+    private Integer globalTimeout;
+
+    /**
+    * the directory where the tests are generated with a default value of `crashreproduction-tests`
+    */
+    @Parameter(defaultValue = "crashreproduction-tests", property = "test_dir")
+    private String testDir;
+
+    /**
+    * the seed used to initialize the random number generator. This value allows to have deterministic
+    * behavior and should be set when performing evaluations
+    */
+    @Parameter(defaultValue = "100", property = "random_seed")
+    private Long randomSeed;
+    // TODO da controllare il valore del default!
+
+    /**
      * Maven variables
      */
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
@@ -67,6 +106,21 @@ public class BotsingMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true)
     private List<RemoteRepository> repositories;
+
+    @Parameter( defaultValue = "${session}", required = true, readonly = true )
+    private MavenSession session;
+
+    /**
+     * Contains the full list of projects in the reactor.
+     */
+    @Parameter( defaultValue = "${reactorProjects}", readonly = true, required = true )
+    private List<MavenProject> reactorProjects;
+
+    /**
+     * The dependency tree builder to use.
+     */
+    @Component( hint = "default" )
+    private DependencyGraphBuilder dependencyGraphBuilder;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -109,7 +163,7 @@ public class BotsingMojo extends AbstractMojo {
         result += project.getModel().getBuild().getDirectory() + File.separator + "classes" + File.pathSeparator;
 
         // Add pom project dependencies
-        for (Artifact unresolvedArtifact : this.project.getDependencyArtifacts()) {
+        for (Artifact unresolvedArtifact : getDependencyTree()) {
             File file = getArtifactFile(unresolvedArtifact);
 
             result += file.getAbsolutePath() + File.pathSeparator;
@@ -117,6 +171,37 @@ public class BotsingMojo extends AbstractMojo {
 
         return result;
     }
+
+	public List<Artifact> getDependencyTree() throws MojoExecutionException {
+		try {
+			ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+			buildingRequest.setProject( project );
+
+			// TODO check if it is necessary to specify an artifact filer
+			DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph( buildingRequest, null, reactorProjects );
+
+			List<Artifact> artifactList = new ArrayList<Artifact>();
+			artifactList.add(rootNode.getArtifact());
+
+			addChildDependencies(rootNode, artifactList);
+
+			return artifactList;
+
+		} catch (DependencyGraphBuilderException e) {
+			throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);
+		}
+	}
+
+	private void addChildDependencies(DependencyNode node, List<Artifact> list) {
+		List<DependencyNode> children = node.getChildren();
+
+		if (children != null) {
+			for (DependencyNode child : children) {
+				list.add(child.getArtifact());
+				addChildDependencies(child, list);
+			}
+		}
+	}
 
     private File getArtifactFile(Artifact artifact) throws MojoExecutionException {
         /**
