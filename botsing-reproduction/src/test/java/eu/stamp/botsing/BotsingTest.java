@@ -42,13 +42,12 @@ public class BotsingTest {
     @Before
     public void initialize() {
         Properties.RANDOM_SEED = (long) 1;
+        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        root.setLevel(Level.WARN);
     }
 
     @Test
     public void testFractionCrash() {
-        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-        root.setLevel(Level.WARN);
-
         Botsing botsing = new Botsing();
 
         // setup of the directory with file *class and file *.log
@@ -83,9 +82,6 @@ public class BotsingTest {
 
     @Test
     public void testPrivateFractionCrash() {
-        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-        root.setLevel(Level.WARN);
-
         Botsing botsing = new Botsing();
 
         // setup of the directory with file *class and file *.log
@@ -116,4 +112,46 @@ public class BotsingTest {
         assertThat(outputDir, anExistingDirectory());
         assertThat(outputDir.list(), arrayWithSize(greaterThan(0)));
     }
+
+    @Test
+    public void testHelpOption() {
+        String[] prop = {"-" + CommandLineParameters.HELP_OPT};
+        Botsing.main(prop);
+    }
+
+    @Test
+    public void testMissingMandatoryOption() {
+        Botsing botsing = new Botsing();
+        String[] prop = {
+                "-" + CommandLineParameters.TARGET_FRAME_OPT,
+                "1",
+                "-" + CommandLineParameters.PROJECT_CP_OPT,
+                "path"
+        };
+        Object result = botsing.parseCommandLine(prop);
+        assertThat("Missing option "+CommandLineParameters.CRASH_LOG_OPT, result, nullValue());
+
+        botsing = new Botsing();
+        prop = new String[]{
+                "-" + CommandLineParameters.CRASH_LOG_OPT,
+                "file.log",
+                "-" + CommandLineParameters.PROJECT_CP_OPT,
+                "path"
+        };
+        result = botsing.parseCommandLine(prop);
+        assertThat("Missing option "+CommandLineParameters.TARGET_FRAME_OPT, result, nullValue());
+
+        botsing = new Botsing();
+        prop = new String[]{
+                "-" + CommandLineParameters.CRASH_LOG_OPT,
+                "file.log",
+                "-" + CommandLineParameters.TARGET_FRAME_OPT,
+                "1"
+        };
+
+        result = botsing.parseCommandLine(prop);
+        assertThat("Missing option "+CommandLineParameters.PROJECT_CP_OPT, result, nullValue());
+    }
+
+
 }
