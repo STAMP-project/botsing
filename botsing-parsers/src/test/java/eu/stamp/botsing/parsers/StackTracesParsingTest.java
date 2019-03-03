@@ -55,12 +55,38 @@ public class StackTracesParsingTest {
         assertThat(st.getFrame(4), equalTo(new EllipsisFrame(44)));
     }
 
+    @Test
+    public void testSimpleStackTraceWithInit() {
+        String input = "org.apache.commons.lang3.SerializationException: ClassNotFoundException " +
+                "while reading cloned object data\n" +
+                "\tat org.apache.commons.lang3.SerializationUtils.<init>(SerializationUtils.java:99)\n" +
+                "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n" +
+                "\tat sun.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)\n" +
+                "\t... 44 more";
+        List<StackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
+        assertThat(stackTraces, hasSize(1));
+
+        StackTrace st = stackTraces.get(0);
+        LOG.trace("Stack trace is {}", st);
+        assertThat(st.getExceptionClass(), equalTo("org.apache.commons.lang3.SerializationException"));
+        assertThat(st.getErrorMessage(), equalTo("ClassNotFoundException while reading cloned object data"));
+        assertThat(st.highestFrameLevel(), equalTo(4));
+
+        assertThat(st.getFrame(1), equalTo(new Frame("org.apache.commons.lang3.SerializationUtils",
+                "<init>", "SerializationUtils.java", 99)));
+        assertThat(st.getFrame(2), equalTo(new Frame("sun.reflect.NativeMethodAccessorImpl",
+                "invoke0", null, Frame.IS_NATIVE)));
+        assertThat(st.getFrame(3), equalTo(new Frame("sun.reflect.GeneratedMethodAccessor4",
+                "invoke", null, Frame.IS_UNKNOWN)));
+        assertThat(st.getFrame(4), equalTo(new EllipsisFrame(44)));
+    }
+
 
     @Test
     public void testStackTraceWithCause() {
         String input = "org.apache.commons.lang3.SerializationException: ClassNotFoundException " +
                 "while reading cloned object data\n" +
-                "\tat org.apache.commons.lang3.SerializationUtils.clone(SerializationUtils.java:99)\n" +
+                "\tat org.apache.commons.lang3.SerializationUtils.<init>(SerializationUtils.java:99)\n" +
                 "Caused by: java.lang.ClassNotFoundException: byte\n" +
                 "\tat org.apache.tools.ant.AntClassLoader.findClassInComponents(AntClassLoader.java:1365)\n" +
                 "\tat java.io.ObjectInputStream.readNonProxyDesc(ObjectInputStream.java:1613)\n";

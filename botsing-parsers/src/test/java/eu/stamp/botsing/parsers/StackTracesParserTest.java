@@ -39,7 +39,7 @@ public class StackTracesParserTest {
     public void testSimpleStackTrace() {
         StackTracesParser parser = setup("org.apache.commons.lang3.SerializationException: ClassNotFoundException " +
                 "while reading cloned object data\n" +
-                "\tat org.apache.commons.lang3.SerializationUtils.clone(SerializationUtils.java:99)\n" +
+                "\tat org.apache.commons.lang3.SerializationUtils.<init>(SerializationUtils.java:99)\n" +
                 "\tat org.apache.commons.lang3.SerializationUtilsTest.testPrimitiveTypeClassSerialization" +
                 "(SerializationUtilsTest.java:373)\n" +
                 "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\n" +
