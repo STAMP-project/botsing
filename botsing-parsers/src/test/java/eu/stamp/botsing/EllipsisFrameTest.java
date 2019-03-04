@@ -70,6 +70,8 @@ public class EllipsisFrameTest {
         assertThat(frame.equals(frame), is(true));
         assertThat(frame.equals(new EllipsisFrame(more)), is(true));
         assertThat(frame.equals(new EllipsisFrame(24)), is(false));
+        assertThat(frame.equals(new Frame("test", "methodtest", "file.java",  24)), is(false));
+
     }
 
     @Test
