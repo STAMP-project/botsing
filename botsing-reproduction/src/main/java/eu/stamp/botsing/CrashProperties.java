@@ -62,14 +62,17 @@ public class CrashProperties {
 
     public enum FitnessFunction {
         WeightedSum,
-        SimpleSum;
+        LineDistance,
+        ExceptionDistance,
+        TraceDistance;
 
         FitnessFunction() {
         }
     }
 
     public enum SearchAlgorithm {
-        Single_Objective_GGA;
+        Single_Objective_GGA,
+    	Multi_Objective_GGA;
 
         SearchAlgorithm() {
         }
@@ -183,6 +186,13 @@ public class CrashProperties {
 
     public void setupStackTrace(StackTrace crash) {
         this.crash = crash;
+    }
+
+    public void setupSearchAlgorithm(boolean multiObjective) {
+    	if (multiObjective) {
+    		searchAlgorithm = SearchAlgorithm.Multi_Objective_GGA;
+    		fitnessFunctions = new CrashProperties.FitnessFunction[]{FitnessFunction.LineDistance, FitnessFunction.ExceptionDistance, FitnessFunction.TraceDistance};
+    	}
     }
 
     public void setClasspath(String projectClassPath) {

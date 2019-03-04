@@ -29,6 +29,7 @@ public class CommandLineParameters {
     public static final String PROJECT_CP_OPT = "project_cp";
     public static final String TARGET_FRAME_OPT = "target_frame";
     public static final String CRASH_LOG_OPT = "crash_log";
+    public static final String MULTI_OBJECTIVE_OPT = "multi_objective";
     public static final String MODEL_PATH_OPT = "model";
     public static final String PROJECT_PACKAGE = "projectPackage";
     public static final String HELP_OPT = "help";
@@ -56,6 +57,10 @@ public class CommandLineParameters {
         options.addOption(Option.builder(CRASH_LOG_OPT)
                 .hasArg()
                 .desc("File with the stack trace")
+                .build());
+        // Select search algorithm
+        options.addOption(Option.builder(MULTI_OBJECTIVE_OPT)
+                .desc("Use multi-objective GGA. Default: single-objective GGA")
                 .build());
         // Models directory
         options.addOption(Option.builder(MODEL_PATH_OPT)

@@ -47,6 +47,12 @@ public class FitnessFunctionHelper {
         switch (CrashProperties.fitnessFunctions[index]){
             case WeightedSum:
                 return new WeightedSum();
+            case LineDistance:
+            	return new LineDistance();
+            case ExceptionDistance:
+            	return new ExceptionDistance();
+            case TraceDistance:
+            	return new TraceDistance();
             default:
                 return new WeightedSum();
         }
