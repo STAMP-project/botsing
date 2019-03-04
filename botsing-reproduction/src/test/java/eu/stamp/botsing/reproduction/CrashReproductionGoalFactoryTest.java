@@ -71,7 +71,7 @@ public class CrashReproductionGoalFactoryTest {
         crashReproductionGoalFactory = new CrashReproductionGoalFactory();
         assertEquals("class eu.stamp.botsing.fitnessfunction.WeightedSum", crashReproductionGoalFactory.getCoverageGoals().get(0).getClass().toString());
 
-        CrashProperties.fitnessFunctions = new CrashProperties.FitnessFunction[]{CrashProperties.FitnessFunction.WeightedSum, CrashProperties.FitnessFunction.SimpleSum};
+        CrashProperties.fitnessFunctions = new CrashProperties.FitnessFunction[]{CrashProperties.FitnessFunction.WeightedSum, CrashProperties.FitnessFunction.LineDistance, CrashProperties.FitnessFunction.ExceptionDistance, CrashProperties.FitnessFunction.TraceDistance};
         crashReproductionGoalFactory = new CrashReproductionGoalFactory();
         assertEquals("class eu.stamp.botsing.fitnessfunction.WeightedSum", crashReproductionGoalFactory.getCoverageGoals().get(0).getClass().toString());
     }

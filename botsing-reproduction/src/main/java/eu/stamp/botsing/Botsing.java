@@ -62,6 +62,7 @@ public class Botsing {
             updateProperties(properties);
             setupStackTrace(crashProperties, commands);
             setupProjectClasspath(crashProperties, commands);
+            setupSearchAlgorithm(crashProperties, commands);
             if(commands.hasOption(MODEL_PATH_OPT)){
                 setupModelSeedingRelatedProperties(commands);
             }
@@ -148,6 +149,10 @@ public class Botsing {
                 LOG.info("* Error while adding classpath entry: " + entry);
             }
         }
+    }
+
+    protected void setupSearchAlgorithm(CrashProperties crashProperties, CommandLine commands) {
+    	crashProperties.setupSearchAlgorithm((commands.hasOption(MULTI_OBJECTIVE_OPT)));
     }
 
     private void printHelpMessage(Options options) {

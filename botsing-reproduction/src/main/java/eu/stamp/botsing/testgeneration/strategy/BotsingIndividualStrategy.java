@@ -24,6 +24,7 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.RootMethodTestChromosomeFactory;
 import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
+import eu.stamp.botsing.ga.strategy.GuidedNSGAII;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
@@ -42,6 +43,10 @@ import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.Resource;
 
@@ -79,8 +84,14 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         if (!(stoppingCondition instanceof MaxTimeStoppingCondition)) {
             ga.addStoppingCondition(new GlobalTimeStoppingCondition());
         }
-        TestFitnessFunction ff = getFF();
-        ga.addFitnessFunction(ff);
+
+        if (ga instanceof GuidedNSGAII){
+        	List<TestFitnessFunction> fitnessFunctions = getFFs();
+        	ga.addFitnessFunctions(fitnessFunctions);
+        } else {
+        	TestFitnessFunction ff = getFF();
+        	ga.addFitnessFunction(ff);
+        }
 
         // prepare model seeding before generating the solution
         if(Properties.MODEL_PATH != null){
@@ -115,6 +126,8 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         switch (CrashProperties.searchAlgorithm){
             case Single_Objective_GGA:
                 return new GuidedGeneticAlgorithm(getChromosomeFactory());
+            case Multi_Objective_GGA:
+            	return new GuidedNSGAII(getChromosomeFactory());
             default:
                 return new GuidedGeneticAlgorithm(getChromosomeFactory());
         }
@@ -126,5 +139,9 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
     private TestFitnessFunction getFF(){
         return fitnessFunctionHelper.getSingleObjective(0);
+    }
+
+    private List<TestFitnessFunction> getFFs(){
+    	return new ArrayList<>(Arrays.asList(fitnessFunctionHelper.getMultiObjectives()));
     }
 }
