@@ -163,7 +163,10 @@ public class BotsingMojo extends AbstractMojo {
 		result += project.getModel().getBuild().getDirectory() + File.separator + "classes" + File.pathSeparator;
 
 		// Add ./target/test-classes
-		result += project.getModel().getBuild().getDirectory() + File.separator + "test-classes" + File.pathSeparator;
+		String testClasses = project.getModel().getBuild().getDirectory() + File.separator + "test-classes";
+		if (new File(testClasses).exists()) {
+			result += testClasses + File.pathSeparator;
+		}
 
 		// Add pom project dependencies
 		for (Artifact unresolvedArtifact : getDependencyTree()) {
