@@ -56,8 +56,9 @@ public class GuidedSinglePointCrossover extends CrossOverFunction {
         int point1 = Randomness.nextInt(parent1.size() - 1) + 1;
         int point2 = Randomness.nextInt(parent2.size() - 1) + 1;
 
-        parent1.crossOver(parent1, point1, point2);
-        parent2.crossOver(parent2, point2, point1);
+        Chromosome clone1 = parent1.clone();
+        parent1.crossOver(parent2, point1, point2);
+        parent2.crossOver(clone1, point2, point1);
     }
 
 }
