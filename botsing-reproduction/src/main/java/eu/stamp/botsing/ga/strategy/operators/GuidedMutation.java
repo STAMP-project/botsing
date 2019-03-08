@@ -14,29 +14,18 @@ public class GuidedMutation<T extends Chromosome> {
 
     public void mutateOffspring(T offspring) {
         boolean isValid = false;
-        // let's try one single mutation
-        try {
-            doRandomMutation(offspring);
-        } catch (AssertionError e) {
-            LOG.debug("First try for insertion mutation was unsuccessful.");
-        }
-        // if the chromosome has no public call, we insert new random statements
-        isValid = utility.includesPublicCall(offspring);
-
-        // if the chromosome has no public call, we insert new random statements
-        if (!isValid) {
-            int nTrials = 0; // we try maximum 50 insertion mutations (to avoid infinite loop)
-            while (!isValid && nTrials < 50) {
-                try {
+        int nTrials = 0; // we try maximum 50 insertion mutations (to avoid infinite loop)
+        while (!isValid && nTrials < 5) {
+            try {
                     doRandomMutation(offspring);
-                    isValid = utility.includesPublicCall(offspring);
-                } catch (AssertionError e) {
-                    LOG.debug("Random insertion mutation was unsuccessful.");
-                } finally {
-                    nTrials++;
-                }
+                isValid = utility.includesPublicCall(offspring);
+            } catch (AssertionError e) {
+                LOG.debug("Random insertion mutation was unsuccessful.");
+            } finally {
+                nTrials++;
             }
         }
+        offspring.setChanged(true);
         offspring.updateAge(offspring.getAge() + 1);
     }
 
