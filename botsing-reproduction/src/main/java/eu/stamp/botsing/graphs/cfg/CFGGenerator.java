@@ -5,6 +5,9 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
 import org.evosuite.graphs.GraphPool;
+import org.evosuite.graphs.cdg.ControlDependenceGraph;
+import org.evosuite.graphs.cfg.ActualControlFlowGraph;
+import org.evosuite.graphs.cfg.BasicBlock;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.objectweb.asm.Opcodes;
@@ -19,7 +22,7 @@ public class CFGGenerator {
     ClassInstrumentation classInstrumenter = new ClassInstrumentation();
     private Map<String,List<RawControlFlowGraph>> cfgs = new HashMap<>();
     private List<FrameControlFlowGraph> frameCFGs =  new LinkedList<>();
-    private BotsingControlFlowGraph InterProceduralGraph;
+    private BotsingRawControlFlowGraph InterProceduralGraph;
 
     public void generateInterProceduralCFG() {
         List<String> interestingClasses = CrashProperties.getInstance().getTargetClasses();
@@ -30,8 +33,41 @@ public class CFGGenerator {
             LOG.error("There is no instrumented classes!");
         }
 
-        generateGraph();
+        generateRawGraph();
+        generateControlDependenceGraph();
     }
+
+    private void generateControlDependenceGraph() {
+        ActualControlFlowGraph actualControlFlowGraph = new BotsingActualControlFlowGraph(InterProceduralGraph);
+        ControlDependenceGraph controlDependenceGraph = new ControlDependenceGraph(actualControlFlowGraph);
+//
+//        controlDependenceGraph.
+        Queue<BasicBlock> queue = new LinkedList<BasicBlock>();
+        LOG.info("Entry point size: {}",controlDependenceGraph.determineEntryPoints().size());
+        List<BasicBlock> alreadyHandled =  new LinkedList<>();
+        for(BasicBlock entryPoint: controlDependenceGraph.determineEntryPoints()){
+            LOG.info("current Entry block: {}",entryPoint.explain());
+            queue.add(entryPoint);
+            while (!queue.isEmpty()){
+                BasicBlock node = queue.poll();
+                LOG.info("node: {}",node.explain());
+//                if(controlDependenceGraph.containsVertex(node)){
+//                    LOG.info("Position in the control dependence graph: \n {}", controlDependenceGraph.getControlDependentBranches(node));
+//                }else{
+//                    LOG.info("following node does not exist: \n {}",node.explain());
+//                }
+
+                for(BasicBlock child: controlDependenceGraph.getChildren(node)){
+//                    if(!alreadyHandled.contains(child)){
+                        queue.add(child);
+//                        alreadyHandled.add(child);
+                        LOG.info("Add child {}",child.explain());
+//                    }
+                }
+            }
+        }
+    }
+
 
     private void collectCFGS(List<Class> instrumentedClasses) {
         GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
@@ -49,7 +85,7 @@ public class CFGGenerator {
         }
     }
 
-    private void generateGraph(){
+    private void generateRawGraph(){
         // Collect interesting method's cfgs
         if(frameCFGs.size() != CrashProperties.getInstance().getStackTrace().getNumberOfFrames()){
             frameCFGs.clear();
@@ -59,17 +95,18 @@ public class CFGGenerator {
             int cfgCounter = 0;
             for(FrameControlFlowGraph fcfg: Lists.reverse(frameCFGs)){
 
-                LOG.info("Class: {}",fcfg.getRcfg().getClassName());
-                LOG.info("Method: {}",fcfg.getRcfg().getMethodName());
-                LOG.info("CFG: {}",fcfg.getRcfg().toString());
-                LOG.info("Linking point: {}",(fcfg.getExitingBCInst()==null)?"NULL":fcfg.getExitingBCInst().toString());
-                LOG.info("~~~~~~~~~~~~~~~~");
+                LOG.debug("Class: {}",fcfg.getRcfg().getClassName());
+                LOG.debug("Method: {}",fcfg.getRcfg().getMethodName());
+                LOG.debug("CFG: {}",fcfg.getRcfg().toString());
+                LOG.debug("Linking point: {}",(fcfg.getExitingBCInst()==null)?"NULL":fcfg.getExitingBCInst().toString());
+                LOG.debug("~~~~~~~~~~~~~~~~");
 
                 if(cfgCounter == 0){
-                    InterProceduralGraph = new BotsingControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"InterPro","multiple",fcfg.getRcfg().getMethodAccess());
+                    InterProceduralGraph = new BotsingRawControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"IntegrationTestingGraph","methodsIntegration",fcfg.getRcfg().getMethodAccess());
                     InterProceduralGraph.clone(fcfg.getRcfg());
                 }else if (src != null){
                     BytecodeInstruction target = fcfg.getRcfg().determineEntryPoint();
+                    LOG.info("TARGEET: {}",target.explain());
                     InterProceduralGraph.clone(fcfg.getRcfg());
                     InterProceduralGraph.addInterProceduralEdge(src,target);
                 }
@@ -108,7 +145,7 @@ public class CFGGenerator {
                     break;
                 }
                 if(classCFG.getMethodName().contains(methodName)){
-                    LOG.info("Method signature: {}",classCFG.getMethodName());
+//                    LOG.info("Method signature: {}",classCFG.getMethodName());
                     List<BytecodeInstruction> bytecodeInstructions;
                     if(frameCounter==1){
                         bytecodeInstructions = new ArrayList(classCFG.vertexSet());
@@ -117,7 +154,7 @@ public class CFGGenerator {
                     }
                     for (BytecodeInstruction instruction: bytecodeInstructions){
                         if(lineNumber==instruction.getLineNumber() && ((frameCounter==1) || (frameCounter!= 1 && instruction.getCalledMethod().contains(frames.get(frameCounter-2).getMethodName())))){
-                            LOG.info("The following cfg is the right one for class {}, method {}, and line number {}: {}",className,methodName,lineNumber,classCFG.toString());
+//                            LOG.info("The following cfg is the right one for class {}, method {}, and line number {}: {}",className,methodName,lineNumber,classCFG.toString());
                             frameCFGs.add(new FrameControlFlowGraph(classCFG,(frameCounter==1)?null:instruction));
                             cfgFound=true;
                             lastMethodWasPrivate = isPrivateMethod(classCFG);
