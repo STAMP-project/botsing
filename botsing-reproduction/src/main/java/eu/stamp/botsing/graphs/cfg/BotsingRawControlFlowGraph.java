@@ -43,6 +43,10 @@ public class BotsingRawControlFlowGraph extends RawControlFlowGraph {
         Set<ControlFlowEdge> outgoingEdgesOfSrc = this.outgoingEdgesOf(src);
         boolean alreadyRedirected = false;
         for(BytecodeInstruction exitPoint : targetGraphExitPoints){
+            if(exitPoint.isThrow()){
+                LOG.info("{} is a THROW",exitPoint);
+                continue;
+            }
             if(!alreadyRedirected){
                 for(ControlFlowEdge outgoingEdge: outgoingEdgesOfSrc){
                     this.redirectEdgeSource(outgoingEdge,exitPoint);
@@ -50,7 +54,7 @@ public class BotsingRawControlFlowGraph extends RawControlFlowGraph {
                 alreadyRedirected = true;
             }else{
                 for(ControlFlowEdge outgoingEdge: outgoingEdgesOfSrc){
-                    this.addEdge(exitPoint,this.getEdgeTarget(outgoingEdge),false);
+                    this.addEdge(exitPoint,this.getEdgeTarget(outgoingEdge),outgoingEdge);
                 }
             }
         }
