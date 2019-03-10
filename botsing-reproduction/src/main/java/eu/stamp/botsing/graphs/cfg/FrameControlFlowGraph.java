@@ -4,19 +4,21 @@ import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
 
 public class FrameControlFlowGraph {
+    // the original raw cfg
     private RawControlFlowGraph rcfg;
-    private BytecodeInstruction exitingBCInst;
+    // The bytecode instruction which is calling the deeper frame method call
+    private BytecodeInstruction callingInst;
 
-    public FrameControlFlowGraph(RawControlFlowGraph rcfg, BytecodeInstruction exitingBCInst){
+    public FrameControlFlowGraph(RawControlFlowGraph rcfg, BytecodeInstruction callingInst){
         this.rcfg = rcfg;
-        this.exitingBCInst = exitingBCInst;
+        this.callingInst = callingInst;
     }
 
     public RawControlFlowGraph getRcfg() {
         return rcfg;
     }
 
-    public BytecodeInstruction getExitingBCInst() {
-        return exitingBCInst;
+    public BytecodeInstruction getCallingInstruction() {
+        return callingInst;
     }
 }
