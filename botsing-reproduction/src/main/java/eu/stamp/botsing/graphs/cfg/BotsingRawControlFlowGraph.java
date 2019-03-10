@@ -39,7 +39,27 @@ public class BotsingRawControlFlowGraph extends RawControlFlowGraph {
         }
     }
 
-    public void addInterProceduralEdge(BytecodeInstruction src, BytecodeInstruction target) {
+    public void addInterProceduralEdge(BytecodeInstruction src, BytecodeInstruction target, Set<BytecodeInstruction> targetGraphExitPoints) {
+        Set<ControlFlowEdge> outgoingEdgesOfSrc = this.outgoingEdgesOf(src);
+        boolean alreadyRedirected = false;
+        for(BytecodeInstruction exitPoint : targetGraphExitPoints){
+            if(!alreadyRedirected){
+                for(ControlFlowEdge outgoingEdge: outgoingEdgesOfSrc){
+                    this.redirectEdgeSource(outgoingEdge,exitPoint);
+                }
+                alreadyRedirected = true;
+            }else{
+                for(ControlFlowEdge outgoingEdge: outgoingEdgesOfSrc){
+                    this.addEdge(exitPoint,this.getEdgeTarget(outgoingEdge),false);
+                }
+            }
+        }
+        if(!alreadyRedirected){
+            LOG.warn("There is no exit point for the target method");
+            for(ControlFlowEdge outgoingEdge: outgoingEdgesOfSrc){
+                this.redirectEdgeSource(outgoingEdge,null);
+            }
+        }
         this.addEdge(src, target, false);
     }
 
@@ -90,4 +110,20 @@ public class BotsingRawControlFlowGraph extends RawControlFlowGraph {
         LOG.debug("Created basic block: {}",basicBlock.toString());
         return basicBlock;
     }
+
+//    @Override
+//    protected ControlFlowEdge addEdge(BytecodeInstruction src, BytecodeInstruction target, boolean isExceptionEdge) {
+//        LOG.debug("Adding edge to RawCFG of " + this.className + "." + this.methodName + ": " + this.vertexCount());
+//        if (BranchPool.getInstance(this.classLoader).isKnownAsBranch(src)) {
+//            if (src.isBranch()) {
+//                return this.addBranchEdge(src, target, isExceptionEdge);
+//            }
+//
+//            if (src.isSwitch()) {
+//                return this.addSwitchBranchEdge(src, target, isExceptionEdge);
+//            }
+//        }
+//
+//        return this.addUnlabeledEdge(src, target, isExceptionEdge);
+//    }
 }
