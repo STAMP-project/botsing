@@ -67,6 +67,10 @@ public class Botsing {
                 crashProperties.integrationTesting = true;
             }
 
+            if(commands.hasOption(DISABLE_LINE_ESTIMATION)){
+                crashProperties.lineEstimation = false;
+            }
+
             if(commands.hasOption(MODEL_PATH_OPT)){
                 setupModelSeedingRelatedProperties(commands);
             }

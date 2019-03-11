@@ -101,6 +101,9 @@ public class CrashProperties {
 
     @Parameter(key = "integration_testing", group = "Crash reproduction", description = "Use integration testing for reproduce the crash.")
     public static boolean integrationTesting = false;
+    @Parameter(key = "line_estimation", group = "Crash reproduction", description = "Detect Missing lines in the stack trace")
+    public static boolean lineEstimation = true;
+
 
     static java.util.Properties configFile = new java.util.Properties();
 

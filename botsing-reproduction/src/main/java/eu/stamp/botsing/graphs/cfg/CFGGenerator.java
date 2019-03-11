@@ -7,6 +7,7 @@ import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cdg.ControlDependenceGraph;
 import org.evosuite.graphs.cfg.*;
+import org.evosuite.utils.Randomness;
 import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,16 +146,60 @@ public class CFGGenerator {
                 }
             }
             if(!cfgFound){
+                boolean fixed = false;
                 LOG.warn("Could not find the cfg of class {}, method {}, and line number {}.",className,methodName,lineNumber);
-                if(isIrrelevantFrame(className,methodName,lineNumber)){
+                HashMap<RawControlFlowGraph,List<BytecodeInstruction>> candidates = estimateTheRightLine(className,methodName,lineNumber,frameCounter,frames);
+                if(isIrrelevantFrame(className,methodName,lineNumber,frameCounter,frames)){
                     LOG.info("Frame level {} is an irrelevant frame. We do not count it in the InterProcedural graph",frameCounter);
+                    fixed=true;
+                }else if(candidates.size()>0) {
+                    LOG.info("Found {} candidates to repair the stack trace line number",frameCounter);
+                    if(CrashProperties.lineEstimation){
+                        LOG.info("detect_missing_line option is enabled.We will make a link beetween each of the lin");
+                        RawControlFlowGraph selectedMethod = Randomness.choice(candidates.keySet());
+                        BytecodeInstruction selectedCandidate = Randomness.choice(candidates.get(selectedMethod));
+                        LOG.info("Selected candidate is in line {} of method {}",selectedCandidate.getLineNumber(),selectedMethod.getMethodName());
+                        frameCFGs.add(new FrameControlFlowGraph(selectedMethod,(frameCounter==1)?null:selectedCandidate));
+                        fixed=true;
+                    }else{
+                        LOG.info("detect_missing_line option is disabled. So, this execution will be stopped");
+                    }
+                }else{
+                    LOG.info("could not find any candidate.");
+                    LOG.info("Probably, Frame level {} is an irrelevant frame. We do not count it in the InterProcedural graph",frameCounter);
+                    fixed=true;
+                }
+
+                if(!fixed){
+                    throw new IllegalArgumentException("Mismatched line numbers for frame "+ frameCounter);
                 }
             }
             frameCounter++;
         }
     }
 
-    private boolean isIrrelevantFrame(String className, String methodName, int lineNumber) {
+    private HashMap<RawControlFlowGraph,List<BytecodeInstruction>> estimateTheRightLine(String className, String methodName, int lineNumber, int frameCounter, ArrayList<StackTraceElement> frames) {
+        HashMap<RawControlFlowGraph,List<BytecodeInstruction>> candidates =  new HashMap<>();
+        for (RawControlFlowGraph classCFG: cfgs.get(className)){
+            if(classCFG.getMethodName().contains(methodName)){
+                for (BytecodeInstruction instruction: classCFG.determineMethodCallsToOwnClass()){
+                    if(frameCounter!= 1 && instruction.getCalledMethod().contains(frames.get(frameCounter-2).getMethodName())){
+                        if(!candidates.containsKey(classCFG)){
+                            candidates.put(classCFG,new ArrayList<>());
+                        }
+                        candidates.get(classCFG).add(instruction);
+                    }
+                }
+            }
+        }
+        return candidates;
+    }
+
+    private boolean isIrrelevantFrame(String className, String methodName, int lineNumber,int frameCounter, ArrayList<StackTraceElement> frames) {
+        return (isNotInDomain(className,methodName,lineNumber) && frames.get(frameCounter-2).getMethodName().equals(methodName));
+    }
+
+    private boolean isNotInDomain(String className, String methodName, int lineNumber) {
         for (RawControlFlowGraph classCFG: cfgs.get(className)){
             if(classCFG.getMethodName().contains(methodName)){
                 int maxLine = -1;
