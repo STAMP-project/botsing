@@ -127,7 +127,6 @@ public class CFGGenerator {
                     break;
                 }
                 if(classCFG.getMethodName().contains(methodName)){
-//                    LOG.info("Method signature: {}",classCFG.getMethodName());
                     List<BytecodeInstruction> bytecodeInstructions;
                     if(frameCounter==1){
                         bytecodeInstructions = new ArrayList(classCFG.vertexSet());
@@ -146,10 +145,36 @@ public class CFGGenerator {
                 }
             }
             if(!cfgFound){
-                LOG.error("Could not find the cfg of class {}, method {}, and line number {}.",className,methodName,lineNumber);
+                LOG.warn("Could not find the cfg of class {}, method {}, and line number {}.",className,methodName,lineNumber);
+                if(isIrrelevantFrame(className,methodName,lineNumber)){
+                    LOG.info("Frame level {} is an irrelevant frame. We do not count it in the InterProcedural graph",frameCounter);
+                }
             }
             frameCounter++;
         }
+    }
+
+    private boolean isIrrelevantFrame(String className, String methodName, int lineNumber) {
+        for (RawControlFlowGraph classCFG: cfgs.get(className)){
+            if(classCFG.getMethodName().contains(methodName)){
+                int maxLine = -1;
+                int minLine = Integer.MAX_VALUE;
+                for (BytecodeInstruction instruction: classCFG.vertexSet()){
+                    int currentLineNumber = instruction.getLineNumber();
+                    if(currentLineNumber > maxLine){
+                        maxLine = currentLineNumber;
+                    }
+                    if(currentLineNumber < minLine && currentLineNumber>0){
+                        minLine = currentLineNumber;
+                    }
+                }
+
+                if(lineNumber<maxLine && lineNumber > minLine){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 
