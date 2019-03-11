@@ -44,7 +44,7 @@ public class BotsingRawControlFlowGraph extends RawControlFlowGraph {
         boolean alreadyRedirected = false;
         for(BytecodeInstruction exitPoint : targetGraphExitPoints){
             if(exitPoint.isThrow()){
-                LOG.info("{} is a THROW",exitPoint);
+                LOG.debug("{} is a THROW. We omitted it for now",exitPoint);
                 continue;
             }
             if(!alreadyRedirected){
@@ -114,20 +114,4 @@ public class BotsingRawControlFlowGraph extends RawControlFlowGraph {
         LOG.debug("Created basic block: {}",basicBlock.toString());
         return basicBlock;
     }
-
-//    @Override
-//    protected ControlFlowEdge addEdge(BytecodeInstruction src, BytecodeInstruction target, boolean isExceptionEdge) {
-//        LOG.debug("Adding edge to RawCFG of " + this.className + "." + this.methodName + ": " + this.vertexCount());
-//        if (BranchPool.getInstance(this.classLoader).isKnownAsBranch(src)) {
-//            if (src.isBranch()) {
-//                return this.addBranchEdge(src, target, isExceptionEdge);
-//            }
-//
-//            if (src.isSwitch()) {
-//                return this.addSwitchBranchEdge(src, target, isExceptionEdge);
-//            }
-//        }
-//
-//        return this.addUnlabeledEdge(src, target, isExceptionEdge);
-//    }
 }
