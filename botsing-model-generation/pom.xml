@@ -38,7 +38,7 @@
         </dependency>
         <dependency>
             <groupId>org.evosuite</groupId>
-            <artifactId>evosuite-client</artifactId>
+            <artifactId>evosuite-client-botsing</artifactId>
             <version>${evosuite-client.version}</version>
         </dependency>
         <dependency>
