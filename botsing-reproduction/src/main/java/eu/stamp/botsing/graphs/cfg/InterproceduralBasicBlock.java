@@ -20,9 +20,9 @@ public class InterproceduralBasicBlock extends BasicBlock {
         }
 
         if (instruction.hasBasicBlockSet()){
-            LOG.info("existing basic block: {}", instruction.getBasicBlock().explain());
-            LOG.info("current basic block: {}", this.explain());
-            LOG.info("DUPLICATE BASIC BLOCK: {} {} {} -- {}", instruction.getClassName(), instruction.getMethodName(),instruction.getLineNumber(),instruction.explain());
+            LOG.debug("existing basic block: {}", instruction.getBasicBlock().explain());
+            LOG.debug("current basic block: {}", this.explain());
+            LOG.debug("DUPLICATE BASIC BLOCK: {} {} {} -- {}", instruction.getClassName(), instruction.getMethodName(),instruction.getLineNumber(),instruction.explain());
 //            throw new IllegalArgumentException("expect to get instruction "+instruction.explain()+" without. BasicBlock already set to: "+instruction.getBasicBlock().explain());
         }
         if (this.instructions.contains(instruction)){
