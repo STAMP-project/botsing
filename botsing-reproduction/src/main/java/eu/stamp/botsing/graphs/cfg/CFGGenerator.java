@@ -37,12 +37,11 @@ public class CFGGenerator {
         actualInterProceduralGraph = new BotsingActualControlFlowGraph(rawInterProceduralGraph);
         controlDependenceInterProceduralGraph = new ControlDependenceGraph(actualInterProceduralGraph);
 
-        loggGeneratedCDG();
+        logGeneratedCDG();
     }
 
     // Logging the generated control dependence graph
-    private void loggGeneratedCDG() {
-
+    private void logGeneratedCDG() {
         for(BasicBlock block: controlDependenceInterProceduralGraph.vertexSet()){
             LOG.debug("DEPTH of {} is:",block.explain());
             for (ControlDependency cd : controlDependenceInterProceduralGraph.getControlDependentBranches(block)){
@@ -119,10 +118,15 @@ public class CFGGenerator {
             String className = f.getClassName();
             String methodName = f.getMethodName();
             int lineNumber = f.getLineNumber();
-            LOG.info(""+className);
+            LOG.info("Analyzing "+className);
 
             // Find the cfg
             boolean cfgFound = false;
+            if (cfgs.get(className) == null){
+                LOG.info("[frame {}]Cannot load class {}. We do not count it in the InterProcedural graph",frameCounter,className);
+                frameCounter++;
+                continue;
+            }
             for (RawControlFlowGraph classCFG: cfgs.get(className)){
                 if(cfgFound){
                     break;
