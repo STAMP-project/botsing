@@ -16,23 +16,19 @@ public class InterproceduralBasicBlock extends BasicBlock {
     @Override
     protected boolean appendInstruction(BytecodeInstruction instruction){
         if (instruction == null){
-            throw new IllegalArgumentException("null given");
+            throw new IllegalArgumentException("The given instruction is null");
         }
 
         if (instruction.hasBasicBlockSet()){
             LOG.debug("existing basic block: {}", instruction.getBasicBlock().explain());
             LOG.debug("current basic block: {}", this.explain());
             LOG.debug("DUPLICATE BASIC BLOCK: {} {} {} -- {}", instruction.getClassName(), instruction.getMethodName(),instruction.getLineNumber(),instruction.explain());
-//            throw new IllegalArgumentException("expect to get instruction "+instruction.explain()+" without. BasicBlock already set to: "+instruction.getBasicBlock().explain());
         }
         if (this.instructions.contains(instruction)){
             throw new IllegalArgumentException("a basic block can not contain the same element twice");
         }
-//        LOG.info("--> {}",instruction.explain());
-//        if(!instruction.hasBasicBlockSet())
-            instruction.basicBlock = this;
-//        instruction.setBasicBlock(this);
 
+        instruction.basicBlock = this;
         return this.instructions.add(instruction);
     }
 }
