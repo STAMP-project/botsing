@@ -19,7 +19,7 @@ public class BotsingActualControlFlowGraph extends ActualControlFlowGraph {
     @Override
     protected void setEntryPoint(BytecodeInstruction entryPoint) {
         if (entryPoint == null) {
-            throw new IllegalArgumentException("null given");
+            throw new IllegalArgumentException("The given entryPoint is null");
         }
         this.entryPoint = entryPoint;
     }
@@ -27,7 +27,7 @@ public class BotsingActualControlFlowGraph extends ActualControlFlowGraph {
     @Override
     protected void setExitPoints(Set<BytecodeInstruction> exitPoints) {
         if (exitPoints == null) {
-            throw new IllegalArgumentException("null given");
+            throw new IllegalArgumentException("The given exitPoints set is null");
         }
         this.exitPoints = new HashSet<BytecodeInstruction>();
         for (BytecodeInstruction exitPoint : exitPoints) {
@@ -41,7 +41,7 @@ public class BotsingActualControlFlowGraph extends ActualControlFlowGraph {
     @Override
     protected void setBranches(Set<BytecodeInstruction> branches) {
         if (branches == null){
-            throw new IllegalArgumentException("null given");
+            throw new IllegalArgumentException("The given branches set is null");
         }
         this.branches = new HashSet<BytecodeInstruction>();
 
@@ -54,7 +54,7 @@ public class BotsingActualControlFlowGraph extends ActualControlFlowGraph {
     protected void setJoins(Set<BytecodeInstruction> joins){
 
         if (joins == null){
-            throw new IllegalArgumentException("null given");
+            throw new IllegalArgumentException("The given joins set is null");
         }
         this.joins = new HashSet<BytecodeInstruction>();
 
