@@ -54,15 +54,12 @@ public class BotsingRawControlFlowGraph extends RawControlFlowGraph {
                 alreadyRedirected = true;
             }else{
                 for(ControlFlowEdge outgoingEdge: outgoingEdgesOfSrc){
-                    this.addEdge(exitPoint,this.getEdgeTarget(outgoingEdge),outgoingEdge);
+                    this.addEdge(exitPoint,this.getEdgeTarget(outgoingEdge));
                 }
             }
         }
         if(!alreadyRedirected){
-            LOG.warn("There is no exit point for the target method");
-            for(ControlFlowEdge outgoingEdge: outgoingEdgesOfSrc){
-                this.redirectEdgeSource(outgoingEdge,null);
-            }
+            throw new IllegalArgumentException("method "+target.getMethodName()+" does not have any exit point");
         }
         this.addEdge(src, target, false);
     }
