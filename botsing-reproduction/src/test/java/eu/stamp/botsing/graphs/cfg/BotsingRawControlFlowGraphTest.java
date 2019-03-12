@@ -2,12 +2,10 @@ package eu.stamp.botsing.graphs.cfg;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
-import org.evosuite.graphs.cfg.ControlFlowEdge;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.util.HashSet;
@@ -17,6 +15,7 @@ import java.util.Set;
 public class BotsingRawControlFlowGraphTest{
 
     private String className = "java.lang.Integer";
+    private GraphTestingUtils testingUtils = new GraphTestingUtils();
     @Test
     public void testClone() {
 
@@ -25,14 +24,14 @@ public class BotsingRawControlFlowGraphTest{
         RawControlFlowGraph rcfg = Mockito.spy(realRCFG);
 
         // Add vertices
-        BytecodeInstruction stmt1 = mockNewStatement(className,"reverse()");
-        BytecodeInstruction stmt2 = mockNewStatement(className,"sum()");
+        BytecodeInstruction stmt1 = testingUtils.mockNewStatement(className,"reverse()");
+        BytecodeInstruction stmt2 = testingUtils.mockNewStatement(className,"sum()");
         rcfg.addVertex(stmt1);
         rcfg.addVertex(stmt2);
 
         // Add edges
         BytecodeInstruction[][] edges = {{stmt1,stmt2},{stmt2,stmt1}};
-        addMockedEdge(edges,rcfg);
+        testingUtils.addMockedEdge(edges,rcfg);
 
         rawInterProceduralGraph.clone(rcfg);
 
@@ -49,14 +48,14 @@ public class BotsingRawControlFlowGraphTest{
 
     @Test
     public void testAddInterProceduralEdge(){
-        BytecodeInstruction cfg1stmt1 = mockNewStatement(className,"reverse()");
-        BytecodeInstruction cfg1stmt2 = mockNewStatement(className,"reverse()");
-        BytecodeInstruction cfg1stmt3 = mockNewStatement(className,"reverse()");
+        BytecodeInstruction cfg1stmt1 = testingUtils.mockNewStatement(className,"reverse()");
+        BytecodeInstruction cfg1stmt2 = testingUtils.mockNewStatement(className,"reverse()");
+        BytecodeInstruction cfg1stmt3 = testingUtils.mockNewStatement(className,"reverse()");
 
-        BytecodeInstruction cfg2stmt1 = mockNewStatement(className,"sum()");
-        BytecodeInstruction cfg2stmt2 = mockNewStatement(className,"sum()");
-        BytecodeInstruction cfg2stmt3 = mockNewStatement(className,"sum()");
-        BytecodeInstruction cfg2stmt4 = mockNewStatement(className,"sum()");
+        BytecodeInstruction cfg2stmt1 = testingUtils.mockNewStatement(className,"sum()");
+        BytecodeInstruction cfg2stmt2 = testingUtils.mockNewStatement(className,"sum()");
+        BytecodeInstruction cfg2stmt3 = testingUtils.mockNewStatement(className,"sum()");
+        BytecodeInstruction cfg2stmt4 = testingUtils.mockNewStatement(className,"sum()");
 
 
         // Creating rcfg1
@@ -67,7 +66,7 @@ public class BotsingRawControlFlowGraphTest{
         rcfg1.addVertex(cfg1stmt3);
 
         BytecodeInstruction[][] edges = {{cfg1stmt1,cfg1stmt2},{cfg1stmt2,cfg1stmt3}};
-        addMockedEdge(edges,rcfg1);
+        testingUtils.addMockedEdge(edges,rcfg1);
 
         // Creating rcfg2
         RawControlFlowGraph realRCFG2 = new BotsingRawControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"testClass","testMethod",0);
@@ -78,7 +77,7 @@ public class BotsingRawControlFlowGraphTest{
         rcfg1.addVertex(cfg2stmt4);
 
         BytecodeInstruction[][] edges2 = {{cfg2stmt1,cfg2stmt2},{cfg2stmt1,cfg2stmt3},{cfg2stmt1,cfg2stmt4}};
-        addMockedEdge(edges2,rcfg2);
+        testingUtils.addMockedEdge(edges2,rcfg2);
 
         BotsingRawControlFlowGraph rawInterProceduralGraph = new BotsingRawControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"testClass","testMethod",0);
         rawInterProceduralGraph.clone(rcfg1);
@@ -101,14 +100,14 @@ public class BotsingRawControlFlowGraphTest{
 
     @Test
     public void testAddInterProceduralEdgeWithoutExitPoints(){
-        BytecodeInstruction cfg1stmt1 = mockNewStatement(className,"reverse()");
-        BytecodeInstruction cfg1stmt2 = mockNewStatement(className,"reverse()");
-        BytecodeInstruction cfg1stmt3 = mockNewStatement(className,"reverse()");
+        BytecodeInstruction cfg1stmt1 = testingUtils.mockNewStatement(className,"reverse()");
+        BytecodeInstruction cfg1stmt2 = testingUtils.mockNewStatement(className,"reverse()");
+        BytecodeInstruction cfg1stmt3 = testingUtils.mockNewStatement(className,"reverse()");
 
-        BytecodeInstruction cfg2stmt1 = mockNewStatement(className,"sum()");
-        BytecodeInstruction cfg2stmt2 = mockNewStatement(className,"sum()");
-        BytecodeInstruction cfg2stmt3 = mockNewStatement(className,"sum()");
-        BytecodeInstruction cfg2stmt4 = mockNewStatement(className,"sum()");
+        BytecodeInstruction cfg2stmt1 = testingUtils.mockNewStatement(className,"sum()");
+        BytecodeInstruction cfg2stmt2 = testingUtils.mockNewStatement(className,"sum()");
+        BytecodeInstruction cfg2stmt3 = testingUtils.mockNewStatement(className,"sum()");
+        BytecodeInstruction cfg2stmt4 = testingUtils.mockNewStatement(className,"sum()");
 
 
         // Creating rcfg1
@@ -119,7 +118,7 @@ public class BotsingRawControlFlowGraphTest{
         rcfg1.addVertex(cfg1stmt3);
 
         BytecodeInstruction[][] edges = {{cfg1stmt1,cfg1stmt2},{cfg1stmt2,cfg1stmt3}};
-        addMockedEdge(edges,rcfg1);
+        testingUtils.addMockedEdge(edges,rcfg1);
 
         // Creating rcfg2
         RawControlFlowGraph realRCFG2 = new BotsingRawControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"testClass","testMethod",0);
@@ -130,7 +129,7 @@ public class BotsingRawControlFlowGraphTest{
         rcfg1.addVertex(cfg2stmt4);
 
         BytecodeInstruction[][] edges2 = {{cfg2stmt1,cfg2stmt2},{cfg2stmt1,cfg2stmt3},{cfg2stmt1,cfg2stmt4}};
-        addMockedEdge(edges2,rcfg2);
+        testingUtils.addMockedEdge(edges2,rcfg2);
 
         BotsingRawControlFlowGraph rawInterProceduralGraph = new BotsingRawControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"testClass","testMethod",0);
         rawInterProceduralGraph.clone(rcfg1);
@@ -164,9 +163,9 @@ public class BotsingRawControlFlowGraphTest{
     public void testBasicBlock(){
         RawControlFlowGraph realRCFG1 = new BotsingRawControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"testClass","testMethod",0);
         RawControlFlowGraph rcfg1 = Mockito.spy(realRCFG1);
-        BytecodeInstruction mainStmnt = mockNewStatement(className,"reverse()");
-        BytecodeInstruction childStmnt = mockNewStatement(className,"reverse()");
-        BytecodeInstruction parentStmnt = mockNewStatement(className,"reverse()");
+        BytecodeInstruction mainStmnt = testingUtils.mockNewStatement(className,"reverse()");
+        BytecodeInstruction childStmnt = testingUtils.mockNewStatement(className,"reverse()");
+        BytecodeInstruction parentStmnt = testingUtils.mockNewStatement(className,"reverse()");
         Mockito.doReturn(1).when(rcfg1).outDegreeOf(mainStmnt);
 
         Set<BytecodeInstruction> childSet = new HashSet<>();
@@ -182,24 +181,5 @@ public class BotsingRawControlFlowGraphTest{
         rcfg1.determineBasicBlockFor(mainStmnt);
     }
 
-    private BytecodeInstruction mockNewStatement(String className, String methodName){
-        BytecodeInstruction stmt = Mockito.mock(BytecodeInstruction.class);
-        Mockito.doReturn(className).when(stmt).getClassName();
-        Mockito.doReturn(methodName).when(stmt).getMethodName();
-        return stmt;
-    }
 
-    private void addMockedEdge(BytecodeInstruction[][] edges,RawControlFlowGraph rcfg){
-        Set<ControlFlowEdge> edgeSet = new HashSet<>();
-        for(int rows=0;rows<edges.length;rows++){
-            BytecodeInstruction src =  edges[rows][0];
-            BytecodeInstruction target =  edges[rows][1];
-            ControlFlowEdge edge = new ControlFlowEdge();
-            edgeSet.add(edge);
-
-            Mockito.doReturn(src).when(rcfg).getEdgeSource(edge);
-            Mockito.doReturn(target).when(rcfg).getEdgeTarget(edge);
-        }
-        Mockito.doReturn(edgeSet).when(rcfg).edgeSet();
-    }
 }
