@@ -30,7 +30,7 @@ public class CFGGenerator {
         if(!instrumentedClasses.isEmpty()){
             collectCFGS(instrumentedClasses);
         }else{
-            LOG.error("There is no instrumented classes!");
+            throw new IllegalArgumentException("There is no instrumented classes!");
         }
 
         generateRawGraph();
@@ -41,7 +41,7 @@ public class CFGGenerator {
     }
 
     // Logging the generated control dependence graph
-    private void logGeneratedCDG() {
+    protected void logGeneratedCDG() {
         for(BasicBlock block: controlDependenceInterProceduralGraph.vertexSet()){
             LOG.debug("DEPTH of {} is:",block.explain());
             for (ControlDependency cd : controlDependenceInterProceduralGraph.getControlDependentBranches(block)){
@@ -51,7 +51,7 @@ public class CFGGenerator {
     }
 
 
-    private void collectCFGS(List<Class> instrumentedClasses) {
+    protected void collectCFGS(List<Class> instrumentedClasses) {
         GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
         for (Class clazz : instrumentedClasses){
             Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(clazz.getName());
@@ -67,7 +67,7 @@ public class CFGGenerator {
         }
     }
 
-    private void generateRawGraph(){
+    protected void generateRawGraph(){
         // Collect interesting method's cfgs
         if(frameCFGs.size() != CrashProperties.getInstance().getStackTrace().getNumberOfFrames()){
             frameCFGs.clear();
@@ -105,7 +105,7 @@ public class CFGGenerator {
 
     }
 
-    private void CollectInterestingCFGs() {
+    protected void CollectInterestingCFGs() {
         ArrayList<StackTraceElement> frames = CrashProperties.getInstance().getStackTrace().getAllFrames();
         int targetFrameLevel = CrashProperties.getInstance().getStackTrace().getTargetFrameLevel();
         int frameCounter = 1;
@@ -182,7 +182,7 @@ public class CFGGenerator {
         }
     }
 
-    private HashMap<RawControlFlowGraph,List<BytecodeInstruction>> estimateTheRightLine(String className, String methodName, int lineNumber, int frameCounter, ArrayList<StackTraceElement> frames) {
+    protected HashMap<RawControlFlowGraph,List<BytecodeInstruction>> estimateTheRightLine(String className, String methodName, int lineNumber, int frameCounter, ArrayList<StackTraceElement> frames) {
         HashMap<RawControlFlowGraph,List<BytecodeInstruction>> candidates =  new HashMap<>();
         for (RawControlFlowGraph classCFG: cfgs.get(className)){
             if(classCFG.getMethodName().contains(methodName)){
@@ -199,11 +199,11 @@ public class CFGGenerator {
         return candidates;
     }
 
-    private boolean isIrrelevantFrame(String className, String methodName, int lineNumber,int frameCounter, ArrayList<StackTraceElement> frames) {
+    protected boolean isIrrelevantFrame(String className, String methodName, int lineNumber,int frameCounter, ArrayList<StackTraceElement> frames) {
         return (isNotInDomain(className,methodName,lineNumber) && frames.get(frameCounter-2).getMethodName().equals(methodName));
     }
 
-    private boolean isNotInDomain(String className, String methodName, int lineNumber) {
+    protected boolean isNotInDomain(String className, String methodName, int lineNumber) {
         for (RawControlFlowGraph classCFG: cfgs.get(className)){
             if(classCFG.getMethodName().contains(methodName)){
                 int maxLine = -1;
@@ -227,7 +227,7 @@ public class CFGGenerator {
     }
 
 
-    private boolean isPrivateMethod(RawControlFlowGraph acfg){
+    protected boolean isPrivateMethod(RawControlFlowGraph acfg){
         return (acfg.getMethodAccess() & Opcodes.ACC_PRIVATE) == Opcodes.ACC_PRIVATE;
     }
 
