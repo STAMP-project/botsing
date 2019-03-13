@@ -45,6 +45,12 @@
             <artifactId>gson</artifactId>
             <version>${gson.version}</version>
         </dependency>
+        <dependency>
+            <groupId>eu.stamp-project</groupId>
+            <artifactId>botsing-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

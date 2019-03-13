@@ -1,6 +1,6 @@
 package eu.stamp.botsing.model.generation.sourcecode;
 
-import eu.stamp.botsing.model.generation.BotsingTestGenerationContext;
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.model.generation.analysis.sourcecode.StaticAnalyser;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.BytecodeInstruction;

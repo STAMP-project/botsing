@@ -1,6 +1,6 @@
 package eu.stamp.botsing.model.generation.analysis.sourcecode;
 
-import eu.stamp.botsing.model.generation.BotsingTestGenerationContext;
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.model.generation.callsequence.CallSequencesPoolManager;
 import eu.stamp.botsing.model.generation.callsequence.MethodCall;
 import org.evosuite.graphs.GraphPool;

@@ -38,7 +38,7 @@
         </dependency>
         <dependency>
             <groupId>org.evosuite</groupId>
-            <artifactId>evosuite-client</artifactId>
+            <artifactId>evosuite-client-botsing</artifactId>
             <version>${evosuite-client.version}</version>
         </dependency>
         <dependency>
@@ -51,6 +51,11 @@
                     <artifactId>log4j-slf4j-impl</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>eu.stamp-project</groupId>
+            <artifactId>botsing-commons</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

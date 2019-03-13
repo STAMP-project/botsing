@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.StringTokenizer;
 
 public class StackTrace {
@@ -69,12 +70,15 @@ public class StackTrace {
                 if (tempFrame == null) {
                     break;
                 }
-                frames.add(stringToStackTraceElement(tempFrame));
-                allFrames.add(stringToStackTraceElement(tempFrame));
+
+                frames.add(stringToStackTraceElement(tempFrame,counter,true));
+                allFrames.add(stringToStackTraceElement(tempFrame,counter,false));
             }
             String tempFrame="";
+            int counter = frameLevel;
             while((tempFrame=reader.readLine())!=null && tempFrame.length()!=0 && tempFrame.contains("at")){
-                allFrames.add(stringToStackTraceElement(tempFrame));
+                allFrames.add(stringToStackTraceElement(tempFrame,counter,true));
+                counter++;
             }
             LOG.info("Target frame is set to: " + frames.get(frameLevel - 1).toString());
 
@@ -91,7 +95,7 @@ public class StackTrace {
         }
     }
 
-    private StackTraceElement stringToStackTraceElement(String frameString) {
+    private StackTraceElement stringToStackTraceElement(String frameString, int counter, boolean report) {
         int startPoint = frameString.indexOf("at ") + 3;
         String usefulPart = frameString.substring(startPoint);
         int splitPoint = usefulPart.indexOf("(");
@@ -101,8 +105,16 @@ public class StackTrace {
         //Line detection
         int lineFirstSplitpoint = usefulForLineDetection.indexOf(":") + 1;
         int lineSecondSplitpoint = usefulForLineDetection.indexOf(")");
+        int lineNumber = Integer.MIN_VALUE;
+        try{
+            lineNumber = Integer.parseInt(usefulForLineDetection.substring(lineFirstSplitpoint, lineSecondSplitpoint));
+        }catch (NumberFormatException e){
+            if(report){
+                LOG.warn("Missing line in frame {}",counter+1);
+            }
 
-        int lineNumber = Integer.parseInt(usefulForLineDetection.substring(lineFirstSplitpoint, lineSecondSplitpoint));
+        }
+
 
         String[] split = usefulForOtherParts.split("\\.");
         // method Detection
@@ -154,5 +166,14 @@ public class StackTrace {
         File file = new File(filePath);
         BufferedReader br = new BufferedReader(new FileReader(file));
         return br;
+    }
+
+    public List<String> getTargetClasses() {
+        List<String> classes = new ArrayList<>();
+        for(StackTraceElement frame: frames){
+            classes.add(frame.getClassName());
+            LOG.debug(frame.getClassName());
+        }
+        return classes;
     }
 }

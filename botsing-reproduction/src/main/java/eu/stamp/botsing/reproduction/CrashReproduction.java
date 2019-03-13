@@ -21,6 +21,7 @@ package eu.stamp.botsing.reproduction;
  */
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.graphs.cfg.CFGGenerator;
 import org.evosuite.Properties;
 import org.evosuite.TimeController;
 import org.evosuite.classpath.ClassPathHandler;
@@ -64,6 +65,7 @@ import java.util.*;
 public class CrashReproduction {
     private static final Logger LOG = LoggerFactory.getLogger(CrashReproduction.class);
 
+
     public static List<TestGenerationResult> execute(){
         CrashProperties crashProperties = CrashProperties.getInstance();
         List<TestGenerationResult> generatedTests = new ArrayList<TestGenerationResult>();
@@ -100,7 +102,12 @@ public class CrashReproduction {
 
         // In the first step initialize the target class
         try{
-            initializeTargetClass();
+//            analyzeClassPaths();
+            if(CrashProperties.integrationTesting){
+                initializeMultipleTargetClasses();
+            }else{
+                initializeTargetClass();
+            }
         }catch (Exception e){
             LOG.error("Error in target initialization:");
             e.printStackTrace();
@@ -133,6 +140,19 @@ public class CrashReproduction {
 
         return writingTest;
 
+    }
+
+    private static void analyzeClassPaths() throws ClassNotFoundException{
+        String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
+        List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
+        LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
+        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+        LOG.info("Analysing dependencies done!");
+    }
+
+    private static void initializeMultipleTargetClasses() {
+        CFGGenerator cfgGenerator = new CFGGenerator();
+        cfgGenerator.generateInterProceduralCFG();
     }
 
     private static void postProcessTests(TestSuiteChromosome testSuite) {

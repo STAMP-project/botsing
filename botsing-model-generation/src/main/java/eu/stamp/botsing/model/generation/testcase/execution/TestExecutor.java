@@ -1,6 +1,6 @@
 package eu.stamp.botsing.model.generation.testcase.execution;
 
-import eu.stamp.botsing.model.generation.BotsingTestGenerationContext;
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.Properties;
 import org.evosuite.ga.stoppingconditions.MaxTestsStoppingCondition;
 import org.evosuite.runtime.Runtime;
