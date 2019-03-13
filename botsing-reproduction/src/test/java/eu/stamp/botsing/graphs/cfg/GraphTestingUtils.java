@@ -16,6 +16,13 @@ public class GraphTestingUtils {
         Mockito.doReturn(methodName).when(stmt).getMethodName();
         return stmt;
     }
+    public BytecodeInstruction mockNewStatement(String className, String methodName,int lineNumber){
+        BytecodeInstruction stmt = Mockito.mock(BytecodeInstruction.class);
+        Mockito.doReturn(className).when(stmt).getClassName();
+        Mockito.doReturn(methodName).when(stmt).getMethodName();
+        Mockito.doReturn(lineNumber).when(stmt).getLineNumber();
+        return stmt;
+    }
 
     public void addMockedEdge(BytecodeInstruction[][] edges,RawControlFlowGraph rcfg){
         Set<ControlFlowEdge> edgeSet = new HashSet<>();
