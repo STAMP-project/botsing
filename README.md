@@ -19,7 +19,7 @@ The latest version of Botsing command line (botsing-reproduction-X-X-X.jar) is a
 Botsing has three mandatory parameters:
  - `-crash_log` the file with the stack trace. The stack trace should be clean (no error message) and cannot contain any nested exceptions.
  - `-target_frame` the target frame to reproduce. This number should be between 1 and the number of frames in the stack trace.
- - `-projectCP` the classpath of the project and all its dependencies. The classpath can be a folder containing all the  `.jar` files required to run the software under test.
+ - `-project_cp` the classpath of the project and all its dependencies. The classpath can be a folder containing all the  `.jar` files required to run the software under test.
  
 By default, Botsing uses the following parameter values:
  - `-Dsearch_budget=1800`, a time budget of 30 min. This value can be modified by specifying an additional parameter in format `-Dsearch_budget=60` (here, for 60 seconds). 
@@ -31,11 +31,11 @@ To check the list of options, use:
 ```sh
 $ java -jar botsing-reproduction.jar -help
 usage: java -jar botsing-reproduction.jar -crash_log stacktrace.log -target_frame 2
-            -projectCP dep1.jar;dep2.jar  )
+            -project_cp dep1.jar;dep2.jar  )
  -crash_log <arg>      File with the stack trace
  -D <property=value>   use value for given property
  -help                 Prints this help message.
- -projectCP <arg>      classpath of the project under test and all its
+ -project_cp <arg>      classpath of the project under test and all its
                        dependencies
  -target_frame <arg>   Level of the target frame
 ```
@@ -43,7 +43,7 @@ usage: java -jar botsing-reproduction.jar -crash_log stacktrace.log -target_fram
 #### Example
 
 ```
-java -jar botsing-reproduction.jar -crash_log LANG-1b.log -target_frame 2 -projectCP ~/bin
+java -jar botsing-reproduction.jar -crash_log LANG-1b.log -target_frame 2 -project_cp ~/bin
 ```
 
 
@@ -55,6 +55,18 @@ Botsing is licensed under Apache-2.0, pull request as are welcome.
 
 The coding style is described in [`checkstyle.xml`](checkstyle.xml). Please (successfully) run the command `mvn checkstyle:check` before submitting a pull request.
 
+### Building Botsing
+
+Currently, Botsing using a customized version of the EvoSuite-client. Hence, the building process contains two steps:
+1- Installing the customized version of EvoSuite-client:
+```
+mvn install:install-file -Dfile=botsing-reproduction/evosuite-client-botsing-1.0.6.jar -DgroupId=org.evosuite -DartifactId=evosuite-client-botsing -Dversion=1.0.6 -Dpackaging=jar
+```
+2- Build the Botsing project:
+
+```
+mvn package
+```
 
 ### Adding a dependency
 

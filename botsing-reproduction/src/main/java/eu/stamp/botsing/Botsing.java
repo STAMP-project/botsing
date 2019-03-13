@@ -161,7 +161,7 @@ public class Botsing {
 
     private void printHelpMessage(Options options) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar botsing.jar -crash_log stacktrace.log -target_frame 2 -projectCP dep1.jar;dep2.jar  )", options);
+        formatter.printHelp("java -jar botsing.jar -crash_log stacktrace.log -target_frame 2 -project_cp dep1.jar;dep2.jar  )", options);
     }
 
     @SuppressWarnings("checkstyle:systemexit")

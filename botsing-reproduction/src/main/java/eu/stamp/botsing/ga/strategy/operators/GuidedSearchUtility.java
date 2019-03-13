@@ -30,6 +30,9 @@ public class GuidedSearchUtility<T extends Chromosome> {
     public Set<String> publicCalls = new HashSet<String>();
 
     public boolean includesPublicCall (T individual) {
+        if(publicCalls.size()==0){
+            getPublicCalls();
+        }
         Iterator<String> publicCallsIterator = publicCalls.iterator();
         TestChromosome candidateChrom = (TestChromosome) individual;
         TestCase candidate = candidateChrom.getTestCase();

@@ -31,14 +31,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+
 
 
 public class CrashProperties {
 
     private static final Logger LOG = LoggerFactory.getLogger(CrashProperties.class);
+    public static final String CONFIG_PROPERTIES_FILE_NAME = "config.properties";
 
     private static CrashProperties instance = null;
     private StackTrace crash = new StackTrace();
@@ -128,10 +127,7 @@ public class CrashProperties {
 
     private void loadConfig() {
         try {
-            String user_dir = System.getProperty("user.dir");
-            Path configDir = Paths.get(user_dir, "src","main","java","eu","stamp","botsing","config.properties");
-//            InputStream inputstream = getClass().getClassLoader().getResourceAsStream(configDir.toString());
-            InputStream inputstream = new FileInputStream(configDir.toString());
+            InputStream inputstream = getClass().getClassLoader().getResourceAsStream(CONFIG_PROPERTIES_FILE_NAME);
             configFile.load(inputstream);
         } catch (FileNotFoundException eta) {
             LOG.error("Default config.properties file not found in the resources of the jar file!");
