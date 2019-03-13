@@ -18,8 +18,8 @@ public class CFGGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(CFGGenerator.class);
 
     ClassInstrumentation classInstrumenter = new ClassInstrumentation();
-    private Map<String,List<RawControlFlowGraph>> cfgs = new HashMap<>();
-    private List<FrameControlFlowGraph> frameCFGs =  new LinkedList<>();
+    protected Map<String,List<RawControlFlowGraph>> cfgs = new HashMap<>();
+    protected List<FrameControlFlowGraph> frameCFGs =  new LinkedList<>();
     private BotsingRawControlFlowGraph rawInterProceduralGraph;
     private ActualControlFlowGraph actualInterProceduralGraph;
     private ControlDependenceGraph controlDependenceInterProceduralGraph;
@@ -67,6 +67,10 @@ public class CFGGenerator {
         }
     }
 
+    protected BotsingRawControlFlowGraph makeBotsingRawControlFlowGraphObject(int methodAccess){
+        return new BotsingRawControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"IntegrationTestingGraph","methodsIntegration",methodAccess);
+    }
+
     protected void generateRawGraph(){
         // Collect interesting method's cfgs
         if(frameCFGs.size() != CrashProperties.getInstance().getStackTrace().getNumberOfFrames()){
@@ -83,7 +87,7 @@ public class CFGGenerator {
                 LOG.debug("~~~~~~~~~~~~~~~~");
 
                 if(cfgCounter == 0){
-                    rawInterProceduralGraph = new BotsingRawControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"IntegrationTestingGraph","methodsIntegration",fcfg.getRcfg().getMethodAccess());
+                    rawInterProceduralGraph = makeBotsingRawControlFlowGraphObject(fcfg.getRcfg().getMethodAccess());
                     rawInterProceduralGraph.clone(fcfg.getRcfg());
                 }else if (src != null){
                     BytecodeInstruction target = fcfg.getRcfg().determineEntryPoint();
@@ -96,7 +100,10 @@ public class CFGGenerator {
                 cfgCounter++;
             }
 
-            LOG.debug("FINAL Result: {}",rawInterProceduralGraph.toString());
+            if(frameCFGs.size() > 0){
+                LOG.debug("FINAL Result: {}",rawInterProceduralGraph.toString());
+            }
+
 
 
         }
@@ -153,7 +160,7 @@ public class CFGGenerator {
                 boolean fixed = false;
                 LOG.warn("Could not find the cfg of class {}, method {}, and line number {}.",className,methodName,lineNumber);
                 HashMap<RawControlFlowGraph,List<BytecodeInstruction>> candidates = estimateTheRightLine(className,methodName,lineNumber,frameCounter,frames);
-                if(isIrrelevantFrame(className,methodName,lineNumber,frameCounter,frames)){
+                if(frameCounter>1 && isIrrelevantFrame(className,methodName,lineNumber,frameCounter,frames)){
                     LOG.info("Frame level {} is an irrelevant frame. We do not count it in the InterProcedural graph",frameCounter);
                     fixed=true;
                 }else if(candidates.size()>0) {
