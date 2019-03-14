@@ -88,9 +88,8 @@ public class BotsingMojo extends AbstractMojo {
 	* the seed used to initialize the random number generator. This value allows to have deterministic
 	* behavior and should be set when performing evaluations
 	*/
-	@Parameter(defaultValue = "100", property = "random_seed")
+	@Parameter(property = "random_seed")
 	private Long randomSeed;
-	// TODO da controllare il valore del default!
 
 	/**
 	 * Maven variables

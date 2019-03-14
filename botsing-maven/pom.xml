@@ -38,11 +38,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.apache.maven.plugin-testing</groupId>
-			<artifactId>maven-plugin-testing-harness</artifactId>
-			<version>${maven-plugin-testing-harness.version}</version>
-		</dependency>
+
 
 		<dependency>
 			<groupId>org.apache.maven</groupId>
@@ -74,10 +70,26 @@
 				<version>${maven-dependency-plugin.version}</version>
 		</dependency>
 
+		<!-- test dependencies -->
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven.plugin-testing</groupId>
+			<artifactId>maven-plugin-testing-harness</artifactId>
+			<version>${maven-plugin-testing-harness.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven.shared</groupId>
+			<artifactId>maven-verifier</artifactId>
+			<version>${maven-verifier.version}</version>
 			<scope>test</scope>
 		</dependency>
 
