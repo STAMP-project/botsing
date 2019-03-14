@@ -60,7 +60,7 @@ The coding style is described in [`checkstyle.xml`](checkstyle.xml). Please (suc
 Currently, Botsing using a customized version of the EvoSuite-client. Hence, the building process contains two steps:
 1- Installing the customized version of EvoSuite-client:
 ```
-mvn install:install-file -Dfile=botsing-reproduction/evosuite-client-botsing-1.0.6.jar -DgroupId=org.evosuite -DartifactId=evosuite-client-botsing -Dversion=1.0.6 -Dpackaging=jar
+mvn install:install-file -Dfile=botsing-reproduction/evosuite-client-botsing-1.0.7.jar -DgroupId=org.evosuite -DartifactId=evosuite-client-botsing -Dversion=1.0.7 -Dpackaging=jar
 ```
 2- Build the Botsing project:
 
