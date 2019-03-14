@@ -1,4 +1,4 @@
-package eu.stamp_project.botsing;
+package eu.stamp.botsing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,8 +8,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -21,49 +22,65 @@ import org.apache.commons.cli.ParseException;
 public class Main {
 
 	static public Options options = initOptions();
+	private static String HYPHENS =  "---";
+	
 
 	public static Options initOptions() {
 		Options opt = new Options();
-		// define options
+		// define flags
 		Option flatten = new Option("f", "flatten", false, "use this option to flatten the stack trace");
 		Option error = new Option("e", "error_message", false, "use this option to remove the error message");
-		Option annotations = new Option("a", "annotations", false, "use this option to remove the frames related to annotations");
-		flatten.setType(Boolean.class);
-		Option crash_log = new Option("l", "crash_log", true, "path to the input stack trace");
+
+		// define parameters
+		Option crash_log = new Option("i", "crash_log", true, "path to the input stack trace");
 		Option output_log = new Option("o", "output_log", true, "path to the output stack trace after processing");
-		Option source = new Option("s", "source", true, "path to the source ZIP");
-		opt.addOption(flatten);
+		Option source = new Option("p", "package", true, "regular expression package pointing to the classes of the project");
+		
+		// define required options
+		crash_log.setRequired(true);
+		output_log.setRequired(true);
+		
 		opt.addOption(crash_log);
 		opt.addOption(output_log);
 		opt.addOption(source);
-		opt.addOption(error);
-		opt.addOption(annotations);
+		opt.addOption(flatten);
+		opt.addOption(error);		
+		
 		return opt;
 	}
 
 	public static void main(String[] args) {
-		if(args.length==0){
-			System.out.println("Available options are:");
-			System.out.println(options.toString());
-			System.exit(1);
-		}			
+		if(args.length == 0){
+			printOptions();			
+		}	
+		
 		CommandLineParser parser = new DefaultParser();
 		try {
 			CommandLine cli = parser.parse(options, args);
 			boolean f = cli.hasOption('f');
 			boolean e = cli.hasOption('e');
-			boolean a = cli.hasOption('a');
-			String input = cli.getOptionValue('l');
+
+			String input = cli.getOptionValue('i');
 			String output = cli.getOptionValue('o');
-			String source = cli.getOptionValue('s');
-			preprocess(f, a, e, input, output, source);
-		} catch (ParseException e) {
-			System.out.println(e.getMessage());
-			System.out.println("wrong arguments. Available options are:");
-			System.out.println(options.toString());
-			System.exit(1);
-		} catch (FileNotFoundException e1) {
-			System.out.println(e1.getMessage());
+			String regexp = cli.getOptionValue('p');//package
+			
+			if (!(f || e)){
+				System.out.println("Wrong arguments. No '-f' or '-e' flag selected");
+				printOptions();
+			}
+
+			if (f && regexp == null){
+				System.out.println("Wrong arguments. For '-f' flag, it's necessary to set the regexp with '-p'");
+				printOptions();
+			}
+			
+			preprocess(f, e, input, output, regexp);		
+				
+		} catch (ParseException e) {		
+			System.out.println("Wrong arguments. " + e.getMessage());
+			printOptions();
+		} catch (FileNotFoundException e) {
+			System.out.println("Wrong arguments. " + e.getMessage());
 			System.exit(1);
 		}
 	}
@@ -72,8 +89,6 @@ public class Main {
 	 * Performs the pre-processing on the stack trace based on the options
 	 * @param flatten
 	 * 			if true, a chained stack trace is flattened
-	 * @param annotations
-	 * 			if true, remove annotations
 	 * @param error
 	 * 			if true, remove the error message
 	 * @param input
@@ -81,30 +96,29 @@ public class Main {
 	 * @param output
 	 *          output file path
 	 */
-	public static void preprocess(boolean flatten, boolean annotations, boolean error, String input, String output, String source) throws FileNotFoundException {
+	public static void preprocess(boolean flatten, boolean error, String input, String output, String regexp) throws FileNotFoundException {
 		File inputFile = new File(input);
 		if (!inputFile.exists()) {
-			throw new FileNotFoundException("Input file does not exist! Exiting...");
+			throw new FileNotFoundException("Input file name '" + inputFile + "' does not exist!");
 		}
 		File outFile = new File(output);
 		if (outFile.exists()) {
-			throw new FileNotFoundException("Output file already exists! Exiting...");
+			outFile.delete();
 		}
 		List<String> lines = fileToLines(inputFile);
+		
+		//pre-processing
 		if (flatten) {
-			lines = StackFlatten.get().preprocess(lines);
+			lines = StackFlatten.get().preprocess(lines, regexp);
 		}
 		if (error) {
-			lines = ErrorMessage.get().preprocess(lines);
+			lines = ErrorMessage.get().preprocess(lines, null);
 		}
-		if (annotations) {
-			File sourceFile = new File(source);
-			if (!sourceFile.exists()) {
-				throw new FileNotFoundException("Zip source file does not exist! Exiting...");
-			}
-			lines = AnnotationMessage.get(source).preprocess(lines);
-		}
+		
+		//generate output log file
 		linesToFile(lines, outFile);
+		
+		System.out.println("End pre-processing");
 	}
 
 	/**
@@ -118,7 +132,18 @@ public class Main {
 		List<String> lines = new ArrayList<>();
 		try (BufferedReader reader = new BufferedReader(new FileReader(log))) {
 			// returns as stream and convert it into a List
-			lines = reader.lines().collect(Collectors.toList());
+			boolean first = false;
+			Iterator<String> i = reader.lines().iterator();
+			while (i.hasNext()) {
+				String line = i.next();
+				if (line.startsWith(HYPHENS)){//read stack trace inside the first and the second hyphens ('---')
+					if (!first)
+						first = true;
+					else
+						break;
+				}else
+					lines.add(line);		
+			}
 			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -150,5 +175,27 @@ public class Main {
 		}
 		return out;
 	}
+	
+	static void printOptions(){
+		Collection<Option> ops = options.getOptions();
+		System.out.println("Available options are:");
+		ops.forEach(
+			(ele)->{
+				System.out.print("-" + ele.getOpt() + " " + ele.getLongOpt());
+				if (ele.isRequired())
+					System.out.print(" [required] ");
+				else
+					System.out.print(" [optional] ");
+				System.out.print("type: ");
+				if (ele.hasArg())
+					System.out.print("param");
+				else
+					System.out.print("flag");
+				System.out.println(", description: " + ele.getDescription());
+			}
+		);
+		System.exit(1);
+	}
+
 
 }
