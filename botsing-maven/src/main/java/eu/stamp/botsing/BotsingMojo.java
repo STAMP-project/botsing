@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -14,7 +15,12 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -31,150 +37,232 @@ import org.eclipse.aether.resolution.ArtifactResult;
 @Mojo(name = "botsing", defaultPhase = LifecyclePhase.VERIFY, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class BotsingMojo extends AbstractMojo {
 
-    /**
-     * To see all the properties available take a look at org.evosuite.Properties.java
-     */
+	/**
+	 * To see all the properties available take a look at org.evosuite.Properties.java
+	 */
 
-    /**
-     * Folder with dependencies to run the project
-     */
-    @Parameter(property = "project_cp")
-    private String projectCP;
+	/**
+	 * Folder with dependencies to run the project
+	 */
+	@Parameter(property = "project_cp")
+	private String projectCP;
 
-    /**
-     * Log file with the stacktrace
-     */
-    @Parameter(defaultValue = "sample.log", property = "crash_log")
-    private String crashLog;
+	/**
+	 * Log file with the stacktrace
+	 */
+	@Parameter(defaultValue = "sample.log", property = "crash_log")
+	private String crashLog;
 
-    /**
-     * The frame level up to which parse the stack trace
-     */
-    @Parameter(defaultValue = "3", property = "target_frame")
-    private Integer targetFrame;
+	/**
+	 * The frame level up to which parse the stack trace
+	 */
+	@Parameter(defaultValue = "3", property = "target_frame")
+	private Integer targetFrame;
 
-    /**
-     * Maven variables
-     */
-    @Parameter(defaultValue = "${project}", required = true, readonly = true)
-    private MavenProject project;
+	/**
+	* the size of the population that evolves during the search with a default value of 100
+	*/
+	@Parameter(defaultValue = "100", property = "population")
+	private Integer population;
 
-    @Component
-    private RepositorySystem repoSystem;
+	/**
+	* the search budget in seconds with a default value of 1800
+	*/
+	@Parameter(defaultValue = "1800", property = "search_budget")
+	private Integer searchBudget;
 
-    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
-    private RepositorySystemSession repoSession;
+	/**
+	* the global timeout in seconds, after which the execution stops if the search is
+	* stuck with a default value of 1800 (the timeout is only reached if the search does not improve after 1800 seconds)
+	*/
+	@Parameter(defaultValue = "1800", property = "global_timeout")
+	private Integer globalTimeout;
 
-    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true)
-    private List<RemoteRepository> repositories;
+	/**
+	* the directory where the tests are generated with a default value of `crashreproduction-tests`
+	*/
+	@Parameter(defaultValue = "crashreproduction-tests", property = "test_dir")
+	private String testDir;
 
-    @Override
-    public void execute() throws MojoExecutionException {
-        getLog().info("Starting Botsing to generate tests with EvoSuite");
-        Botsing botsing = new Botsing();
-        List<String> propertiesList = new ArrayList<String>();
+	/**
+	* the seed used to initialize the random number generator. This value allows to have deterministic
+	* behavior and should be set when performing evaluations
+	*/
+	@Parameter(property = "random_seed")
+	private Long randomSeed;
 
-        propertiesList.add("-"+CommandLineParameters.CRASH_LOG_OPT);
-        propertiesList.add(crashLog);
+	/**
+	 * Maven variables
+	 */
+	@Parameter(defaultValue = "${project}", required = true, readonly = true)
+	private MavenProject project;
 
-        propertiesList.add("-"+CommandLineParameters.TARGET_FRAME_OPT);
-        propertiesList.add(targetFrame.toString());
+	@Component
+	private RepositorySystem repoSystem;
 
-        String dependencies = null;
-        if (projectCP != null) {
-            dependencies = getDependenciesFromFolder(projectCP);
-        } else {
-            dependencies = getDependenciesFromPom();
-        }
+	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
+	private RepositorySystemSession repoSession;
 
-        getLog().debug("dependencies: " + dependencies);
-        propertiesList.add("-"+CommandLineParameters.PROJECT_CP_OPT);
-        propertiesList.add(dependencies);
+	@Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true)
+	private List<RemoteRepository> repositories;
 
-        try {
-            // Start Botsing
-            botsing.parseCommandLine(propertiesList.toArray(new String[0]));
+	@Parameter( defaultValue = "${session}", required = true, readonly = true )
+	private MavenSession session;
 
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error executing Botsing", e);
-        }
+	/**
+	 * Contains the full list of projects in the reactor.
+	 */
+	@Parameter( defaultValue = "${reactorProjects}", readonly = true, required = true )
+	private List<MavenProject> reactorProjects;
 
-        getLog().info("Stopping Botsing");
-    }
+	/**
+	 * The dependency tree builder to use.
+	 */
+	@Component( hint = "default" )
+	private DependencyGraphBuilder dependencyGraphBuilder;
 
-    public String getDependenciesFromPom() throws MojoExecutionException {
-        String result = "";
+	@Override
+	public void execute() throws MojoExecutionException {
+		getLog().info("Starting Botsing to generate tests with EvoSuite");
+		Botsing botsing = new Botsing();
+		List<String> propertiesList = new ArrayList<String>();
 
-        // Add ./target/classes
-        result += project.getModel().getBuild().getDirectory() + File.separator + "classes" + File.pathSeparator;
+		propertiesList.add("-"+CommandLineParameters.CRASH_LOG_OPT);
+		propertiesList.add(crashLog);
 
-        // Add pom project dependencies
-        for (Artifact unresolvedArtifact : this.project.getDependencyArtifacts()) {
-            File file = getArtifactFile(unresolvedArtifact);
+		propertiesList.add("-"+CommandLineParameters.TARGET_FRAME_OPT);
+		propertiesList.add(targetFrame.toString());
 
-            result += file.getAbsolutePath() + File.pathSeparator;
-        }
+		String dependencies = null;
+		if (projectCP != null) {
+			dependencies = getDependenciesFromFolder(projectCP);
+		} else {
+			dependencies = getDependenciesFromPom();
+		}
 
-        return result;
-    }
+		getLog().debug("dependencies: " + dependencies);
+		propertiesList.add("-"+CommandLineParameters.PROJECT_CP_OPT);
+		propertiesList.add(dependencies);
 
-    private File getArtifactFile(Artifact artifact) throws MojoExecutionException {
-        /**
-         * Taken from https://gist.github.com/vincent-zurczak/282775f56d27e12a70d3
-         */
+		try {
+			// Start Botsing
+			botsing.parseCommandLine(propertiesList.toArray(new String[0]));
 
-        // We ask Maven to resolve the artifact's location.
-        // It may imply downloading it from a remote repository,
-        // searching the local repository or looking into the reactor's cache.
+		} catch (Exception e) {
+			throw new MojoExecutionException("Error executing Botsing", e);
+		}
 
-        // To achieve this, we must use Aether
-        // (the dependency mechanism behind Maven).
-        String artifactId = artifact.getArtifactId();
-        org.eclipse.aether.artifact.Artifact aetherArtifact = new DefaultArtifact(artifact.getGroupId(),
-                artifact.getArtifactId(), artifact.getClassifier(), artifact.getType(), artifact.getVersion());
+		getLog().info("Stopping Botsing");
+	}
 
-        ArtifactRequest req = new ArtifactRequest().setRepositories(this.repositories).setArtifact(aetherArtifact);
-        ArtifactResult resolutionResult;
-        try {
-            resolutionResult = this.repoSystem.resolveArtifact(this.repoSession, req);
+	public String getDependenciesFromPom() throws MojoExecutionException {
+		String result = "";
 
-        } catch (ArtifactResolutionException e) {
-            throw new MojoExecutionException("Artifact " + artifactId + " could not be resolved.", e);
-        }
+		// Add ./target/classes
+		result += project.getModel().getBuild().getDirectory() + File.separator + "classes" + File.pathSeparator;
 
-        // The file should exists, but we never know.
-        File file = resolutionResult.getArtifact().getFile();
-        if (file == null || !file.exists()) {
-            getLog().warn("Artifact " + artifactId
-                    + " has no attached file. Its content will not be copied in the target model directory.");
-        }
+		// Add ./target/test-classes
+		String testClasses = project.getModel().getBuild().getDirectory() + File.separator + "test-classes";
+		if (new File(testClasses).exists()) {
+			result += testClasses + File.pathSeparator;
+		}
 
-        return file;
-    }
+		// Add pom project dependencies
+		for (Artifact unresolvedArtifact : getDependencyTree()) {
+			File file = getArtifactFile(unresolvedArtifact);
 
-    public static String getDependenciesFromFolder(String dependenciesFolder) {
-        String result = "";
+			result += file.getAbsolutePath() + File.pathSeparator;
+		}
 
-        if (dependenciesFolder == null) {
-            return result;
-        }
+		return result;
+	}
 
-        File depFolder = new File(dependenciesFolder);
-        File[] listOfFilesInSourceFolder = depFolder.listFiles();
+	public List<Artifact> getDependencyTree() throws MojoExecutionException {
+		try {
+			ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+			buildingRequest.setProject( project );
 
-        for (int i = 0; i < listOfFilesInSourceFolder.length; i++) {
+			// TODO check if it is necessary to specify an artifact filter
+			DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph( buildingRequest, null, reactorProjects );
 
-            if (listOfFilesInSourceFolder[i].getName().charAt(0) != '.') {
-                Path depPath = Paths.get(depFolder.getAbsolutePath(), listOfFilesInSourceFolder[i].getName());
-                String dependency = depPath.toString();
+			List<Artifact> artifactList = new ArrayList<Artifact>();
+			addChildDependencies(rootNode, artifactList);
 
-                result += (dependency + File.pathSeparator);
-            }
-        }
+			return artifactList;
 
-        result = result.substring(0, result.length() - 1);
+		} catch (DependencyGraphBuilderException e) {
+			throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);
+		}
+	}
 
-        return result;
-    }
+	private void addChildDependencies(DependencyNode node, List<Artifact> list) {
+		List<DependencyNode> children = node.getChildren();
+
+		if (children != null) {
+			for (DependencyNode child : children) {
+				list.add(child.getArtifact());
+				addChildDependencies(child, list);
+			}
+		}
+	}
+
+	private File getArtifactFile(Artifact artifact) throws MojoExecutionException {
+		/**
+		 * Taken from https://gist.github.com/vincent-zurczak/282775f56d27e12a70d3
+		 */
+
+		// We ask Maven to resolve the artifact's location.
+		// It may imply downloading it from a remote repository,
+		// searching the local repository or looking into the reactor's cache.
+
+		// To achieve this, we must use Aether
+		// (the dependency mechanism behind Maven).
+		String artifactId = artifact.getArtifactId();
+		org.eclipse.aether.artifact.Artifact aetherArtifact = new DefaultArtifact(artifact.getGroupId(),
+				artifact.getArtifactId(), artifact.getClassifier(), artifact.getType(), artifact.getVersion());
+
+		ArtifactRequest req = new ArtifactRequest().setRepositories(this.repositories).setArtifact(aetherArtifact);
+		ArtifactResult resolutionResult;
+		try {
+			resolutionResult = this.repoSystem.resolveArtifact(this.repoSession, req);
+
+		} catch (ArtifactResolutionException e) {
+			throw new MojoExecutionException("Artifact " + artifactId + " could not be resolved.", e);
+		}
+
+		// The file should exists, but we never know.
+		File file = resolutionResult.getArtifact().getFile();
+		if (file == null || !file.exists()) {
+			getLog().warn("Artifact " + artifactId
+					+ " has no attached file. Its content will not be copied in the target model directory.");
+		}
+
+		return file;
+	}
+
+	public static String getDependenciesFromFolder(String dependenciesFolder) {
+		String result = "";
+
+		if (dependenciesFolder == null) {
+			return result;
+		}
+
+		File depFolder = new File(dependenciesFolder);
+		File[] listOfFilesInSourceFolder = depFolder.listFiles();
+
+		for (int i = 0; i < listOfFilesInSourceFolder.length; i++) {
+
+			if (listOfFilesInSourceFolder[i].getName().charAt(0) != '.') {
+				Path depPath = Paths.get(depFolder.getAbsolutePath(), listOfFilesInSourceFolder[i].getName());
+				String dependency = depPath.toString();
+
+				result += (dependency + File.pathSeparator);
+			}
+		}
+
+		result = result.substring(0, result.length() - 1);
+
+		return result;
+	}
 
 }

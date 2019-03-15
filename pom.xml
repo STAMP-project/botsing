@@ -84,13 +84,16 @@
         <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
         <maven-compat.version>3.5.4</maven-compat.version>
         <maven-core.version>3.5.4</maven-core.version>
+        <maven-dependency-plugin.version>3.1.1</maven-dependency-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
         <maven-model.version>3.5.4</maven-model.version>
         <maven-plugin-annotations.version>3.5.2</maven-plugin-annotations.version>
         <maven-plugin-api.version>3.5.4</maven-plugin-api.version>
         <maven-plugin-testing-harness.version>3.3.0</maven-plugin-testing-harness.version>
-        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+        <maven-verifier.version>1.6</maven-verifier.version>
+	
+	<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-source-plugin.version>2.4</maven-source-plugin.version>
         <mockito.version>2.23.0</mockito.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
@@ -268,7 +271,7 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <!-- <version>${coveralls-maven-plugin.version}</version> -->
-            </plugin>
+		</plugin>
         </plugins>
         <pluginManagement>
             <plugins>
