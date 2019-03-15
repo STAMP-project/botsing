@@ -21,25 +21,41 @@ package eu.stamp.botsing.fitnessfunction;
  * #L%
  */
 
+import eu.stamp.botsing.CrashProperties;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
+import org.evosuite.testcase.TestFitnessFunction;
 
 public class FitnessFunctionHelper {
 
-    public static boolean isConstructor(BytecodeInstruction targetInstruction){
+    public boolean isConstructor(BytecodeInstruction targetInstruction){
         String methodName = targetInstruction.getMethodName();
         methodName = methodName.substring(0, methodName.indexOf('('));
         String classPath = targetInstruction.getClassName();
-        System.out.println(methodName+" "+classPath);
         int lastOccurrence = classPath.lastIndexOf(".");
         if (lastOccurrence == -1){
             return false;
         }
         String className = classPath.substring(lastOccurrence+1);
-        if(className.equals(methodName)){
-            return true;
+        return className.equals(methodName);
+
+    }
+
+    public TestFitnessFunction getSingleObjective(int index){
+        if(CrashProperties.fitnessFunctions.length < index){
+            return null;
         }
-
-        return false;
-
+        switch (CrashProperties.fitnessFunctions[index]){
+            case WeightedSum:
+                return new WeightedSum();
+            default:
+                return new WeightedSum();
+        }
+    }
+    public TestFitnessFunction[] getMultiObjectives(){
+        TestFitnessFunction[] result =  new TestFitnessFunction[CrashProperties.fitnessFunctions.length];
+        for (int i = 0; i<CrashProperties.fitnessFunctions.length;i++){
+            result[i]= getSingleObjective(i);
+        }
+        return result;
     }
 }

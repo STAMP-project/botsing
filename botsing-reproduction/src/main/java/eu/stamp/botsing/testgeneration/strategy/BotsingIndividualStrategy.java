@@ -21,9 +21,11 @@ package eu.stamp.botsing.testgeneration.strategy;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.RootMethodTestChromosomeFactory;
-import eu.stamp.botsing.ga.strategy.SingleObjectiveGGA;
+import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
+import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
+import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -31,6 +33,8 @@ import org.evosuite.ga.stoppingconditions.GlobalTimeStoppingCondition;
 import org.evosuite.ga.stoppingconditions.MaxTimeStoppingCondition;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.evosuite.ga.stoppingconditions.ZeroFitnessStoppingCondition;
+import org.evosuite.seeding.ObjectPool;
+import org.evosuite.seeding.ObjectPoolManager;
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
@@ -38,9 +42,15 @@ import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Resource;
+
 // This strategy selects one coverage goal. In the current version, this single goal is crash coverage
 public class BotsingIndividualStrategy extends TestGenerationStrategy {
     private static final Logger LOG = LoggerFactory.getLogger(BotsingIndividualStrategy.class);
+
+    @Resource
+    FitnessFunctionHelper fitnessFunctionHelper =  new FitnessFunctionHelper();
 
     @Override
     public TestSuiteChromosome generateTests() {
@@ -49,7 +59,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         TestSuiteChromosome suite = new TestSuiteChromosome();
         StoppingCondition stoppingCondition = getStoppingCondition();
         try {
-            stoppingCondition.setLimit(CrashProperties.getLongValue("search_budget"));
+            stoppingCondition.setLimit(CrashProperties.getInstance().getLongValue("search_budget"));
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (Properties.NoSuchParameterException e) {
@@ -71,6 +81,14 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         }
         TestFitnessFunction ff = getFF();
         ga.addFitnessFunction(ff);
+
+        // prepare model seeding before generating the solution
+        if(Properties.MODEL_PATH != null){
+            ModelSeedingHelper modelSeedingHelper = new ModelSeedingHelper(Properties.MODEL_PATH);
+            ObjectPool pool = modelSeedingHelper.generatePool();
+            ObjectPoolManager.getInstance().addPool(pool);
+            Properties.ALLOW_OBJECT_POOL_USAGE=true;
+        }
         ga.generateSolution();
 
 
@@ -83,6 +101,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
         }else{
             LOG.info("* The target crash is not covered! The best solution has "+ga.getBestIndividual().getFitness()+" fitness value.");
+            LOG.info("The best test is:(non-minimized version:\n)",((TestChromosome) ga.getBestIndividual()).toString());
         }
 
         // after finishing the search check: ga.getBestIndividual().getFitness() == 0.0
@@ -95,17 +114,17 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     private GeneticAlgorithm getGA(){
         switch (CrashProperties.searchAlgorithm){
             case Single_Objective_GGA:
-                return new SingleObjectiveGGA(getChromosomeFactory());
+                return new GuidedGeneticAlgorithm(getChromosomeFactory());
             default:
-                return new SingleObjectiveGGA(getChromosomeFactory());
+                return new GuidedGeneticAlgorithm(getChromosomeFactory());
         }
     }
 
     private ChromosomeFactory<TestChromosome> getChromosomeFactory() {
-        return new RootMethodTestChromosomeFactory();
+        return new RootMethodTestChromosomeFactory(new GuidedSearchUtility());
     }
 
     private TestFitnessFunction getFF(){
-        return new WeightedSum(CrashProperties.getTargetException());
+        return fitnessFunctionHelper.getSingleObjective(0);
     }
 }

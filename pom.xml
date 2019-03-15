@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>eu.stamp-project</groupId>
     <artifactId>botsing</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>botsing</name>
-    <description>Botsing is a Java framework for crash replication using evolutionary algorithms.</description>
+    <name>Botsing</name>
+    <description>Botsing is a Java framework for crash reproduction using evolutionary algorithms.</description>
+    <url>https://www.stamp-project.eu/</url>
     <inceptionYear>2017</inceptionYear>
 
     <organization>
@@ -68,28 +67,45 @@
         <license.licenseName>apache_v2</license.licenseName>
         <!-- Dependencies versions -->
         <!-- To ensure a proper management of dependencies, all versions have to be declared here -->
+        <antlr.version>4.7.2</antlr.version>
         <build-helper-maven-plugin.version>1.12</build-helper-maven-plugin.version>
-        <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
-        <hamcrest-all.version>1.3</hamcrest-all.version>
-        <jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
+        <commons-cli.version>1.4</commons-cli.version>
+        <!-- <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version> -->
+        <evosuite-client.version>1.0.7</evosuite-client.version>
+        <guava.version>27.0.1-jre</guava.version>
+
+        <hamcrest.version>2.0.0.0</hamcrest.version>
+        <jacoco-maven-plugin.version>0.8.3</jacoco-maven-plugin.version>
         <junit.version>4.12</junit.version>
         <license-maven-plugin.version>1.16</license-maven-plugin.version>
+        <logback-classic.version>1.1.3</logback-classic.version>
+        <maven-aether-provider.version>3.3.9</maven-aether-provider.version>
         <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
-        <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
+        <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
+        <maven-compat.version>3.5.4</maven-compat.version>
+        <maven-core.version>3.5.4</maven-core.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
+        <maven-model.version>3.5.4</maven-model.version>
+        <maven-plugin-annotations.version>3.5.2</maven-plugin-annotations.version>
+        <maven-plugin-api.version>3.5.4</maven-plugin-api.version>
+        <maven-plugin-testing-harness.version>3.3.0</maven-plugin-testing-harness.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-source-plugin.version>2.4</maven-source-plugin.version>
+        <mockito.version>2.23.0</mockito.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-        <evosuite-client.version>1.0.6</evosuite-client.version>
-        <commons-cli.version>1.4</commons-cli.version>
-        <asm.version>6.2.1</asm.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <wagon-ssh.version>2.12</wagon-ssh.version>
+        <gson.version>2.8.5</gson.version>
+        <yami.version>1.1.0</yami.version>
+        <vibes.version>2.0.2</vibes.version>
+        <maven-shade-plugin.version>3.1.0</maven-shade-plugin.version>
     </properties>
 
     <profiles>
         <profile>
             <!-- Define a profile for releases of the application -->
-            <!-- mvn release:prepare release:perform -P release -->
+            <!-- mvn release:prepare release:perform -P release -DskipTests=true -->
             <id>release</id>
             <build>
                 <plugins>
@@ -172,6 +188,13 @@
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.maven.wagon</groupId>
+                                <artifactId>wagon-ssh</artifactId>
+                                <version>${wagon-ssh.version}</version>
+                            </dependency>
+                        </dependencies>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -201,6 +224,10 @@
                     <configLocation>checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failOnViolation>true</failOnViolation>
+                    <sourceDirectories>
+                        <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                        <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                    </sourceDirectories>
                 </configuration>
                 <executions>
                     <execution>
@@ -240,15 +267,153 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>${coveralls-maven-plugin.version}</version>
+                <!-- <version>${coveralls-maven-plugin.version}</version> -->
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven-shade-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>shade</goal>
+                            </goals>
+                            <configuration>
+                                <shadedArtifactAttached>false</shadedArtifactAttached>
+                                <createDependencyReducedPom>true</createDependencyReducedPom>
+                                <!-- do not change "org.evosuite.shaded." as it used in some of the java classes -->
+                                <relocations>
+                                    <relocation>
+                                        <pattern>org.objectweb.asm</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.objectweb.asm</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.hibernate</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.hibernate</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.hsqldb</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.hsqldb</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.jboss</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.jboss</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.springframework</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.springframework</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.apache.commons.logging</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.apache.commons.logging</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>javassist</pattern>
+                                        <shadedPattern>org.evosuite.shaded.javassist</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>antlr</pattern>
+                                        <shadedPattern>org.evosuite.shaded.antlr</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.antlr</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.antlr</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.dom4j</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.dom4j</shadedPattern>
+                                    </relocation>
+                                    <!--
+                                    <relocation>
+                                        <pattern>org.xml</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.xml</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.w3c</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.w3c</shadedPattern>
+                                    </relocation>
+                                    -->
+                                    <relocation>
+                                        <pattern>org.aopalliance</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.aopalliance</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.mockito</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.mockito</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>net.bytebuddy</pattern>
+                                        <shadedPattern>org.evosuite.shaded.net.bytebuddy</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <!-- This is special. Originally we wanted to handle it directly, but
+                                         did not turn out to be a good idea. However, too early to remove
+                                         that code, so we just shade this package to avoid backward
+                                         compatibility issues
+                                         -->
+                                        <pattern>javax.servlet</pattern>
+                                        <shadedPattern>org.evosuite.shaded.javax.servlet</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.apache</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.apache</shadedPattern>
+                                        <excludes>
+                                            <!-- Important, otherwise AntInitializingListener would not work in Ant -->
+                                            <exclude>org.apache.tools.ant.taskdefs.optional.junit.JUnitResultFormatter</exclude>
+                                            <exclude>org.apache.tools.ant.taskdefs.optional.junit.JUnitTest</exclude>
+                                            <exclude>org.apache.tools.ant.BuildException</exclude>
+                                            <exclude>org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor</exclude>
+                                        </excludes>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.hamcrest</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.hamcrest</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.objenesis</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.objenesis</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>be.vibes</pattern>
+                                        <shadedPattern>org.evosuite.shaded.be.vibes</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>be.yami</pattern>
+                                        <shadedPattern>org.evosuite.shaded.be.yami</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>com.google</pattern>
+                                        <shadedPattern>org.evosuite.shaded.com.google</shadedPattern>
+                                    </relocation>
+                                    <!--<relocation>-->
+                                    <!--<pattern>org.slf4j</pattern>-->
+                                    <!--<shadedPattern>org.evosuite.shaded.org.slf4j</shadedPattern>-->
+                                    <!--</relocation>-->
+                                    <!--<relocation>-->
+                                    <!--<pattern>ch.qos.logback</pattern>-->
+                                    <!--<shadedPattern>org.evosuite.shaded.ch.qos.logback</shadedPattern>-->
+                                    <!--</relocation>-->
+                                </relocations>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <modules>
+        <module>botsing-commons</module>
+        <module>botsing-examples</module>
         <module>botsing-reproduction</module>
         <module>botsing-maven</module>
         <module>botsing-preprocessing</module>
+        <module>botsing-model-generation</module>
+        <module>botsing-parsers</module>
     </modules>
 
 </project>

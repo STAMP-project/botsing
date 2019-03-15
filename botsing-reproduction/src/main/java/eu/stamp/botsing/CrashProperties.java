@@ -21,25 +21,28 @@ package eu.stamp.botsing;
  * #L%
  */
 
-import org.apache.commons.cli.CommandLine;
 import org.evosuite.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.nio.file.Paths;
+import java.util.List;
 
 
 public class CrashProperties {
 
+    private static final Logger LOG = LoggerFactory.getLogger(CrashProperties.class);
+    public static final String CONFIG_PROPERTIES_FILE_NAME = "config.properties";
+
     private static CrashProperties instance = null;
-    private StackTrace crash = StackTrace.getInstance();
+    private StackTrace crash = new StackTrace();
     private String[] projectClassPaths;
+
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
@@ -50,18 +53,29 @@ public class CrashProperties {
 
         String description();
     }
-    public static enum TestGenerationStrategy {
-        Single_GA;
 
-        private TestGenerationStrategy() {
+    public enum TestGenerationStrategy {
+        Single_GA,
+        Multi_GA;
+
+        TestGenerationStrategy() {
         }
     }
 
-    public static enum SearchAlgorithm{
-        Single_Objective_GGA;
-        private SearchAlgorithm(){}
+    public enum FitnessFunction {
+        WeightedSum,
+        SimpleSum;
+
+        FitnessFunction() {
+        }
     }
 
+    public enum SearchAlgorithm {
+        Single_Objective_GGA;
+
+        SearchAlgorithm() {
+        }
+    }
 
 
     @Properties.Parameter(key = "testGenerationStrategy", group = "Crash reproduction", description = "Which mode to use for crash reproduction")
@@ -72,36 +86,55 @@ public class CrashProperties {
     public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.Single_Objective_GGA;
 
 
-    /** The target frame in the crash stack trace */
+    @Properties.Parameter(key = "FitnessFunctions", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
+    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.WeightedSum};
+
+
+
+    /**
+     * The target frame in the crash stack trace
+     */
     @Parameter(key = "max_target_injection_tries", group = "Runtime", description = "The maximum number of times the search tries to generate an individuals with the target method.")
     public static int max_target_injection_tries = 150;
 
+
+    @Parameter(key = "integration_testing", group = "Crash reproduction", description = "Use integration testing for reproduce the crash.")
+    public static boolean integrationTesting = false;
+    @Parameter(key = "line_estimation", group = "Crash reproduction", description = "Detect Missing lines in the stack trace")
+    public static boolean lineEstimation = true;
+
+
     static java.util.Properties configFile = new java.util.Properties();
-    private CrashProperties(){
+
+    private CrashProperties() {
         loadConfig();
-        for (String property : configFile.stringPropertyNames()){
+        for (String property : configFile.stringPropertyNames()) {
             try {
                 if (Properties.hasParameter(property)) {
                     Properties.getInstance().setValue(property, configFile.getProperty(property));
                 }
             } catch (Properties.NoSuchParameterException e) {
-                e.printStackTrace();
+                LOG.debug("Property {} not found!", property, e);
+                throw new IllegalArgumentException("Property " + property + " not found!", e);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                LOG.debug("Illegal access for property {}!", property, e);
+                throw new IllegalArgumentException("Illegal access for property " + property + "!", e);
             }
         }
 
 
-
     }
 
-    private void loadConfig(){
+    private void loadConfig() {
         try {
-        InputStream inputstream = new FileInputStream(Paths.get(System.getProperty("user.dir"),"src","main","java","eu","stamp","botsing","config.properties").toString());
-        configFile.load(inputstream);
-
-        }catch(Exception eta){
-            eta.printStackTrace();
+            InputStream inputstream = getClass().getClassLoader().getResourceAsStream(CONFIG_PROPERTIES_FILE_NAME);
+            configFile.load(inputstream);
+        } catch (FileNotFoundException eta) {
+            LOG.error("Default config.properties file not found in the resources of the jar file!");
+            throw new IllegalStateException("Default config.properties file not found in the resources of the jar file!");
+        } catch (IOException e) {
+            LOG.error("Exception while reading default config.properties from the resources of the jar file!");
+            throw new IllegalStateException("Exception while reading default config.properties from the resources of the jar file!");
         }
     }
 
@@ -112,73 +145,92 @@ public class CrashProperties {
         return instance;
     }
 
-    public static String getStringValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
-        if (Properties.hasParameter(property)){
+    public String getStringValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
+        if (Properties.hasParameter(property)) {
             return Properties.getStringValue(property);
-        }else if (configFile.containsKey(property)){
+        } else if (configFile.containsKey(property)) {
             return configFile.getProperty(property);
         }
         return null;
     }
 
 
-
-    public static int getIntValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
-            return Properties.getIntegerValue(property);
+    public int getIntValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
+        return Properties.getIntegerValue(property);
     }
 
 
-    public static long getLongValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
+    public long getLongValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
         return Properties.getLongValue(property);
     }
 
-
-    public static Boolean getBooleanValue(String property){
-        try{
-        if (Properties.hasParameter(property)){
-            return Properties.getBooleanValue(property);
-        }else if (configFile.containsKey(property)){
-            return Boolean.valueOf(configFile.getProperty(property));
-        }
+    /**
+     * Returns the value of the given property or null if the property could not be found.
+     * @param property the property to get the value of.
+     * @return The value of the given property or null if the property could not be found.
+     * @throws IllegalStateException If the property could not be accessed.
+     */
+    public Boolean getBooleanValue(String property) {
+        try {
+            if (Properties.hasParameter(property)) {
+                return Properties.getBooleanValue(property);
+            } else if (configFile.containsKey(property)) {
+                return Boolean.valueOf(configFile.getProperty(property));
+            }
         } catch (Properties.NoSuchParameterException e) {
-            e.printStackTrace();
+            LOG.debug("Property {} not found!", property, e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            LOG.debug("Illegal access for property {}!", property, e);
+            throw new IllegalStateException("Illegal access for property " + property + "!", e);
         }
         return null;
     }
 
-
-    public void setupStackTrace(CommandLine command){
-        java.util.Properties properties = command.getOptionProperties("D");
-        crash.setup(properties.getProperty("crash_log"),Integer.parseInt(properties.getProperty("target_frame")));
+    public void setupStackTrace(String stacktraceFile, int targetFrame) {
+        crash.setup(stacktraceFile, targetFrame);
     }
 
-    public void setClasspath(String projectClassPath){
+    public void setupStackTrace(StackTrace crash) {
+        this.crash = crash;
+    }
+
+    public void setClasspath(String projectClassPath) {
         projectClassPaths = projectClassPath.split(File.pathSeparator);
     }
+
+    public void setClasspath(String[] projectClassPath) {
+        projectClassPaths = projectClassPath;
+    }
+
 
     public String[] getProjectClassPaths() {
         return projectClassPaths;
     }
 
-    public StackTrace getStackTrace(){
+    public StackTrace getStackTrace() {
         return crash;
     }
 
-    public static Properties.StoppingCondition getStoppingCondition(){
+    public Properties.StoppingCondition getStoppingCondition() {
         return Properties.STOPPING_CONDITION;
     }
-    public static Throwable getTargetException () {
-        StackTraceElement [] stackArray = new StackTraceElement [StackTrace.getInstance().getNumberOfFrames()];
-        stackArray = StackTrace.getInstance().getFrames().toArray(stackArray);
+
+    public Throwable getTargetException() {
+        StackTraceElement[] stackArray = new StackTraceElement[crash.getNumberOfFrames()];
+        stackArray = crash.getFrames().toArray(stackArray);
         Throwable targetException = new Exception();
         targetException.setStackTrace(stackArray);
-
         return targetException;
     }
 
 
+    public void resetStackTrace() {
+        crash = new StackTrace();
+    }
 
 
-        }
+    public List<String> getTargetClasses() {
+        return crash.getTargetClasses();
+    }
+
+}

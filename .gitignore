@@ -3,7 +3,6 @@
 
 # Log file
 *.log
-!sample.log
 
 # BlueJ files
 *.ctxt
@@ -13,7 +12,8 @@
 
 # Package Files #
 *.jar
-!atos.jar
+!evosuite-client-botsing-*.jar
+!*projectA*.jar
 *.war
 *.nar
 *.ear
@@ -30,6 +30,7 @@ hs_err_pid*
 .Rapp.history
 
 # Maven
+dependency-reduced-pom.xml
 target/
 
 # OS generated files #
@@ -47,4 +48,8 @@ Thumbs.db
 .classpath
 .project
 .settings/
+
+# local test directory
+**/test/**/botsing/local/
+**/test/**/botsing/model/generation/local/
 

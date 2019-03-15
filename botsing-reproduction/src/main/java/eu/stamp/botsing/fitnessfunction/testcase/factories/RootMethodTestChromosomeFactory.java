@@ -21,11 +21,14 @@ package eu.stamp.botsing.fitnessfunction.testcase.factories;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
+import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.Properties;
 import org.evosuite.ga.ConstructionFailedException;
-import org.evosuite.runtime.System;
+import org.evosuite.rmi.ClientServices;
+import org.evosuite.rmi.service.ClientNodeLocal;
 import org.evosuite.setup.TestCluster;
+import org.evosuite.statistics.RuntimeVariable;
+import org.evosuite.testcarver.extraction.CarvingManager;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFactory;
@@ -42,12 +45,15 @@ import java.util.*;
 
 public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFactory {
     private static final Logger LOG = LoggerFactory.getLogger(RootMethodTestChromosomeFactory.class);
+    private GuidedSearchUtility utility;
+
     private static Set<GenericAccessibleObject<?>> publicParentCalls = new HashSet<GenericAccessibleObject<?>>();
     private static Set<GenericAccessibleObject<?>> attemptedPublicParents = new HashSet<GenericAccessibleObject<?>>();
 
     private static List<GenericAccessibleObject<?>> allMethods = new LinkedList<GenericAccessibleObject<?>>();
 
-    public RootMethodTestChromosomeFactory(){
+    public RootMethodTestChromosomeFactory(GuidedSearchUtility utility){
+        this.utility = utility;
         allMethods.clear();
         allMethods.addAll(TestCluster.getInstance().getTestCalls());
         Randomness.shuffle(allMethods);
@@ -56,15 +62,45 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 
     @Override
     public TestChromosome getChromosome() {
-        TestChromosome c = new TestChromosome();
+        TestChromosome chromosome = new TestChromosome();
+        if(Properties.CARVE_OBJECT_POOL && Properties.SELECTED_JUNIT != null){
+            CarvingManager manager = CarvingManager.getInstance();
+            final Class<?> targetClass = Properties.getTargetClassAndDontInitialise();
+            List<TestCase> junitTests = manager.getTestsForClass(targetClass);
+//            if (junitTests.size() > 0) {
+//                LOG.info("* Using {} carved tests from existing JUnit tests for seeding", junitTests.size());
+//            }
+            ClientNodeLocal client = ClientServices.getInstance().getClientNode();
+            client.trackOutputVariable(RuntimeVariable.CarvedTests, junitTests.size());
+            client.trackOutputVariable(RuntimeVariable.CarvedCoverage,0.0);
+
+            final int N_mutations = Properties.SEED_MUTATIONS;
+            final double P_clone = Properties.SEED_CLONE;
+            double r = Randomness.nextDouble();
+
+            if (junitTests.size() > 0 && r <= P_clone){
+                LOG.info("Cloning user test");
+                TestCase test = Randomness.choice(junitTests);
+                chromosome.setTestCase(test.clone());
+                if (N_mutations > 0) {
+                    int numMutations = Randomness.nextInt(N_mutations);
+                    logger.debug("Mutations: " + numMutations);
+                    // doing the mutations on the cloned test case
+                    for (int i = 0; i < numMutations; i++) {
+                        chromosome.mutate();
+                    }
+                }
+                return chromosome;
+            }
+        }
         try {
-            c.setTestCase(getRandomTestCase(CrashProperties.getIntValue("chromosome_length")));
+            chromosome.setTestCase(getRandomTestCase(CrashProperties.getInstance().getIntValue("chromosome_length")));
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (Properties.NoSuchParameterException e) {
             e.printStackTrace();
         }
-        return c;
+        return chromosome;
     }
 
     private TestCase getRandomTestCase(int size) {
@@ -126,7 +162,7 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 //					else {
 //						assert (false) : "Found test call that is neither method nor constructor";
 //					}
-                } catch (ConstructionFailedException e) {
+                } catch (ConstructionFailedException | Error e) {
                     if (injecting) {
                         prob = 1 / (length - test.size() + 1);
                     }
@@ -137,7 +173,7 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 
         if (target_counter < 1 && max_rounds >= CrashProperties.max_target_injection_tries){
             LOG.error("Guided initialization failed. Please revise the target class and method!");
-            System.exit(0);
+            throw new IllegalStateException("Guided initialization failed. Please revise the target class and method!");
         }
 
         if (logger.isDebugEnabled()) {
@@ -153,17 +189,20 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 
     public void reset(){
         fillPublicCalls();
+        attemptedPublicParents.clear();
     }
 
     private void fillPublicCalls(){
-        Iterator<String> iterateParents = WeightedSum.publicCalls.iterator();
+        if (utility != null){
+            Iterator<String> iterateParents = utility.getPublicCalls().iterator();
 
-        // Fill up the set of parent calls by assessing the method names
-        while (iterateParents.hasNext()) {
-            String nextCall = iterateParents.next();
-            for (int i=0; i<allMethods.size(); i++) {
-                if (allMethods.get(i).getName().equals(nextCall)) {
-                    publicParentCalls.add(allMethods.get(i));
+            // Fill up the set of parent calls by assessing the method names
+            while (iterateParents.hasNext()) {
+                String nextCall = iterateParents.next();
+                for (int i=0; i<allMethods.size(); i++) {
+                    if (allMethods.get(i).getName().equals(nextCall)) {
+                        publicParentCalls.add(allMethods.get(i));
+                    }
                 }
             }
         }
