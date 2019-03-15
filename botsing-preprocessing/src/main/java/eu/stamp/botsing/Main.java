@@ -80,7 +80,7 @@ public class Main {
 			printOptions();
 		} catch (FileNotFoundException e) {
 			System.out.println("Wrong arguments. " + e.getMessage());
-			System.exit(1);
+			return;
 		}
 	}
 
@@ -199,7 +199,7 @@ public class Main {
 			}
 			System.out.println(", description: " + ele.getDescription());
 		});
-		System.exit(1);
+		return;
 	}
 
 }
