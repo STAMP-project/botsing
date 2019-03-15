@@ -45,17 +45,17 @@ public class StackFlatten implements STProcessor {
 	 * flat stack trace with the root cause at the top
 	 */
 	List<String> flatten(List<List<String>> splittedTrace, String regexp) {
-		
+
 		//reverse order to get the deep nested stack trace
 		Collections.reverse(splittedTrace);
 		Pattern pattern = Pattern.compile(regexp);
-		
+
 		for (List<String> chunk : splittedTrace) {
 			cleanNestedChunk(chunk);
 			for (String line: chunk){
 				if (pattern.matcher(line).find()){
 					return chunk;
-				}				
+				}
 			}
 		}
 		return Collections.emptyList();

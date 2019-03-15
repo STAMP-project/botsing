@@ -4,7 +4,7 @@ import java.util.List;
 
 public class ErrorMessage implements STProcessor {
 	private final static String EXCEPTION_PREFIX = "Exception in thread";
-	
+
 	private static ErrorMessage instance = new ErrorMessage();
 
 	public static ErrorMessage get() {
@@ -20,7 +20,7 @@ public class ErrorMessage implements STProcessor {
 			return lines;
 		}
 		String head = lines.get(0);
-		// remove thread info 
+        // remove thread info
 		if (head.startsWith(EXCEPTION_PREFIX)) {
 			head = head.replaceAll(EXCEPTION_PREFIX + " \".*\" ", "");
 		}
