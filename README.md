@@ -14,12 +14,15 @@ See the [documentation for the Maven Plugin](https://github.com/STAMP-project/bo
 
 ### Command line interface
 
+
+#### botsing reproduction
 The latest version of Botsing command line (botsing-reproduction-X-X-X.jar) is available at [https://github.com/STAMP-project/botsing/releases](https://github.com/STAMP-project/botsing/releases). 
 
 Botsing has three mandatory parameters:
  - `-crash_log` the file with the stack trace. The stack trace should be clean (no error message) and cannot contain any nested exceptions.
  - `-target_frame` the target frame to reproduce. This number should be between 1 and the number of frames in the stack trace.
  - `-project_cp` the classpath of the project and all its dependencies. The classpath can be a folder containing all the  `.jar` files required to run the software under test.
+
  
 By default, Botsing uses the following parameter values:
  - `-Dsearch_budget=1800`, a time budget of 30 min. This value can be modified by specifying an additional parameter in format `-Dsearch_budget=60` (here, for 60 seconds). 
@@ -31,6 +34,7 @@ To check the list of options, use:
 ```sh
 $ java -jar botsing-reproduction.jar -help
 usage: java -jar botsing-reproduction.jar -crash_log stacktrace.log -target_frame 2
+
             -project_cp dep1.jar;dep2.jar  )
  -crash_log <arg>      File with the stack trace
  -D <property=value>   use value for given property
@@ -92,6 +96,36 @@ And referenced in the dependencies of the module using the following syntax:
 </dependencies>
 ```
 Please check in the list of properties that the dependency version is not already there before adding a new one.
+
+#### botsing preprocessing
+
+The latest version of Botsing command line (botsing-preprocessing-X-X-X.jar) is available at [https://github.com/STAMP-project/botsing/releases](https://github.com/STAMP-project/botsing/releases). 
+
+Botsing preprocessing has these mandatory parameters:
+ - `-i` represents the input file path (`crash_log`) with the stack trace to clean. For example `-i=path-name-of-crash-log`
+ - `-o` represents the output file path (`output_log`) cleaned of the error message and/or nested exceptions. For example `-o=path-name-of-output-log` 
+ 
+These parameters define actions to perform (clean) in the stack trace: 
+ - `-f` to flatten the stack trace.
+ - `-e` to remove the error message.
+ 
+ - `-p` to set the regexp in the stack trace use case. For example `-p=my.package.*` 
+
+#### Example
+
+To clean the nested stack trace
+
+```
+java -jar botsing-preprocessing.jar -i=crash_log.txt -o=output_log.log -f -p=com.example.*
+```
+
+or to remove the error message
+
+```
+java -jar botsing-preprocessing.jar -e -i=crash_log.txt -o==output_log.log 
+```
+
+Note that you can use also both actions (`-f` and `-e`).
 
 ## Background
 
