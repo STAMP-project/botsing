@@ -14,31 +14,38 @@ import org.evosuite.utils.generic.GenericTypeInference;
 import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 public class CarvingRunListener extends org.evosuite.testcarver.extraction.CarvingRunListener {
+
     private static final Logger LOG = LoggerFactory.getLogger(CarvingRunListener.class);
+
     private final Map<Class<?>, List<TestCase>> carvedTests = new LinkedHashMap<>();
+
+    @Override
+    public Map<Class<?>, List<TestCase>> getTestCases() {
+        return carvedTests;
+    }
+
     @Override
     public void testFinished(Description description) {
-        try{
+        try {
             final CaptureLog log = Capturer.stopCapture();
-            LOG.info("Carving test {}.{}", description.getClassName(), description.getMethodName());
+            LOG.trace("Carving test {}.{}", description.getClassName(), description.getMethodName());
             List<Class<?>> observedClasses = this.processLog(description, log);
-            for(Class<?> clazz : observedClasses){
+            for(Class<?> clazz : observedClasses) {
                 TestUsagePoolManager.getInstance().addTest(clazz.getName(), description.getClassName());
             }
-
             Capturer.clear();
-        }catch (Exception e){
-            LOG.warn("error in capturing log: {}",e.toString());
+        } catch(Exception e) {
+            LOG.warn("Error in capturing log: ", e);
         }
 
     }
 
-
     private List<Class<?>> processLog(Description description, final CaptureLog log) {
-        LOG.debug("Current log: "+log);
+        LOG.debug("Current log: " + log);
         List<Class<?>> observedClasses = getObservedClasses(log);
 
         final CaptureLogAnalyzer analyzer = new CaptureLogAnalyzer();
@@ -46,7 +53,7 @@ public class CarvingRunListener extends org.evosuite.testcarver.extraction.Carvi
         for(Class<?> observedClass : observedClasses) {
             Class<?>[] targetClasses = new Class<?>[1];
             targetClasses[0] = observedClass;
-            if(!carvedTests.containsKey(observedClass)){
+            if(!carvedTests.containsKey(observedClass)) {
                 carvedTests.put(observedClass, new ArrayList<TestCase>());
             }
 
@@ -54,7 +61,7 @@ public class CarvingRunListener extends org.evosuite.testcarver.extraction.Carvi
             CarvedTestCase carvedTest = (CarvedTestCase) codeGen.getCode();
 
             if(carvedTest == null) {
-                LOG.debug("Failed to carve test for "+Arrays.asList(targetClasses));
+                LOG.debug("Failed to carve test for {}", targetClasses);
                 codeGen.clear();
                 continue;
             }
@@ -67,46 +74,38 @@ public class CarvingRunListener extends org.evosuite.testcarver.extraction.Carvi
                 inference.inferTypes(carvedTest);
 
                 carvedTests.get(observedClass).add(carvedTest);
-            }catch (Throwable t) {
-                LOG.info("Exception during carving: " + t);
-                for(StackTraceElement elem : t.getStackTrace()) {
-                    LOG.info(elem.toString());
-                }
-                LOG.info(carvedTest.toCode());
+            } catch(Throwable t) {
+                LOG.debug("Exception during carving: ", t);
+                LOG.debug(carvedTest.toCode());
             }
             codeGen.clear();
         }
         return observedClasses;
     }
 
-
-    private List<Class<?>> getObservedClasses(final CaptureLog log){
+    private List<Class<?>> getObservedClasses(final CaptureLog log) {
         List<Class<?>> observedClasses = new ArrayList<>();
         String[] testSuitePaths = Properties.SELECTED_JUNIT.split(":");
         List<String> jUnitClassesNames = new ArrayList<>();
-        for (String s : testSuitePaths) {
+        for(String s : testSuitePaths) {
             jUnitClassesNames.add(s.trim());
         }
         Set<String> uniqueObservedClasses = new LinkedHashSet<String>(log.getObservedClasses());
 
         for(String className : uniqueObservedClasses) {
-            if (!jUnitClassesNames.contains(className) && BotsingBytecodeInstrumentation.checkIfCanInstrument(className)) {
-                    try {
-                        Class<?> clazz = Class.forName(className, true, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                        if(!observedClasses.contains(clazz)){
-                            observedClasses.add(clazz);
-                        }
-                    } catch(ClassNotFoundException e) {
-                        LOG.info("Error in instrumenting class "+className+" after carving: "+e);
+            if(!jUnitClassesNames.contains(className) && BotsingBytecodeInstrumentation.checkIfCanInstrument(className)) {
+                try {
+                    Class<?> clazz = Class.forName(className, true,
+                            BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+                    if(!observedClasses.contains(clazz)) {
+                        observedClasses.add(clazz);
                     }
+                } catch(ClassNotFoundException e) {
+                    LOG.warn("Error in instrumenting class " + className + " after carving: " + e);
+                }
             }
         }
         return observedClasses;
-    }
-
-    @Override
-    public Map<Class<?>, List<TestCase>> getTestCases() {
-        return carvedTests;
     }
 
 }

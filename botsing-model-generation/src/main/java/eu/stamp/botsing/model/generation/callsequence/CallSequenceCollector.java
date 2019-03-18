@@ -56,8 +56,10 @@ public class CallSequenceCollector {
 
         // Storing the object usage of test suites to the output directory
         TestUsagePoolManager.getInstance().savingTestsUsages(Paths.get(outputFolder, "carvedTests").toString());
-        // Storing the collected call sequences
-        CallSequencesPoolManager.getInstance().report();
+        // Reporting the collected call sequences
+        if(LOG.isDebugEnabled()) {
+            CallSequencesPoolManager.getInstance().report();
+        }
     }
 
 

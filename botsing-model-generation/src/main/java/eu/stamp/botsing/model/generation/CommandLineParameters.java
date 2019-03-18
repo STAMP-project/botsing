@@ -62,12 +62,19 @@ public class CommandLineParameters {
         // User can limit the number of tests for dynamic analysis by passing the crashes
         options.addOption(Option.builder(CRASHES)
                 .hasArg()
-                .desc("Limiting the number of tests for dynamic analysis by passing the crashes. The format of this parameter should be a list off crash logs addresses with JSON format.")
+                .desc("Limiting the number of tests for dynamic analysis by passing the crashes. The format of this " +
+                        "parameter should be a list off crash logs addresses with JSON format.")
                 .build());
 
         options.addOption(Option.builder(OUTPUT_FOLDER)
                 .hasArg()
                 .desc("the output directory.")
+                .build());
+
+        options.addOption(Option.builder(LIST_CLASSES)
+                .hasArg()
+                .desc("the file with the list of classes (one class per line) to consider for the dynamic analysis. " +
+                        "All test cases referencing one of those classes will be executed for the dynamic analysis.")
                 .build());
 
         return options;

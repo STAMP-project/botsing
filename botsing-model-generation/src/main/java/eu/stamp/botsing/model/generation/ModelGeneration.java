@@ -84,7 +84,7 @@ public class ModelGeneration {
 
             } else {
                 LOG.error("Either project prefix or project package name should be passed as an input. For more " +
-                        "information -> help");
+                        "information, use -" + HELP_OPT);
             }
         } else {
             LOG.error("Project classpath should be passed as an input. For more information -> help");
