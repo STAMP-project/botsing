@@ -38,7 +38,7 @@ public class ModelGenerationTest {
     }
 
     @Test
-    public void testMain(){
+    public void testParseCommandLine(){
         String user_dir = System.getProperty("user.dir"); // the current directory is the module <b>botsing-model-generation</b>
         File file = new File(user_dir);
         String base_dir = Paths.get(file.getParent(), "botsing-examples").toString();
@@ -47,14 +47,14 @@ public class ModelGenerationTest {
         File outputDir = Paths.get(user_dir, "target", "generated-models").toFile();
         //run Botsing
         String[] prop = {
-                "-projectCP",
+                CommandLineParameters.PROJECT_CP_OPT,
                 bin_path,
-                "-projectPrefix",
+                CommandLineParameters.PROJECT_PREFIX,
                 classPrefix,
-                "-outDir",
+                CommandLineParameters.OUTPUT_FOLDER,
                 outputDir.getAbsolutePath()
         };
-        Main main = new Main();
+        ModelGeneration main = new ModelGeneration();
         main.parseCommandLine(prop);
 
         // Check output directory
