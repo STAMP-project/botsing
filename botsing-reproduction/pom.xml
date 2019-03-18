@@ -31,11 +31,6 @@
             <!--<scope>test</scope>-->
         </dependency>
         <dependency>
-            <groupId>org.evosuite</groupId>
-            <artifactId>evosuite-client-botsing</artifactId>
-            <version>${evosuite-client.version}</version>
-        </dependency>
-        <dependency>
             <groupId>be.unamur.info</groupId>
             <artifactId>vibes-dsl</artifactId>
             <version>${vibes.version}</version>
@@ -50,7 +45,6 @@
             <artifactId>botsing-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>
