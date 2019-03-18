@@ -11,7 +11,9 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +27,15 @@ public class ModelGeneration {
     @SuppressWarnings("checkstyle:systemexit")
     public static void main(String[] args) {
         ModelGeneration botsingModelGeneration = new ModelGeneration();
-        botsingModelGeneration.parseCommandLine(args);
+        try {
+            botsingModelGeneration.parseCommandLine(args);
+        } catch(IOException e) {
+            LOG.error("Exception occured during model generation!", e);
+        }
         System.exit(0);
     }
 
-    public void parseCommandLine(String[] args) {
+    public void parseCommandLine(String[] args) throws IOException {
         Options options = CommandLineParameters.getCommandLineOptions();
         CommandLine commands = parseCommands(args, options);
         if(commands.hasOption(HELP_OPT)) {
@@ -45,12 +51,15 @@ public class ModelGeneration {
             String outputFolder = commands.hasOption(OUTPUT_FOLDER) ? commands.getOptionValue(OUTPUT_FOLDER) :
                     "generated_results";
 
-            ArrayList<String> involvedObejcts = new ArrayList<>();
+            List<String> involvedObejcts = new ArrayList<>();
             if(commands.hasOption(CRASHES)) {
                 Gson gson = new Gson();
                 ArrayList<String> crashes = gson.fromJson(commands.getOptionValue(CRASHES), ArrayList.class);
                 LogReader logReader = new LogReader(crashes);
                 involvedObejcts = logReader.collectInvolvedObjects();
+            } else if(commands.hasOption(LIST_CLASSES)) {
+                File listClasses = new File(commands.getOptionValue(LIST_CLASSES));
+                involvedObejcts = Files.readAllLines(listClasses.toPath());
             }
 
             // set project prefix
@@ -69,10 +78,8 @@ public class ModelGeneration {
                 try {
                     modelGenerator.generate(CallSequencesPoolManager.getInstance().getPool(), Paths.get(outputFolder,
                             "models").toString());
-                } catch(IOException e) {
-                    e.printStackTrace();
                 } catch(SessionBuildException e) {
-                    e.printStackTrace();
+                    LOG.error("Exception while building a session to learn the model!", e);
                 }
 
             } else {

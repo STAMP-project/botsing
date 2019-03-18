@@ -31,7 +31,7 @@ public class CommandLineParameters {
     public static final String OUTPUT_FOLDER = "out_dir";
     public static final String PROJECT_PACKAGE = "project_package";
     public static final String CRASHES = "crashes";
-    public static final String CLASSES_REGEX = "classes_regex";
+    public static final String LIST_CLASSES = "list_classes";
 
     public static Options getCommandLineOptions() {
         Options options = new Options();

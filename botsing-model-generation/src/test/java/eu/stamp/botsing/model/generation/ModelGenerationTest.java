@@ -47,11 +47,11 @@ public class ModelGenerationTest {
         File outputDir = Paths.get(user_dir, "target", "generated-models").toFile();
         //run Botsing
         String[] prop = {
-                CommandLineParameters.PROJECT_CP_OPT,
+                "-" + CommandLineParameters.PROJECT_CP_OPT,
                 bin_path,
-                CommandLineParameters.PROJECT_PREFIX,
+                "-" + CommandLineParameters.PROJECT_PREFIX,
                 classPrefix,
-                CommandLineParameters.OUTPUT_FOLDER,
+                "-" + CommandLineParameters.OUTPUT_FOLDER,
                 outputDir.getAbsolutePath()
         };
         ModelGeneration main = new ModelGeneration();
