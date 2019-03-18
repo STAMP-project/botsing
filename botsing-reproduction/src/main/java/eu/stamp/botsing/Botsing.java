@@ -20,6 +20,7 @@ package eu.stamp.botsing;
  * #L%
  */
 
+import eu.stamp.botsing.commons.ClassPaths;
 import eu.stamp.botsing.reproduction.CrashReproduction;
 
 import static eu.stamp.botsing.CommandLineParameters.*;
@@ -130,18 +131,10 @@ public class Botsing {
     protected void setupProjectClasspath(CrashProperties crashProperties, CommandLine commands){
         // Setup Project's class path
         String cp = commands.getOptionValue(PROJECT_CP_OPT);
-        File file = new File(cp);
-        // If the file is a directory, get all the jar files in that directory.
-        if(file.isDirectory()){
-            File[] jarsFiles = file.listFiles((File f) -> f.isFile() && f.getName().endsWith(".jar"));
-            String[] jarsCp = new String[jarsFiles.length];
-            for(int i = 0 ; i < jarsCp.length ; i++){
-                jarsCp[i] = jarsFiles[i].getAbsolutePath();
-            }
-            crashProperties.setClasspath(jarsCp);
-        } else {
-            crashProperties.setClasspath(cp);
-        }
+        // Get EvoSuite compatible class path
+        List<String> classPathEntries = ClassPaths.getClassPathEntries(cp);
+        crashProperties.setClasspath(classPathEntries.toArray(new String[classPathEntries.size()]));
+
         ClassPathHandler.getInstance().changeTargetClassPath(crashProperties.getProjectClassPaths());
 
         // locate Tool jar
