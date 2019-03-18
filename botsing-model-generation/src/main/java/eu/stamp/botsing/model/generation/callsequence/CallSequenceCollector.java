@@ -14,46 +14,48 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class CallSequenceCollector {
+
     private static final Logger LOG = LoggerFactory.getLogger(CallSequenceCollector.class);
 
+    StaticAnalyser staticAnalyser = new StaticAnalyser();
+    DynamicAnalyser dynamicAnalyser = new DynamicAnalyser();
     private String[] projectClassPaths;
-    public CallSequenceCollector(String cp){
-        projectClassPaths=cp.split(File.pathSeparator);
+
+
+    public CallSequenceCollector(String cp) {
+        this(cp.split(File.pathSeparator));
     }
-    public CallSequenceCollector(String[] jarsCp ){
+
+    public CallSequenceCollector(String[] jarsCp) {
         projectClassPaths = jarsCp.clone();
     }
 
-
-
-
-
-    StaticAnalyser staticAnalyser =  new StaticAnalyser();
-    DynamicAnalyser dynamicAnalyser =  new DynamicAnalyser();
-
-    public void collect(String targetClassIndicator, String outputFolder,ArrayList<String> involvedObejcts, Boolean isPrefix){
+    public void collect(String targetClassIndicator, String outputFolder, List<String> involvedObejcts,
+                        Boolean isPrefix) {
 
         //pre-processes before starting the analysis
-        if(projectClassPaths == null){
+        if(projectClassPaths == null) {
             LOG.error("Project classpath should be set before the model generation.");
         }
         // Class path handler
         handleClassPath();
 
         // Static Analysis
-        List<String> interestingClasses = detectInterestingClasses(targetClassIndicator,isPrefix);
-//        generateCFGS();
+        List<String> interestingClasses = detectInterestingClasses(targetClassIndicator, isPrefix);
+        //        generateCFGS();
         staticAnalyser.analyse(interestingClasses);
 
         // Dynamic Analysis
-        dynamicAnalyser.analyse(staticAnalyser.getObjectsTests(),involvedObejcts);
+        dynamicAnalyser.analyse(staticAnalyser.getObjectsTests(), involvedObejcts);
 
         // Storing the object usage of test suites to the output directory
-        TestUsagePoolManager.getInstance().savingTestsUsages(Paths.get(outputFolder,"carvedTests").toString());
+        TestUsagePoolManager.getInstance().savingTestsUsages(Paths.get(outputFolder, "carvedTests").toString());
         // Storing the collected call sequences
         CallSequencesPoolManager.getInstance().report();
     }
@@ -62,10 +64,10 @@ public class CallSequenceCollector {
     private void handleClassPath() {
         ClassPathHandler.getInstance().changeTargetClassPath(projectClassPaths);
         List<String> cpList = Arrays.asList(projectClassPaths);
-        for (String cp: cpList){
+        for(String cp : cpList) {
             try {
                 ClassPathHacker.addFile(cp);
-            } catch (IOException e) {
+            } catch(IOException e) {
                 e.printStackTrace();
             }
         }
@@ -73,27 +75,24 @@ public class CallSequenceCollector {
     }
 
 
-
-    private  List<String> detectInterestingClasses(String targetClassIndicator,Boolean isPrefix) {
-        List<String> interestingClasses =  new ArrayList<String>();
+    private List<String> detectInterestingClasses(String targetClassIndicator, Boolean isPrefix) {
+        List<String> interestingClasses = new ArrayList<String>();
         InheritanceTree projectTree = CPAnalysor.getInheritanceTree();
-        if(isPrefix){
-            for (String clazz:  projectTree.getAllClasses()){
-                if (clazz.startsWith(targetClassIndicator)){
+        if(isPrefix) {
+            for(String clazz : projectTree.getAllClasses()) {
+                if(clazz.startsWith(targetClassIndicator)) {
                     interestingClasses.add(clazz);
                 }
             }
-        }else{
-            for (String clazz:  projectTree.getAllClasses()){
-                if (clazz.contains("."+targetClassIndicator+".")){
+        } else {
+            for(String clazz : projectTree.getAllClasses()) {
+                if(clazz.contains("." + targetClassIndicator + ".")) {
                     interestingClasses.add(clazz);
                 }
             }
         }
         return interestingClasses;
     }
-
-
 
 
 }
