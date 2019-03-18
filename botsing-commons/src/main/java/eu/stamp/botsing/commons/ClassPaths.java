@@ -20,6 +20,11 @@ public class ClassPaths {
      */
     public static List<String> getClassPathEntries(String classPath) {
         List<String> entries = new ArrayList<>();
+        // If the classpath is empty, return an empty list
+        if(classPath.isEmpty()){
+            return entries;
+        }
+        // Else process entries
         for(String rawEntry : classPath.split(File.pathSeparator)) {
             File file = new File(rawEntry);
             // If the entry is a folder, check for '.jar' files
