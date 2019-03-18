@@ -38,7 +38,7 @@ public class ModelGenerationTest {
     }
 
     @Test
-    public void testParseCommandLine(){
+    public void testParseCommandLine() throws Exception{
         String user_dir = System.getProperty("user.dir"); // the current directory is the module <b>botsing-model-generation</b>
         File file = new File(user_dir);
         String base_dir = Paths.get(file.getParent(), "botsing-examples").toString();
