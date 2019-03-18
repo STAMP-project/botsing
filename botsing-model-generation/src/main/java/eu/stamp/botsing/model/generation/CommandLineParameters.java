@@ -25,12 +25,13 @@ import org.apache.commons.cli.Options;
 
 public class CommandLineParameters {
 
-    public static final String PROJECT_CP_OPT = "projectCP";
+    public static final String PROJECT_CP_OPT = "project_cp";
     public static final String HELP_OPT = "help";
-    public static final String PROJECT_PREFIX = "projectPrefix";
-    public static final String OUTPUT_FOLDER = "outDir";
-    public static final String PROJECT_PACKAGE = "projectPackage";
+    public static final String PROJECT_PREFIX = "project_prefix";
+    public static final String OUTPUT_FOLDER = "out_dir";
+    public static final String PROJECT_PACKAGE = "project_package";
     public static final String CRASHES = "crashes";
+    public static final String CLASSES_REGEX = "classes_regex";
 
     public static Options getCommandLineOptions() {
         Options options = new Options();

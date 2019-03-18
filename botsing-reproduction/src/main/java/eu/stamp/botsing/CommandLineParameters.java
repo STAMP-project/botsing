@@ -30,7 +30,6 @@ public class CommandLineParameters {
     public static final String TARGET_FRAME_OPT = "target_frame";
     public static final String CRASH_LOG_OPT = "crash_log";
     public static final String MODEL_PATH_OPT = "model";
-    public static final String PROJECT_PACKAGE = "projectPackage";
     public static final String HELP_OPT = "help";
     public static final String INTEGRATION_TESTING = "integration_testing";
     public static final String DISABLE_LINE_ESTIMATION = "disable_line_estimation";
