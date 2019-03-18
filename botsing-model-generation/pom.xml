@@ -71,7 +71,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>eu.stamp.botsing.model.generation.Main</mainClass>
+                            <mainClass>eu.stamp.botsing.model.generation.ModelGeneration</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
