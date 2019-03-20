@@ -48,13 +48,13 @@ public class CommandLineParameters {
         //if all of the interesting classes has the same prefix, the user can use this option
         options.addOption(Option.builder(PROJECT_PREFIX)
                 .hasArg()
-                .desc("Prefix of the classes that we want to use for manual/dynamic analysis")
+                .desc("Prefix of the classes that we want to use for dynamic analysis")
                 .build());
 
         //if all of the interesting classes has the same package name, the user can use this option
         options.addOption(Option.builder(PROJECT_PACKAGE)
                 .hasArg()
-                .desc("Package name of the classes that we want to use for manual/dynamic analysis")
+                .desc("Package name of the classes that we want to use for dynamic analysis")
                 .build());
 
         // note: Either projectPrefix or projectPackage should be set.
