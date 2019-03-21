@@ -16,9 +16,10 @@ import java.util.Map;
 
 
 public class DynamicAnalyser {
+
     private static final Logger LOG = LoggerFactory.getLogger(DynamicAnalyser.class);
 
-    public void analyse(Map<String, List<String>> objectsTests, ArrayList<String> involvedObjects){
+    public void analyse(Map<String, List<String>> objectsTests, List<String> involvedObjects){
         List<String> testSuites =  new ArrayList<String>();
         if(involvedObjects.size()>0){
                 for(String involvedObj: involvedObjects){

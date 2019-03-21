@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 public class CarvingManager {
+
     private static final Logger LOG = LoggerFactory.getLogger(CarvingManager.class);
 
     private static CarvingManager instance = null;
@@ -21,18 +22,19 @@ public class CarvingManager {
 
     private Map<Class<?>, List<TestCase>> carvedTestCases = new LinkedHashMap<>();
 
-    private CarvingManager(){}
+    private CarvingManager() {
+    }
 
-    public static CarvingManager getInstance(){
-        if(instance == null){
+    public static CarvingManager getInstance() {
+        if(instance == null) {
             instance = new CarvingManager();
         }
 
         return instance;
     }
 
-    public Map<Class<?>, List<TestCase>> getCarvedTestCases(){
-        if (!carvingFinished) {
+    public Map<Class<?>, List<TestCase>> getCarvedTestCases() {
+        if(!carvingFinished) {
             carveTestCases();
         }
 
@@ -42,7 +44,8 @@ public class CarvingManager {
     private void carveTestCases() {
         List<String> testSuites = getListOftestSuites();
         // run test suites
-        final org.evosuite.testcarver.extraction.CarvingClassLoader classLoader = new org.evosuite.testcarver.extraction.CarvingClassLoader();
+        final org.evosuite.testcarver.extraction.CarvingClassLoader classLoader =
+                new org.evosuite.testcarver.extraction.CarvingClassLoader();
         final List<Class<?>> junitTestClasses = new ArrayList<Class<?>>();
 
         final JUnitCore runner = new JUnitCore();
@@ -51,38 +54,38 @@ public class CarvingManager {
         // Set carving class loader
         FieldRegistry.carvingClassLoader = classLoader;
 
-        for (String testSuiteName : testSuites) {
+        for(String testSuiteName : testSuites) {
 
             try {
                 String classNameWithDots = ResourceList.getClassNameFromResourcePath(testSuiteName);
                 final Class<?> junitClass = classLoader.loadClass(classNameWithDots);
-                if(junitClass != null){
+                if(junitClass != null) {
                     junitTestClasses.add(junitClass);
                 }
-            } catch (Exception e) {
+            } catch(Exception e) {
                 LOG.error("Failed to load JUnit test class {}: {}", testSuiteName, e);
             }
         }
-        try{
+        try {
             final Class<?>[] classes = new Class<?>[junitTestClasses.size()];
             junitTestClasses.toArray(classes);
             Result result = runner.run(classes);
             carvedTestCases = listener.getTestCases();
 
 
-            LOG.info("Result: {}/{}", result.getFailureCount(), result.getRunCount());
-            for(Failure failure : result.getFailures()) {
-                LOG.info("Failure: {}", failure.getMessage());
-                LOG.info("Exception: {}", failure.getException());
+            LOG.info("Executed {}/{} test cases while carving.", result.getRunCount() - result.getFailureCount(),
+                    result.getRunCount());
+            if(LOG.isDebugEnabled()) {
+                for(Failure failure : result.getFailures()) {
+                    LOG.info("Failure: {}", failure.getMessage());
+                    LOG.info("Exception: {}", failure.getException());
+                }
             }
-        }catch (Exception e){
-            LOG.warn("exception in final step of carving: {}",e.toString());
-        }catch (Error e){
-            LOG.warn("error in final step of carving: {}",e.toString());
+        } catch(Exception e) {
+            LOG.warn("exception in final step of carving: {}", e.toString());
+        } catch(Error e) {
+            LOG.warn("error in final step of carving: {}", e.toString());
         }
-
-
-
 
 
     }
@@ -90,11 +93,11 @@ public class CarvingManager {
     private List<String> getListOftestSuites() {
         List<String> testSuites = new LinkedList<>();
         String selectedJunitProp = Properties.SELECTED_JUNIT;
-        if (selectedJunitProp == null || selectedJunitProp.trim().isEmpty()){
+        if(selectedJunitProp == null || selectedJunitProp.trim().isEmpty()) {
             LOG.warn(
                     "Properties.SELECTED_JUNIT is empty. test carving is failed.");
         }
-        for (String testSuiteCP: selectedJunitProp.split(":")){
+        for(String testSuiteCP : selectedJunitProp.split(":")) {
             testSuites.add(testSuiteCP.trim());
         }
 

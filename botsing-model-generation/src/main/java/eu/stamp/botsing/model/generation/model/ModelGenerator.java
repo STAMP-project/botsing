@@ -26,15 +26,18 @@ import java.util.Map;
 import java.util.Set;
 
 public class ModelGenerator {
+
     private static final Logger LOG = LoggerFactory.getLogger(ModelGenerator.class);
-    public void generate(Map<String, Set<List<MethodCall>>> pool,String outputFolder) throws IOException, SessionBuildException {
+
+    public void generate(Map<String, Set<List<MethodCall>>> pool, String outputFolder) throws IOException,
+            SessionBuildException {
         Gson gson = new GsonBuilder().create();
-        String json = gson.toJson(pool,pool.getClass());
+        String json = gson.toJson(pool, pool.getClass());
         // The bigram which will construct the model
         final MultipleModelsProcessor processor = new MultipleModelsProcessor() {
             @Override
             protected NGram<be.yami.java.MethodCall> buildNewNGram(String name) {
-                LOG.info("Bigram created for class {}", name);
+                LOG.trace("Bigram created for class {}", name);
                 return new Bigram<>(name, ClassMethodParametersKeyGenerator.getInstance());
             }
         };
@@ -45,14 +48,14 @@ public class ModelGenerator {
         final List<Integer> sizes = Lists.newArrayList();
         builder.addListener((MethodCallSequence seq) -> {
             sizes.add(seq.size());
-            LOG.info("Sequences processed: {}", sizes.size());
+            LOG.trace("Sequences processed: {}", sizes.size());
         });
 
         InputStream in = IOUtils.toInputStream(json, "UTF-8");
         builder.buildSessions(in);
         File outFolder = new File(outputFolder.replace(".JSON", "").replace(".Json", ""));
-        LOG.info("Printing models in folder {}", outFolder);
-        if (!outFolder.exists()) {
+        LOG.trace("Printing models in folder {}", outFolder);
+        if(!outFolder.exists()) {
             outFolder.mkdirs();
         }
         processor.getNGrams().forEach((ngram) -> {
@@ -61,7 +64,7 @@ public class ModelGenerator {
                 UsageModel um = ngram.getModel();
                 File output = new File(outFolder, ngram.getName() + ".xml");
                 Xml.print(um, output);
-            } catch (ModelGenerationException ex) {
+            } catch(ModelGenerationException ex) {
                 LOG.error("Exception while retrieving usage model for {}!", ngram.getName(), ex);
             }
         });

@@ -31,9 +31,9 @@
             <!--<scope>test</scope>-->
         </dependency>
         <dependency>
-            <groupId>org.evosuite</groupId>
-            <artifactId>evosuite-client-botsing</artifactId>
-            <version>${evosuite-client.version}</version>
+            <groupId>eu.stamp-project</groupId>
+            <artifactId>botsing-commons</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>be.unamur.info</groupId>
@@ -45,12 +45,6 @@
             <artifactId>gson</artifactId>
             <version>${gson.version}</version>
         </dependency>
-        <dependency>
-            <groupId>eu.stamp-project</groupId>
-            <artifactId>botsing-commons</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
     </dependencies>
 
     <build>

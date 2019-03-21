@@ -11,30 +11,33 @@ import java.io.PrintWriter;
 import java.nio.file.Paths;
 
 public class TestUsagePoolManager extends TestUsagePool {
-    private static final Logger LOG = LoggerFactory.getLogger(TestUsagePoolManager.class);
-    private static TestUsagePoolManager instance = null;
-    private TestUsagePoolManager(){}
 
-    public static TestUsagePoolManager getInstance(){
-        if(instance==null){
+    private static final Logger LOG = LoggerFactory.getLogger(TestUsagePoolManager.class);
+
+    private static TestUsagePoolManager instance = null;
+
+    private TestUsagePoolManager() {
+    }
+
+    public static TestUsagePoolManager getInstance() {
+        if(instance == null) {
             instance = new TestUsagePoolManager();
         }
         return instance;
     }
 
 
-
     public void savingTestsUsages(String outputPath) {
         Gson gson = new GsonBuilder().create();
         String json = gson.toJson(this.pool);
         File outDirectory = new File(outputPath);
-        if (!outDirectory.exists()) {
+        if(!outDirectory.exists()) {
             outDirectory.mkdirs();
         }
-        try (PrintWriter out = new PrintWriter(Paths.get(outputPath,"tests.xml").toString())) {
+        try(PrintWriter out = new PrintWriter(Paths.get(outputPath, "tests.xml").toString())) {
             out.println(json);
-            LOG.info("The saved test usage is: {}",json);
-        } catch (FileNotFoundException e) {
+            LOG.debug("The saved test usage is: {}", json);
+        } catch(FileNotFoundException e) {
             LOG.error("The output directory for carved tests is not valid.");
         }
     }

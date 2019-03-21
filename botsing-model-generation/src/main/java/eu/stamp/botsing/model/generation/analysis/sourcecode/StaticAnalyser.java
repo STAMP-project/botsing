@@ -10,9 +10,13 @@ import org.evosuite.junit.CoverageAnalysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class StaticAnalyser {
+
     private static final Logger LOG = LoggerFactory.getLogger(StaticAnalyser.class);
 
 
@@ -21,163 +25,180 @@ public class StaticAnalyser {
     private String oldBCBranch = null;
 
     private LinkedList testSuite = new LinkedList<>();
-    private Map<String,List<String>> objectsTests =  new HashMap<>();
+    private Map<String, List<String>> objectsTests = new HashMap<>();
 
 
-//    private Map<String, List<List<MethodCall>>> exportedMethodCalls =  new HashMap<String, List<List<MethodCall>>>();
+    //    private Map<String, List<List<MethodCall>>> exportedMethodCalls =  new HashMap<String,
+    // List<List<MethodCall>>>();
 
 
     public void analyse(List<String> interestingClasses) {
         int counter = 0;
-        for (String clazz : interestingClasses) {
-            try{
-                if (clazz.startsWith("org.xwiki.rendering.wikimodel.internal.common.javacc")){
+        for(String clazz : interestingClasses) {
+            try {
+                if(clazz.startsWith("org.xwiki.rendering.wikimodel.internal.common.javacc")) {
                     continue;
                 }
-                    counter++;
-                    LOG.info("Analyzing methods of class " + clazz + " ("+counter+"/"+interestingClasses.size()+")");
-                    boolean isTest = false;
-                    Class<?> cls = null;
-                    try {
-                        cls = Class.forName(clazz,false, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                        if(CoverageAnalysis.isTest(cls)){
-                            LOG.info("The class {} is a testSuite",clazz);
-                            isTest=true;
-                            testSuite.add(clazz);
-                        }
-                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
-        //                e.printStackTrace();
-                        LOG.warn("error in loading {}",clazz);
+                counter++;
+                LOG.trace("Analyzing methods of class " + clazz + " (" + counter + "/" + interestingClasses.size() +
+                        ")");
+                boolean isTest = false;
+                Class<?> cls = null;
+                try {
+                    cls = Class.forName(clazz, false,
+                            BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+                    if(CoverageAnalysis.isTest(cls)) {
+                        LOG.trace("The class {} is a testSuite", clazz);
+                        isTest = true;
+                        testSuite.add(clazz);
                     }
+                } catch(ClassNotFoundException | NoClassDefFoundError e) {
+                    //                e.printStackTrace();
+                    LOG.warn("Error while loading {}", clazz, e);
+                }
 
 
-                    GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                    Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(clazz);
-                    if (methodsGraphs != null) {
-                        for (Map.Entry<String, RawControlFlowGraph> entry : methodsGraphs.entrySet()) {
-                            Map<String, Map<String, List<MethodCall>>> collectedCallSequencesForCurrentMethod = analyseMethod(clazz, entry.getKey(), entry.getValue(),isTest);
-                            savingMethodCallSequences(collectedCallSequencesForCurrentMethod);
-                        }
-                    } else {
-                        LOG.warn("The generated control flow graphs for class {} was empty. We cannot execute manual analysis withour the control flow graph.", clazz);
+                GraphPool graphPool =
+                        GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+                Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(clazz);
+                if(methodsGraphs != null) {
+                    for(Map.Entry<String, RawControlFlowGraph> entry : methodsGraphs.entrySet()) {
+                        Map<String, Map<String, List<MethodCall>>> collectedCallSequencesForCurrentMethod =
+                                analyseMethod(clazz, entry.getKey(), entry.getValue(), isTest);
+                        savingMethodCallSequences(collectedCallSequencesForCurrentMethod);
                     }
-            }catch(Exception e){
-                LOG.warn("Error in analyzing class {}",clazz);
-                LOG.warn(e.toString());
+                } else {
+                    LOG.warn("The generated control flow graphs for class {} was empty. We cannot execute manual " +
+                            "analysis withour the control flow graph.", clazz);
+                }
+            } catch(Exception e) {
+                LOG.warn("Error in analyzing class {}", clazz, e);
             }
         }
     }
 
     private void savingMethodCallSequences(Map<String, Map<String, List<MethodCall>>> methodCallSequences) {
-        for (Map.Entry<String, Map<String, List<MethodCall>>> CSEntry : methodCallSequences.entrySet()) {
+        for(Map.Entry<String, Map<String, List<MethodCall>>> CSEntry : methodCallSequences.entrySet()) {
             String clazz = CSEntry.getKey();
             Map<String, List<MethodCall>> sequences = CSEntry.getValue();
-            for (Map.Entry<String, List<MethodCall>> callSequenceEntry : sequences.entrySet()) {
+            for(Map.Entry<String, List<MethodCall>> callSequenceEntry : sequences.entrySet()) {
                 List<MethodCall> callSequence = callSequenceEntry.getValue();
                 CallSequencesPoolManager.getInstance().addSequence(clazz, callSequence);
             }
         }
     }
 
-    private Map<String, Map<String, List<MethodCall>>> analyseMethod(String className, String methodname, RawControlFlowGraph cfg, boolean isTest) {
-        LOG.info("Reading Call Sequences from method " + methodname);
+    private Map<String, Map<String, List<MethodCall>>> analyseMethod(String className, String methodname,
+                                                                     RawControlFlowGraph cfg, boolean isTest) {
+        LOG.debug("Reading Call Sequences from method " + methodname);
         clearOldBC();
-        Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod = new HashMap<String, Map<String, List<MethodCall>>>();
+        Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod = new HashMap<String, Map<String,
+                List<MethodCall>>>();
         List<BytecodeInstruction> bcList = cfg.determineMethodCalls();
-        for (BytecodeInstruction bc : bcList) {
-            LOG.debug("analyzing byteCode " + bc.explain());
+        for(BytecodeInstruction bc : bcList) {
+            LOG.trace("analyzing byteCode " + bc.explain());
             String calledMethodsClass = bc.getCalledMethodsClass();
-            if (!calledMethodsClass.equals(className) && !bc.toString().contains("evosuite")) {// Filter the internal method calls
+            if(!calledMethodsClass.equals(className) && !bc.toString().contains("evosuite")) {// Filter the internal
+                // method calls
 
-                if (isTest){
-                    if (!objectsTests.containsKey(calledMethodsClass)){
-                        objectsTests.put(calledMethodsClass,new LinkedList<String>());
+                if(isTest) {
+                    if(!objectsTests.containsKey(calledMethodsClass)) {
+                        objectsTests.put(calledMethodsClass, new LinkedList<String>());
                     }
-                    if (!objectsTests.get(calledMethodsClass).contains(className)){
+                    if(!objectsTests.get(calledMethodsClass).contains(className)) {
                         objectsTests.get(calledMethodsClass).add(className);
                     }
                 }
 
-                if (bc.isConstructorInvocation()) {
+                if(bc.isConstructorInvocation()) {
                     // Here, we should instantiate a new call sequence
                     handleConstructorInvocation(bc, cfg, callSequencesOfCurrentMethod);
-                } else if (bc.isCallToStaticMethod() || bc.toString().contains("INVOKESTATIC")) {
+                } else if(bc.isCallToStaticMethod() || bc.toString().contains("INVOKESTATIC")) {
                     // Here, we have a call to a static method call. It means we may need a new call sequence.
                     handleStaticMethodCallInvocation(bc, callSequencesOfCurrentMethod);
                 } else {
-                    // Here, we have a regular method call. Also, We are sure that we do not need to initialize a new call sequence of call here. We should just add this to an existing call sequence.
+                    // Here, we have a regular method call. Also, We are sure that we do not need to initialize a new
+                    // call sequence of call here. We should just add this to an existing call sequence.
                     handleRegularMethodInvocation(bc, cfg, callSequencesOfCurrentMethod);
                 }
             } else {
-                LOG.debug("The bytecode Instruction is filtered.");
+                LOG.trace("The bytecode Instruction is filtered.");
                 clearOldBC();
             }
         }
         return callSequencesOfCurrentMethod;
     }
 
-    private void handleRegularMethodInvocation(BytecodeInstruction bc, RawControlFlowGraph cfg, Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) throws IllegalStateException{
-        if (bc.getSourceOfMethodInvocationInstruction() != null) {
-            if (bc.getSourceOfMethodInvocationInstruction().getVariableName() != null) {
-                if (bc.getSourceOfMethodInvocationInstruction().getVariableName().length() > 0) {
+    private void handleRegularMethodInvocation(BytecodeInstruction bc, RawControlFlowGraph cfg, Map<String,
+            Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) throws IllegalStateException {
+        if(bc.getSourceOfMethodInvocationInstruction() != null) {
+            if(bc.getSourceOfMethodInvocationInstruction().getVariableName() != null) {
+                if(bc.getSourceOfMethodInvocationInstruction().getVariableName().length() > 0) {
                     // We have a variable for the object which is used for method invocation
                     String variableName = bc.getSourceOfMethodInvocationInstruction().getVariableName();
                     // We should have the type of the object in this slot
                     String parentType = detectParentType(variableName, callSequencesOfCurrentMethod);
                     recordRegularInvocation(bc, parentType, variableName, callSequencesOfCurrentMethod);
                 } else {
-                    LOG.warn("The variable name is empty: {} ", bc);
-//                    throw new IllegalStateException("Variable with empty name discovered during static analysis for instruction: " + bc);
+                    LOG.debug("The variable name is empty: {} ", bc);
+                    //                    throw new IllegalStateException("Variable with empty name discovered during
+                    // static analysis for instruction: " + bc);
                 }
 
             } else {
-                if (bc.getSourceOfMethodInvocationInstruction().equals(this.oldBC)) {
-                    // This method is invoked by the returned value of the previous method call. So, it should be store in the same call sequence.
+                if(bc.getSourceOfMethodInvocationInstruction().equals(this.oldBC)) {
+                    // This method is invoked by the returned value of the previous method call. So, it should be
+                    // store in the same call sequence.
                     recordInvocation(bc, this.oldBCObject, oldBCBranch, callSequencesOfCurrentMethod);
                 } else {
-                    LOG.error("The variable name of the current byteCode instruction is missing: " + bc.toString());
+                    LOG.debug("The variable name of the current byteCode instruction is missing: " + bc.toString());
                 }
             }
         } else {
-            LOG.warn("Following regular method call cannot find its source of method invocation: " + bc.toString());
+            LOG.debug("Following regular method call cannot find its source of method invocation: " + bc.toString());
         }
     }
 
-    private void recordRegularInvocation(BytecodeInstruction bc, String parentType, String variableName, Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) throws IllegalStateException {
-        if (parentType == null || (parentType.equals(bc.getCalledMethodsClass()))) {
+    private void recordRegularInvocation(BytecodeInstruction bc, String parentType, String variableName, Map<String,
+            Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) throws IllegalStateException {
+        if(parentType == null || (parentType.equals(bc.getCalledMethodsClass()))) {
             // parent is initialized outside of the CUT. For instance, System.out variable in printing.
             recordInvocation(bc, bc.getCalledMethodsClass(), variableName, callSequencesOfCurrentMethod);
-        } else if (callSequencesOfCurrentMethod.get(parentType).containsKey(variableName)) {
+        } else if(callSequencesOfCurrentMethod.get(parentType).containsKey(variableName)) {
             // The object is initialized by another class. We will use this type for recording this invocation.
             recordInvocation(bc, parentType, variableName, callSequencesOfCurrentMethod);
         } else {
             LOG.error("Cannot detect the right call sequence for recording: {}", bc);
-//            throw new IllegalStateException("Could not detect the right call sequence ofr recording " + bc);
+            //            throw new IllegalStateException("Could not detect the right call sequence ofr recording " +
+            // bc);
         }
     }
 
-    private String detectParentType(String branch, Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) {
+    private String detectParentType(String branch,
+                                    Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) {
         String parentType = null;
-        for (Map.Entry<String, Map<String, List<MethodCall>>> CSEntry : callSequencesOfCurrentMethod.entrySet()) {
+        for(Map.Entry<String, Map<String, List<MethodCall>>> CSEntry : callSequencesOfCurrentMethod.entrySet()) {
             Map<String, List<MethodCall>> sequences = CSEntry.getValue();
-            if (sequences.containsKey(branch)) {
+            if(sequences.containsKey(branch)) {
                 // We found our type. We must achieve to this branch
                 parentType = CSEntry.getKey();
-//                LOG.info("parent type " + parentType);
+                //                LOG.info("parent type " + parentType);
                 break;
             }
         }
         return parentType;
     }
 
-    private void handleStaticMethodCallInvocation(BytecodeInstruction bc, Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) {
-        LOG.debug("Detect a static call. Adding it to the static call sequence.");
+    private void handleStaticMethodCallInvocation(BytecodeInstruction bc,
+                                                  Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) {
+        LOG.trace("Detect a static call. Adding it to the static call sequence.");
         recordInvocation(bc, bc.getCalledMethodsClass(), "static", callSequencesOfCurrentMethod);
     }
 
-    private void handleConstructorInvocation(BytecodeInstruction bc, RawControlFlowGraph cfg, Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) {
+    private void handleConstructorInvocation(BytecodeInstruction bc, RawControlFlowGraph cfg, Map<String, Map<String,
+            List<MethodCall>>> callSequencesOfCurrentMethod) {
         String newVariableName = getNewVariableName(bc, cfg);
-        if (newVariableName.length() > 0) {
+        if(newVariableName.length() > 0) {
             // Here, we need to add a new call sequence to the methodCallSequences
             recordInvocation(bc, bc.getCalledMethodsClass(), newVariableName, callSequencesOfCurrentMethod);
         } else {
@@ -186,10 +207,12 @@ public class StaticAnalyser {
 
     }
 
-    private void recordInvocation(BytecodeInstruction bc, String clazz, String branch, Map<String, Map<String, List<MethodCall>>> callSequencesOfCurrentMethod) {
+    private void recordInvocation(BytecodeInstruction bc, String clazz, String branch, Map<String, Map<String,
+            List<MethodCall>>> callSequencesOfCurrentMethod) {
 
         // Check if we already had this class in this method
-        if (!callSequencesOfCurrentMethod.containsKey(clazz)) { // If we did not see it, we would add its key to  methodCallSequences
+        if(!callSequencesOfCurrentMethod.containsKey(clazz)) { // If we did not see it, we would add its key to
+            // methodCallSequences
             Map<String, List<MethodCall>> newSequence = new HashMap<String, List<MethodCall>>();
             callSequencesOfCurrentMethod.put(clazz, newSequence);
             LOG.debug("add new class to callSequencesOfCurrentMethod: " + clazz);
@@ -197,7 +220,7 @@ public class StaticAnalyser {
 
 
         // Check if we already had this branch in the selected class
-        if (!callSequencesOfCurrentMethod.get(clazz).containsKey(branch)) {
+        if(!callSequencesOfCurrentMethod.get(clazz).containsKey(branch)) {
             callSequencesOfCurrentMethod.get(clazz).put(branch, new LinkedList<MethodCall>());
             LOG.debug("add new branch to class {}: {}", clazz, branch);
         }
@@ -216,12 +239,12 @@ public class StaticAnalyser {
         // Try to change newVariableSlot
         int id = bc.getInstructionId() + 1;
         BytecodeInstruction next = cfg.getInstruction(id);
-        if (next.getInstructionType().equals("ASTORE")) {
+        if(next.getInstructionType().equals("ASTORE")) {
             // Only here we change the newVariableSlot
             newVariableName = next.getVariableName();
         } else {
-            if (!next.getInstructionType().equals("ALOAD")) {
-                LOG.warn("The returned value did not stored: "+next.explain());
+            if(!next.getInstructionType().equals("ALOAD")) {
+                LOG.debug("The returned value did not stored: " + next.explain());
             }
         }
         return newVariableName;
@@ -241,11 +264,11 @@ public class StaticAnalyser {
     }
 
 
-    public LinkedList<String> getTestSuite(){
+    public LinkedList<String> getTestSuite() {
         return this.testSuite;
     }
 
-    public Map<String,List<String>> getObjectsTests(){
+    public Map<String, List<String>> getObjectsTests() {
         return this.objectsTests;
     }
 }
