@@ -3,10 +3,11 @@ package eu.stamp.botsing.preprocessing;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class StackFlatten implements STProcessor {
-	private static final String MORE = " more";
-	static final String CAUSED_BY_PREFIX = "Caused by: ";
+	static final String MORE = " more";
+	protected static final String CAUSED_BY_PREFIX = "Caused by: ";
 
 	private static StackFlatten instance = new StackFlatten();
 	public static StackFlatten get() {
@@ -17,12 +18,12 @@ public class StackFlatten implements STProcessor {
 	}
 
 	@Override
-	public List<String> preprocess(List<String> lines) {
+	public List<String> preprocess(List<String> lines, String regexp) {
 		if (lines.size() < 2) {
 			return lines;
 		}
 		List<List<String>> chuncks = splitLines(lines, CAUSED_BY_PREFIX);
-		return flatten(chuncks);
+		return flatten(chuncks, regexp);
 	}
 
 	/*
@@ -39,47 +40,25 @@ public class StackFlatten implements STProcessor {
 		return chunk;
 	}
 
-	String findCauseMethod(List<String> chunk) throws IndexOutOfBoundsException {
-		String lastFrame = chunk.get(chunk.size() - 1);
-		int splitPoint = lastFrame.indexOf('(');
-		return lastFrame.substring(0, splitPoint);
-	}
-
-	/*
-	 * searches a list and returns the index of the first line starting with a
-	 * given prefix
-	 */
-	int findElementWithPrefix(List<String> lines, String prefix) {
-		String target = lines.stream().filter(l -> l.startsWith(prefix)).findFirst().orElse(null);
-		return target != null ? lines.indexOf(target) : -1;
-	}
-
 	/*
 	 * Takes a stack trace splitted at every chained exception and produces a
 	 * flat stack trace with the root cause at the top
 	 */
-	List<String> flatten(List<List<String>> splittedTrace) {
-		//case of empty trace
-		if (splittedTrace.isEmpty()) {
-			return Collections.emptyList();
-		}
-		List<String> orderedList = new ArrayList<>();
-		orderedList.addAll(splittedTrace.get(0));
+	List<String> flatten(List<List<String>> splittedTrace, String regexp) {
+
+		//reverse order to get the deep nested stack trace
+		Collections.reverse(splittedTrace);
+		Pattern pattern = Pattern.compile(regexp);
+
 		for (List<String> chunk : splittedTrace) {
-			if (chunk.isEmpty() || !chunk.get(0).startsWith(CAUSED_BY_PREFIX)) {
-				continue;
+			cleanNestedChunk(chunk);
+			for (String line: chunk){
+				if (pattern.matcher(line).find()){
+					return chunk;
+				}
 			}
-			chunk = cleanNestedChunk(chunk);
-			String method = findCauseMethod(chunk);
-
-			// look for first occurrence of method in main_chunck
-			int targetIndex = findElementWithPrefix(orderedList, method);
-
-			// remove all frames until the one containing the target method
-			orderedList.subList(0, targetIndex + 1).clear();
-			orderedList.addAll(0, chunk);
 		}
-		return orderedList;
+		return Collections.emptyList();
 	}
 
 	/*
@@ -87,6 +66,7 @@ public class StackFlatten implements STProcessor {
 	 * line starts with the prefix, the first chunk is empty
 	 */
 	List<List<String>> splitLines(List<String> lines, String prefix) {
+		//ArrayList - insertion order
 		List<List<String>> subSets = new ArrayList<List<String>>();
 		List<String> chunk = new ArrayList<>();
 		for (String line : lines) {
