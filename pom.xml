@@ -108,7 +108,8 @@
     <profiles>
         <profile>
             <!-- Define a profile for releases of the application -->
-            <!-- mvn release:prepare release:perform -P release -DskipTests=true -->
+            <!-- mvn release:prepare -P release -DskipTests=true -->
+            <!-- mvn release:perform -P release -DskipTests=true -->
             <id>release</id>
             <build>
                 <plugins>
