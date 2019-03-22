@@ -14,6 +14,34 @@ See the [documentation for the Maven Plugin](https://github.com/STAMP-project/bo
 
 ### Command line interface
 
+#### botsing preprocessing
+
+The latest version of Botsing command line (botsing-preprocessing-X-X-X.jar) is available at [https://github.com/STAMP-project/botsing/releases](https://github.com/STAMP-project/botsing/releases). 
+
+Botsing preprocessing has these mandatory parameters (key/value):
+ - `-i` represents the input file path (`crash_log`) with the stack trace to clean. For example `-i=path-name-of-crash-log`
+ - `-o` represents the output file path (`output_log`) cleaned of the error message and/or nested exceptions. For example `-o=path-name-of-output-log` 
+ 
+The actions to perform (clean) in the input log file are: 
+ - `-f` to flatten the stack trace. This action needs to use `-p` parameter (key/value) to set the package has frames pointing to the software under test (as **regexp**). For example `-p=my.package.*`. 
+ - `-e` to remove the error message. For example `-e`. 
+ 
+
+#### Example
+
+To clean the nested stack trace:
+
+```
+java -jar botsing-preprocessing.jar -i=crash_log.txt -o=output_log.log -f -p=com.example.*
+```
+
+or to remove the error message in the log file
+
+```
+java -jar botsing-preprocessing.jar -e -i=crash_log.txt -o==output_log.log 
+```
+
+Note that you can use also both actions (`-f` and `-e`).
 
 #### botsing reproduction
 The latest version of Botsing command line (botsing-reproduction-X-X-X.jar) is available at [https://github.com/STAMP-project/botsing/releases](https://github.com/STAMP-project/botsing/releases). 
@@ -97,35 +125,6 @@ And referenced in the dependencies of the module using the following syntax:
 ```
 Please check in the list of properties that the dependency version is not already there before adding a new one.
 
-#### botsing preprocessing
-
-The latest version of Botsing command line (botsing-preprocessing-X-X-X.jar) is available at [https://github.com/STAMP-project/botsing/releases](https://github.com/STAMP-project/botsing/releases). 
-
-Botsing preprocessing has these mandatory parameters:
- - `-i` represents the input file path (`crash_log`) with the stack trace to clean. For example `-i=path-name-of-crash-log`
- - `-o` represents the output file path (`output_log`) cleaned of the error message and/or nested exceptions. For example `-o=path-name-of-output-log` 
- 
-These parameters define actions to perform (clean) in the stack trace: 
- - `-f` to flatten the stack trace.
- - `-e` to remove the error message.
- 
- - `-p` to set the regexp in the stack trace use case. For example `-p=my.package.*` 
-
-#### Example
-
-To clean the nested stack trace
-
-```
-java -jar botsing-preprocessing.jar -i=crash_log.txt -o=output_log.log -f -p=com.example.*
-```
-
-or to remove the error message
-
-```
-java -jar botsing-preprocessing.jar -e -i=crash_log.txt -o==output_log.log 
-```
-
-Note that you can use also both actions (`-f` and `-e`).
 
 ## Background
 
