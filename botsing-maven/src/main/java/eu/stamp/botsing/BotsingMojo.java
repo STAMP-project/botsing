@@ -50,38 +50,38 @@ public class BotsingMojo extends AbstractMojo {
 	/**
 	 * Log file with the stacktrace
 	 */
-	@Parameter(defaultValue = "sample.log", property = "crash_log")
+	@Parameter(property = "crash_log")
 	private String crashLog;
 
 	/**
 	 * The frame level up to which parse the stack trace
 	 */
-	@Parameter(defaultValue = "3", property = "target_frame")
+	@Parameter(property = "target_frame")
 	private Integer targetFrame;
 
 	/**
 	* the size of the population that evolves during the search with a default value of 100
 	*/
-	@Parameter(defaultValue = "100", property = "population")
+	@Parameter(property = "population")
 	private Integer population;
 
 	/**
 	* the search budget in seconds with a default value of 1800
 	*/
-	@Parameter(defaultValue = "1800", property = "search_budget")
+	@Parameter(property = "search_budget")
 	private Integer searchBudget;
 
 	/**
 	* the global timeout in seconds, after which the execution stops if the search is
 	* stuck with a default value of 1800 (the timeout is only reached if the search does not improve after 1800 seconds)
 	*/
-	@Parameter(defaultValue = "1800", property = "global_timeout")
+	@Parameter(property = "global_timeout")
 	private Integer globalTimeout;
 
 	/**
 	* the directory where the tests are generated with a default value of `crashreproduction-tests`
 	*/
-	@Parameter(defaultValue = "crashreproduction-tests", property = "test_dir")
+	@Parameter(property = "test_dir")
 	private String testDir;
 
 	/**
@@ -125,14 +125,11 @@ public class BotsingMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException {
 		getLog().info("Starting Botsing to generate tests with EvoSuite");
 		Botsing botsing = new Botsing();
-		List<String> propertiesList = new ArrayList<String>();
 
-		propertiesList.add("-"+CommandLineParameters.CRASH_LOG_OPT);
-		propertiesList.add(crashLog);
+		// get properties
+		List<String> properties = getPropertyList();
 
-		propertiesList.add("-"+CommandLineParameters.TARGET_FRAME_OPT);
-		propertiesList.add(targetFrame.toString());
-
+		// build dependencies List
 		String dependencies = null;
 		if (projectCP != null) {
 			dependencies = getDependenciesFromFolder(projectCP);
@@ -140,19 +137,54 @@ public class BotsingMojo extends AbstractMojo {
 			dependencies = getDependenciesFromPom();
 		}
 
+		// add dependencies
 		getLog().debug("dependencies: " + dependencies);
-		propertiesList.add("-"+CommandLineParameters.PROJECT_CP_OPT);
-		propertiesList.add(dependencies);
+		properties.add("-"+CommandLineParameters.PROJECT_CP_OPT);
+		properties.add(dependencies);
 
+		// Start Botsing
 		try {
-			// Start Botsing
-			botsing.parseCommandLine(propertiesList.toArray(new String[0]));
+			botsing.parseCommandLine(properties.toArray(new String[0]));
 
 		} catch (Exception e) {
 			throw new MojoExecutionException("Error executing Botsing", e);
 		}
 
 		getLog().info("Stopping Botsing");
+	}
+
+	private List<String> getPropertyList() {
+		List<String> result = new ArrayList<String>();
+
+		// mandatory parameters
+		result.add("-" + CommandLineParameters.CRASH_LOG_OPT);
+		result.add(crashLog);
+
+		result.add("-" + CommandLineParameters.TARGET_FRAME_OPT);
+		result.add(targetFrame + "");
+
+		// optional parameters
+		if (population != null) {
+			result.add("-Dpopulation=" + population);
+		}
+
+		if (searchBudget != null) {
+			result.add("-Dsearch_budget=" + searchBudget);
+		}
+
+		if (globalTimeout != null) {
+			result.add("-Dglobal_timeout=" + globalTimeout);
+		}
+
+		if (testDir != null) {
+			result.add("-Dtest_dir=" + testDir);
+		}
+
+		if (randomSeed != null) {
+			result.add("-Drandom_seed=" + randomSeed);
+		}
+
+		return result;
 	}
 
 	public String getDependenciesFromPom() throws MojoExecutionException {
