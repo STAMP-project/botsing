@@ -109,7 +109,7 @@ public class Main {
 		List<String> lines = fileToLines(inputFile);
 
 		// pre-processing
-		if (flatten) {
+		if (flatten && regexp != null) {
 			lines = StackFlatten.get().preprocess(lines, regexp);
 		}
 		if (error) {
