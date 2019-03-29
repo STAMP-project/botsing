@@ -77,7 +77,7 @@ public class BotsingMojoTest {
 	 * Test Disabled until FIXME will be resolved
 	 */
 	//@Test
-	public void shouldExecuteBotsingMojoOnBotsingexampleProjectAndGenerateTest() throws Exception {
+	public void shouldExecuteBotsingMojoOnBotsingExampleProjectAndGenerateTest() throws Exception {
 		// botsing-example folder
 		String user_dir = System.getProperty("user.dir");
 		File file = new File(user_dir);
@@ -85,9 +85,9 @@ public class BotsingMojoTest {
 
 		try {
 			// execute botsing-maven as an external process
-			executeProcess(baseDir, "mvn", "clean", "compile", "-X",  "eu.stamp-project:botsing-maven:1.0.4-SNAPSHOT:botsing",
+			executeProcess(baseDir, "mvn", "clean", "compile", "-X",  "eu.stamp-project:botsing-maven:1.0.5-SNAPSHOT:botsing",
 					"-Dcrash_log=src/main/resources/Fraction.log", "-Dtarget_frame=1",
-					"-Dorg.slf4j.simpleLogger.log.org.evosuite=off ", "-Dorg.slf4j.simpleLogger.showLogName=true");
+					"-Dorg.slf4j.simpleLogger.log.org.evosuite=off ", "-Dorg.slf4j.simpleLogger.showLogName=true", "-Dno_runtime_dependency=false");
 
 			// FIXME: Failure to find org.apache.maven.plugins:maven-dependency-plugin:jar:${maven-dependency-plugin.version}
 

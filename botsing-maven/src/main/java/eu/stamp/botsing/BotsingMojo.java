@@ -91,6 +91,10 @@ public class BotsingMojo extends AbstractMojo {
 	@Parameter(property = "random_seed")
 	private Long randomSeed;
 
+
+	@Parameter(property = "no_runtime_dependency", defaultValue="false")
+	private String noRuntimeDependency;
+
 	/**
 	 * Maven variables
 	 */
@@ -182,6 +186,10 @@ public class BotsingMojo extends AbstractMojo {
 
 		if (randomSeed != null) {
 			result.add("-Drandom_seed=" + randomSeed);
+		}
+
+		if (noRuntimeDependency != null) {
+			result.add("-Dno_runtime_dependency=" + noRuntimeDependency);
 		}
 
 		return result;
