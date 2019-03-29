@@ -71,6 +71,7 @@
         <build-helper-maven-plugin.version>1.12</build-helper-maven-plugin.version>
         <commons-cli.version>1.4</commons-cli.version>
         <!-- <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version> -->
+        <evosuite.version>1.0.6</evosuite.version>
         <evosuite-client.version>1.0.7</evosuite-client.version>
         <guava.version>27.0.1-jre</guava.version>
 
