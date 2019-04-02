@@ -38,6 +38,13 @@ import org.eclipse.aether.resolution.ArtifactResult;
 public class BotsingMojo extends AbstractMojo {
 
 	/**
+	 * Properties taken from eu.stamp.botsing.CommandLineParameters.java
+	 */
+	private static final String PROJECT_CP_OPT = "project_cp";
+	private static final String CRASH_LOG_OPT = "crash_log";
+	private static final String TARGET_FRAME_OPT = "target_frame";
+
+	/**
 	 * To see all the properties available take a look at org.evosuite.Properties.java
 	 */
 
@@ -85,20 +92,27 @@ public class BotsingMojo extends AbstractMojo {
 	private String testDir;
 
 	/**
+	 * Botsing version to use
+	 */
+	@Parameter(property = "botsing_version", defaultValue="1.0.5-SNAPSHOT")
+	private String botsingVersion;
+
+	/**
 	* the seed used to initialize the random number generator. This value allows to have deterministic
 	* behavior and should be set when performing evaluations
 	*/
 	@Parameter(property = "random_seed")
 	private Long randomSeed;
 
+
+	@Parameter(property = "no_runtime_dependency", defaultValue="false")
+	private String noRuntimeDependency;
+
 	/**
 	 * Maven variables
 	 */
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
 	private MavenProject project;
-
-	@Component
-	private RepositorySystem repoSystem;
 
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession repoSession;
@@ -108,6 +122,9 @@ public class BotsingMojo extends AbstractMojo {
 
 	@Parameter( defaultValue = "${session}", required = true, readonly = true )
 	private MavenSession session;
+
+	@Component
+	private RepositorySystem repoSystem;
 
 	/**
 	 * Contains the full list of projects in the reactor.
@@ -124,7 +141,6 @@ public class BotsingMojo extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException {
 		getLog().info("Starting Botsing to generate tests with EvoSuite");
-		Botsing botsing = new Botsing();
 
 		// get properties
 		List<String> properties = getPropertyList();
@@ -139,12 +155,20 @@ public class BotsingMojo extends AbstractMojo {
 
 		// add dependencies
 		getLog().debug("dependencies: " + dependencies);
-		properties.add("-"+CommandLineParameters.PROJECT_CP_OPT);
+		properties.add("-"+PROJECT_CP_OPT);
 		properties.add(dependencies);
 
 		// Start Botsing
 		try {
-			botsing.parseCommandLine(properties.toArray(new String[0]));
+
+			// TODO find a way to get the latest version of botsing-reproduction
+			// tried "[1.0.4, )" for version but
+			// Could not find artifact eu.stamp-project:botsing-reproduction:jar:[1.0.4, ) in central (https://repo.maven.apache.org/maven2) -> [Help 1]
+
+			File botsingReproductionJar = getArtifactFile(
+					new DefaultArtifact("eu.stamp-project", "botsing-reproduction", "", "jar", botsingVersion));
+
+			ProcessRunner.executeBotsing(project.getBasedir(), botsingReproductionJar, properties, getLog());
 
 		} catch (Exception e) {
 			throw new MojoExecutionException("Error executing Botsing", e);
@@ -157,10 +181,10 @@ public class BotsingMojo extends AbstractMojo {
 		List<String> result = new ArrayList<String>();
 
 		// mandatory parameters
-		result.add("-" + CommandLineParameters.CRASH_LOG_OPT);
+		result.add("-" + CRASH_LOG_OPT);
 		result.add(crashLog);
 
-		result.add("-" + CommandLineParameters.TARGET_FRAME_OPT);
+		result.add("-" + TARGET_FRAME_OPT);
 		result.add(targetFrame + "");
 
 		// optional parameters
@@ -182,6 +206,10 @@ public class BotsingMojo extends AbstractMojo {
 
 		if (randomSeed != null) {
 			result.add("-Drandom_seed=" + randomSeed);
+		}
+
+		if (noRuntimeDependency != null) {
+			result.add("-Dno_runtime_dependency=" + noRuntimeDependency);
 		}
 
 		return result;
@@ -242,6 +270,16 @@ public class BotsingMojo extends AbstractMojo {
 		/**
 		 * Taken from https://gist.github.com/vincent-zurczak/282775f56d27e12a70d3
 		 */
+		DefaultArtifact aetherArtifact = new DefaultArtifact(artifact.getGroupId(),
+				artifact.getArtifactId(), artifact.getClassifier(), artifact.getType(), artifact.getVersion());
+
+		return getArtifactFile(aetherArtifact);
+	}
+
+	private File getArtifactFile(DefaultArtifact aetherArtifact) throws MojoExecutionException {
+		/**
+		 * Taken from https://gist.github.com/vincent-zurczak/282775f56d27e12a70d3
+		 */
 
 		// We ask Maven to resolve the artifact's location.
 		// It may imply downloading it from a remote repository,
@@ -249,9 +287,6 @@ public class BotsingMojo extends AbstractMojo {
 
 		// To achieve this, we must use Aether
 		// (the dependency mechanism behind Maven).
-		String artifactId = artifact.getArtifactId();
-		org.eclipse.aether.artifact.Artifact aetherArtifact = new DefaultArtifact(artifact.getGroupId(),
-				artifact.getArtifactId(), artifact.getClassifier(), artifact.getType(), artifact.getVersion());
 
 		ArtifactRequest req = new ArtifactRequest().setRepositories(this.repositories).setArtifact(aetherArtifact);
 		ArtifactResult resolutionResult;
@@ -259,13 +294,13 @@ public class BotsingMojo extends AbstractMojo {
 			resolutionResult = this.repoSystem.resolveArtifact(this.repoSession, req);
 
 		} catch (ArtifactResolutionException e) {
-			throw new MojoExecutionException("Artifact " + artifactId + " could not be resolved.", e);
+			throw new MojoExecutionException("Artifact " + aetherArtifact.getArtifactId() + " could not be resolved.", e);
 		}
 
 		// The file should exists, but we never know.
 		File file = resolutionResult.getArtifact().getFile();
 		if (file == null || !file.exists()) {
-			getLog().warn("Artifact " + artifactId
+			getLog().warn("Artifact " + aetherArtifact.getArtifactId()
 					+ " has no attached file. Its content will not be copied in the target model directory.");
 		}
 

@@ -12,13 +12,13 @@ You can install it in your Maven local repository following this steps:
 
 ## Usage
 
-If you have a Maven project you can run Botsing using Maven from the project folder with this command: 
+If you have a Maven project you can run Botsing using Maven from the project folder with this command:
 
 ```
 mvn eu.stamp-project:botsing-maven:botsing -Dcrash_log=ACC-474/ACC-474.log -Dtarget_frame=2
 ```
 
 * crash_log is the parameter to tell Botsing where is the log file to analyze.
-* target_frame is the parameter to tell Botsing how many lines of the log to replicate 
+* target_frame is the parameter to tell Botsing how many lines of the log to replicate
 
 To have more information on the parameters that you can use, please refer to the [Botsing project](https://github.com/STAMP-project/botsing).
