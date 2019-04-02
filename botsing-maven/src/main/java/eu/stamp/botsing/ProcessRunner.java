@@ -44,21 +44,12 @@ public class ProcessRunner {
 			process = builder.start();
 			handleProcessOutput(process, log);
 
-			// Scanner s = new Scanner(process.getInputStream());
-			// StringBuilder text = new StringBuilder();
-			// while (s.hasNextLine()) {
-			// text.append(s.nextLine());
-			// text.append("\n");
-			// }
-			// s.close();
-
-			// log.debug("Process exited with result {} and output {} ", result, text);
-
 			int exitCode = process.waitFor();
 
 			if (exitCode != 0) {
 				log.error("Error executing botsing-reproduction");
 				return false;
+
 			} else {
 				log.debug("botsing-reproduction terminated");
 			}
@@ -83,7 +74,6 @@ public class ProcessRunner {
 
 		}
 
-		process = null;
 		return true;
 	}
 
