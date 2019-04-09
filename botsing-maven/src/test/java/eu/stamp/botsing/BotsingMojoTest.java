@@ -43,8 +43,8 @@ public class BotsingMojoTest {
 		List<String> goals = new ArrayList<String>();
 		goals.add("clean");
 		goals.add("compile");
-		goals.add("eu.stamp-project:botsing-maven:1.0.5-SNAPSHOT:botsing");
-		// goals.add("eu.stamp-project:botsing-maven:botsing");
+		//goals.add("eu.stamp-project:botsing-maven:1.0.5-SNAPSHOT:botsing");
+		goals.add("eu.stamp-project:botsing-maven:botsing");
 
 		try {
 			// execute goals

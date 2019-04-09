@@ -160,6 +160,8 @@ public class BotsingMojo extends AbstractMojo {
 
 		// Start Botsing
 		try {
+			// TODO Maven build succeeds while botsing fails
+			// see issue https://github.com/STAMP-project/botsing/issues/72
 
 			// TODO find a way to get the latest version of botsing-reproduction
 			// tried "[1.0.4, )" for version but
