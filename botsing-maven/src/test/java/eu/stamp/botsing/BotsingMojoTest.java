@@ -9,11 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.it.Verifier;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class BotsingMojoTest {
 
 	@Test
+	@Ignore
 	public void shouldExecuteBotsingMojoOnBotsingexampleProjectAndGenerateTestWithMavenVerifier() throws Exception {
 
 		// botsing-example folder
@@ -43,8 +45,8 @@ public class BotsingMojoTest {
 		List<String> goals = new ArrayList<String>();
 		goals.add("clean");
 		goals.add("compile");
-		//goals.add("eu.stamp-project:botsing-maven:1.0.5-SNAPSHOT:botsing");
-		goals.add("eu.stamp-project:botsing-maven:botsing");
+		goals.add("eu.stamp-project:botsing-maven:1.0.5-SNAPSHOT:botsing");
+		//goals.add("eu.stamp-project:botsing-maven:botsing");
 
 		try {
 			// execute goals
