@@ -10,6 +10,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -38,17 +39,6 @@ import org.eclipse.aether.resolution.ArtifactResult;
 public class BotsingMojo extends AbstractMojo {
 
 	/**
-	 * Properties taken from eu.stamp.botsing.CommandLineParameters.java
-	 */
-	private static final String PROJECT_CP_OPT = "project_cp";
-	private static final String CRASH_LOG_OPT = "crash_log";
-	private static final String TARGET_FRAME_OPT = "target_frame";
-
-	/**
-	 * To see all the properties available take a look at org.evosuite.Properties.java
-	 */
-
-	/**
 	 * Folder with dependencies to run the project
 	 */
 	@Parameter(property = "project_cp")
@@ -67,45 +57,53 @@ public class BotsingMojo extends AbstractMojo {
 	private Integer targetFrame;
 
 	/**
-	* the size of the population that evolves during the search with a default value of 100
-	*/
+	 * The frame level up to which parse the stack trace
+	 */
+	@Parameter(property = "max_target_frame")
+	private Integer maxTargetFrame;
+
+	/**
+	 * the size of the population that evolves during the search with a default
+	 * value of 100
+	 */
 	@Parameter(property = "population")
 	private Integer population;
 
 	/**
-	* the search budget in seconds with a default value of 1800
-	*/
+	 * the search budget in seconds with a default value of 1800
+	 */
 	@Parameter(property = "search_budget")
 	private Integer searchBudget;
 
 	/**
-	* the global timeout in seconds, after which the execution stops if the search is
-	* stuck with a default value of 1800 (the timeout is only reached if the search does not improve after 1800 seconds)
-	*/
+	 * the global timeout in seconds, after which the execution stops if the search
+	 * is stuck with a default value of 1800 (the timeout is only reached if the
+	 * search does not improve after 1800 seconds)
+	 */
 	@Parameter(property = "global_timeout")
 	private Integer globalTimeout;
 
 	/**
-	* the directory where the tests are generated with a default value of `crashreproduction-tests`
-	*/
+	 * the directory where the tests are generated with a default value of
+	 * `crashreproduction-tests`
+	 */
 	@Parameter(property = "test_dir")
 	private String testDir;
 
 	/**
 	 * Botsing version to use
 	 */
-	@Parameter(property = "botsing_version", defaultValue="1.0.5-SNAPSHOT")
+	@Parameter(property = "botsing_version", defaultValue = "1.0.5-SNAPSHOT")
 	private String botsingVersion;
 
 	/**
-	* the seed used to initialize the random number generator. This value allows to have deterministic
-	* behavior and should be set when performing evaluations
-	*/
+	 * the seed used to initialize the random number generator. This value allows to
+	 * have deterministic behavior and should be set when performing evaluations
+	 */
 	@Parameter(property = "random_seed")
 	private Long randomSeed;
 
-
-	@Parameter(property = "no_runtime_dependency", defaultValue="false")
+	@Parameter(property = "no_runtime_dependency", defaultValue = "false")
 	private String noRuntimeDependency;
 
 	/**
@@ -120,7 +118,7 @@ public class BotsingMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true)
 	private List<RemoteRepository> repositories;
 
-	@Parameter( defaultValue = "${session}", required = true, readonly = true )
+	@Parameter(defaultValue = "${session}", required = true, readonly = true)
 	private MavenSession session;
 
 	@Component
@@ -129,21 +127,20 @@ public class BotsingMojo extends AbstractMojo {
 	/**
 	 * Contains the full list of projects in the reactor.
 	 */
-	@Parameter( defaultValue = "${reactorProjects}", readonly = true, required = true )
+	@Parameter(defaultValue = "${reactorProjects}", readonly = true, required = true)
 	private List<MavenProject> reactorProjects;
 
 	/**
 	 * The dependency tree builder to use.
 	 */
-	@Component( hint = "default" )
+	@Component(hint = "default")
 	private DependencyGraphBuilder dependencyGraphBuilder;
 
 	@Override
 	public void execute() throws MojoExecutionException {
 		getLog().info("Starting Botsing to generate tests with EvoSuite");
 
-		// get properties
-		List<String> properties = getPropertyList();
+		// TODO check properties
 
 		// build dependencies List
 		String dependencies = null;
@@ -153,24 +150,33 @@ public class BotsingMojo extends AbstractMojo {
 			dependencies = getDependenciesFromPom();
 		}
 
-		// add dependencies
+		// print dependencies for debug
 		getLog().debug("dependencies: " + dependencies);
-		properties.add("-"+PROJECT_CP_OPT);
-		properties.add(dependencies);
+
+		// add dependencies
+		BotsingConfiguration configuration = new BotsingConfiguration(crashLog, maxTargetFrame, dependencies,
+				population, searchBudget, globalTimeout, testDir, randomSeed, noRuntimeDependency, getLog());
 
 		// Start Botsing
 		try {
-			// TODO Maven build succeeds while botsing fails
-			// see issue https://github.com/STAMP-project/botsing/issues/72
 
 			// TODO find a way to get the latest version of botsing-reproduction
 			// tried "[1.0.4, )" for version but
-			// Could not find artifact eu.stamp-project:botsing-reproduction:jar:[1.0.4, ) in central (https://repo.maven.apache.org/maven2) -> [Help 1]
+			// Could not find artifact eu.stamp-project:botsing-reproduction:jar:[1.0.4, )
+			// in central (https://repo.maven.apache.org/maven2) -> [Help 1]
 
 			File botsingReproductionJar = getArtifactFile(
 					new DefaultArtifact("eu.stamp-project", "botsing-reproduction", "", "jar", botsingVersion));
 
-			ProcessRunner.executeBotsing(project.getBasedir(), botsingReproductionJar, properties, getLog());
+			Integer actualTargetFrame = ProcessRunner.executeBotsing(project.getBasedir(), botsingReproductionJar,
+					configuration, maxTargetFrame, getLog());
+
+			if (actualTargetFrame <= 0) {
+				throw new MojoFailureException("Failed to reproduce the stacktrace.");
+
+			} else {
+				getLog().info("Botsing executed succesfully");
+			}
 
 		} catch (Exception e) {
 			throw new MojoExecutionException("Error executing Botsing", e);
@@ -179,55 +185,11 @@ public class BotsingMojo extends AbstractMojo {
 		getLog().info("Stopping Botsing");
 	}
 
-	private List<String> getPropertyList() {
-		List<String> result = new ArrayList<String>();
-
-		// mandatory parameters
-		result.add("-" + CRASH_LOG_OPT);
-		result.add(crashLog);
-
-		result.add("-" + TARGET_FRAME_OPT);
-		result.add(targetFrame + "");
-
-		// optional parameters
-		if (population != null) {
-			result.add("-Dpopulation=" + population);
-		}
-
-		if (searchBudget != null) {
-			result.add("-Dsearch_budget=" + searchBudget);
-		}
-
-		if (globalTimeout != null) {
-			result.add("-Dglobal_timeout=" + globalTimeout);
-		}
-
-		if (testDir != null) {
-			result.add("-Dtest_dir=" + testDir);
-		}
-
-		if (randomSeed != null) {
-			result.add("-Drandom_seed=" + randomSeed);
-		}
-
-		if (noRuntimeDependency != null) {
-			result.add("-Dno_runtime_dependency=" + noRuntimeDependency);
-		}
-
-		return result;
-	}
-
 	public String getDependenciesFromPom() throws MojoExecutionException {
 		String result = "";
 
-		// Add ./target/classes
-		result += project.getModel().getBuild().getDirectory() + File.separator + "classes" + File.pathSeparator;
-
-		// Add ./target/test-classes
-		String testClasses = project.getModel().getBuild().getDirectory() + File.separator + "test-classes";
-		if (new File(testClasses).exists()) {
-			result += testClasses + File.pathSeparator;
-		}
+		// add project artifact
+		result += getArtifactFile(project.getArtifact()).getAbsolutePath() + File.pathSeparator;
 
 		// Add pom project dependencies
 		for (Artifact unresolvedArtifact : getDependencyTree()) {
@@ -241,11 +203,13 @@ public class BotsingMojo extends AbstractMojo {
 
 	public List<Artifact> getDependencyTree() throws MojoExecutionException {
 		try {
-			ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-			buildingRequest.setProject( project );
+			ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(
+					session.getProjectBuildingRequest());
+			buildingRequest.setProject(project);
 
 			// TODO check if it is necessary to specify an artifact filter
-			DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph( buildingRequest, null, reactorProjects );
+			DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null,
+					reactorProjects);
 
 			List<Artifact> artifactList = new ArrayList<Artifact>();
 			addChildDependencies(rootNode, artifactList);
@@ -272,8 +236,8 @@ public class BotsingMojo extends AbstractMojo {
 		/**
 		 * Taken from https://gist.github.com/vincent-zurczak/282775f56d27e12a70d3
 		 */
-		DefaultArtifact aetherArtifact = new DefaultArtifact(artifact.getGroupId(),
-				artifact.getArtifactId(), artifact.getClassifier(), artifact.getType(), artifact.getVersion());
+		DefaultArtifact aetherArtifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(),
+				artifact.getClassifier(), artifact.getType(), artifact.getVersion());
 
 		return getArtifactFile(aetherArtifact);
 	}

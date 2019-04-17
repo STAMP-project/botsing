@@ -11,7 +11,41 @@ import org.apache.maven.plugin.logging.Log;
 
 public class ProcessRunner {
 
-	public static boolean executeBotsing(File basedir, File botsingReproductionJar, List<String> properties, Log log)
+	public static Integer executeBotsing(File basedir, File botsingReproductionJar, BotsingConfiguration configuration, Integer maxTargetFrame, Log log) throws InterruptedException, IOException {
+
+		Integer targetFrame = configuration.getTargetFrame();
+		boolean success = false;
+		if (maxTargetFrame == null) {
+
+			// execute Botsing only in the target frame passed
+			success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar, configuration.getProperties(), log);
+
+		} else {
+			// targetFrame (should be null) overridden from maxTargetFrame
+			targetFrame = maxTargetFrame;
+
+			// execute Botsing decreasing target frame until a Botsing is executed successfully
+			while (!success || targetFrame == 0) {
+
+				log.info("Running Botsing with frame " + targetFrame);
+				success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar, configuration.getProperties(), log);
+				if (success) {
+					// TODO check that in the generated test does not contains "EvoSuite did not generate any tests"
+				}
+				targetFrame = configuration.decreaseTargetFrame();
+			}
+		}
+
+		// return target frame that get a successful execution or -1
+		if (success) {
+			return targetFrame;
+
+		} else {
+			return -1;
+		}
+	}
+
+	private static boolean executeBotsing(File basedir, File botsingReproductionJar, List<String> properties, Log log)
 			throws InterruptedException, IOException {
 
 		final String JAVA_CMD = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar
@@ -28,7 +62,7 @@ public class ProcessRunner {
 		return ProcessRunner.executeProcess(basedir, log, jarCommand.toArray(new String[0]));
 	}
 
-	public static boolean executeProcess(File workDir, Log log, String... command) throws InterruptedException, IOException {
+	private static boolean executeProcess(File workDir, Log log, String... command) throws InterruptedException, IOException {
 		Process process = null;
 
 		if (log.isDebugEnabled()) {
