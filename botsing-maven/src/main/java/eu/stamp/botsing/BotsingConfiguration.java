@@ -7,7 +7,11 @@ import org.apache.maven.plugin.logging.Log;
 
 public class BotsingConfiguration {
 
+	/**
+	 * Botsing configuration is stored in a List of String
+	 */
 	private List<String> properties;
+
 	private Log log;
 
 	/**
@@ -80,6 +84,8 @@ public class BotsingConfiguration {
 				properties.add(i+1, value.toString());
 
 			} else {
+
+				// insert parameter and value
 				properties.add("-" + name);
 				properties.add(value.toString());
 			}
@@ -95,34 +101,75 @@ public class BotsingConfiguration {
 		}
 	}
 
+	public String getTestDir() {
+		return getParameterValue("test_dir");
+	}
+
+	private String getParameterValue(String parameterName) {
+		String value = null;
+
+		for (int i = 0; i < properties.size(); i++) {
+			if (properties.get(i).startsWith("-" + parameterName)) {
+
+				// parameter stored as "-PARAM_NAME PARAM_VALUE" (two strings in the list)
+				value = properties.get(i + 1);
+				break;
+
+			} else if (properties.get(i).startsWith("-D" + parameterName)) {
+
+				// parameter stored as "-DPARAM_NAME=PARAM_VALUE" (one string in the list)
+				int eqIndex = properties.get(i).indexOf("=");
+				value = properties.get(i).substring(eqIndex);
+				break;
+			}
+		}
+
+		return value;
+	}
+
 	public Integer getTargetFrame() {
 
-		return getOrDecreaseTargetFrame(false);
+		return getOrDecreaseParameterValue(TARGET_FRAME_OPT, false);
 	}
 
 	public Integer decreaseTargetFrame() {
 
-		return getOrDecreaseTargetFrame(true);
+		return getOrDecreaseParameterValue(TARGET_FRAME_OPT, true);
 	}
 
-	private Integer getOrDecreaseTargetFrame(boolean decrease) {
+	private Integer getOrDecreaseParameterValue(String parameterName, boolean decrease) {
 
-		Integer targetFrame = null;
+		Integer value = null;
 
 		for (int i = 0; i < properties.size(); i++) {
-			if (properties.get(i).startsWith("-" + TARGET_FRAME_OPT)) {
-				targetFrame = Integer.parseInt(properties.get(i + 1));
+			if (properties.get(i).startsWith("-" + parameterName)) {
+
+				// parameter stored as "-PARAM_NAME PARAM_VALUE" (two strings in the list)
+				value = Integer.parseInt(properties.get(i + 1));
 
 				if (decrease) {
-					targetFrame = targetFrame - 1;
-					properties.add(i + 1, (targetFrame) + "");
+					value = value - 1;
+					properties.add(i + 1, (value) + "");
+				}
+
+				break;
+
+			} else if (properties.get(i).startsWith("-D" + parameterName)) {
+
+				// parameter stored as "-DPARAM_NAME=PARAM_VALUE" (one string in the list)
+				int eqIndex = properties.get(i).indexOf("=");
+				value = Integer.parseInt(properties.get(i).substring(eqIndex));
+
+				if (decrease) {
+					value = value - 1;
+					properties.add(i, "-D" + parameterName + "=" + value);
 				}
 
 				break;
 			}
 		}
 
-		return targetFrame;
+		return value;
 	}
 
 	public List<String> getProperties() {

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -18,6 +19,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
@@ -37,6 +40,10 @@ import org.eclipse.aether.resolution.ArtifactResult;
  */
 @Mojo(name = "botsing", defaultPhase = LifecyclePhase.VERIFY, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class BotsingMojo extends AbstractMojo {
+
+	private enum DependencyInputType {
+		FOLDER, POM, ARTIFACT
+	}
 
 	/**
 	 * Folder with dependencies to run the project
@@ -92,6 +99,7 @@ public class BotsingMojo extends AbstractMojo {
 
 	/**
 	 * Botsing version to use
+	 * TODO remove default value
 	 */
 	@Parameter(property = "botsing_version", defaultValue = "1.0.5-SNAPSHOT")
 	private String botsingVersion;
@@ -105,6 +113,24 @@ public class BotsingMojo extends AbstractMojo {
 
 	@Parameter(property = "no_runtime_dependency", defaultValue = "false")
 	private String noRuntimeDependency;
+
+	/**
+	 * Parameters to get dependencies from artifactId
+	 */
+	@Parameter(property = "group_id")
+	private String groupId;
+
+	@Parameter(property = "artifact_id")
+	private String artifactId;
+
+	@Parameter(property = "classifier")
+	private String classifier;
+
+	@Parameter(property = "extension")
+	private String extension;
+
+	@Parameter(property = "version")
+	private String version;
 
 	/**
 	 * Maven variables
@@ -136,25 +162,17 @@ public class BotsingMojo extends AbstractMojo {
 	@Component(hint = "default")
 	private DependencyGraphBuilder dependencyGraphBuilder;
 
+	@Component
+	private ProjectBuilder projectBuilder;
+
 	@Override
 	public void execute() throws MojoExecutionException {
 		getLog().info("Starting Botsing to generate tests with EvoSuite");
 
 		// TODO check properties
 
-		// build dependencies List
-		String dependencies = null;
-		if (projectCP != null) {
-			dependencies = getDependenciesFromFolder(projectCP);
-		} else {
-			dependencies = getDependenciesFromPom();
-		}
-
-		// print dependencies for debug
-		getLog().debug("dependencies: " + dependencies);
-
-		// add dependencies
-		BotsingConfiguration configuration = new BotsingConfiguration(crashLog, maxTargetFrame, dependencies,
+		// set Botsing configuration
+		BotsingConfiguration configuration = new BotsingConfiguration(crashLog, targetFrame, getDependencies(),
 				population, searchBudget, globalTimeout, testDir, randomSeed, noRuntimeDependency, getLog());
 
 		// Start Botsing
@@ -185,14 +203,75 @@ public class BotsingMojo extends AbstractMojo {
 		getLog().info("Stopping Botsing");
 	}
 
-	public String getDependenciesFromPom() throws MojoExecutionException {
+	/**
+	 * Return if the dependencies should be found in a folder or from pom.xml or searching via artifactId looking at the input
+	 * @return
+	 */
+	private DependencyInputType getDependencyType() {
+
+		if (projectCP != null) {
+
+			getLog().info("Reading dependencies from folder");
+			return DependencyInputType.FOLDER;
+
+		} else if (groupId != null && artifactId != null) {
+
+			getLog().info("Reading dependencies from artifact");
+			return DependencyInputType.ARTIFACT;
+
+		} else {
+
+			getLog().info("Reading dependencies from pom");
+			return DependencyInputType.POM;
+		}
+	}
+
+	/**
+	 * build a list of dependencies to run Botsing
+	 *
+	 * @return
+	 * @throws MojoExecutionException
+	 */
+	public String getDependencies() throws MojoExecutionException {
+		String dependencies = null;
+
+		// check where the dependency should be found
+		DependencyInputType dependencyType = getDependencyType();
+
+		if (dependencyType == DependencyInputType.FOLDER) {
+			dependencies = getDependenciesFromFolder(projectCP);
+
+		} else {
+			dependencies = getDependenciesWithMaven(dependencyType);
+		}
+
+		// print dependencies for debug
+		getLog().debug("dependencies: " + dependencies);
+
+		return dependencies;
+	}
+
+	public String getDependenciesWithMaven(DependencyInputType dependencyType) throws MojoExecutionException {
 		String result = "";
 
-		// add project artifact
-		result += getArtifactFile(project.getArtifact()).getAbsolutePath() + File.pathSeparator;
+		if (dependencyType == DependencyInputType.POM) {
 
-		// Add pom project dependencies
-		for (Artifact unresolvedArtifact : getDependencyTree()) {
+			// add project artifact
+			result += getArtifactFile(project.getArtifact()).getAbsolutePath() + File.pathSeparator;
+
+		} else if (dependencyType == DependencyInputType.ARTIFACT) {
+
+			// add input artifact
+			File artifactFile = getArtifactFile(
+					new DefaultArtifact(groupId, artifactId, classifier, extension, version));
+			result += artifactFile.getAbsolutePath() + File.pathSeparator;
+
+		} else {
+			getLog().warn("Dependency type '"+dependencyType+"' not supported!");
+		}
+
+		// Add dependencies
+		for (Artifact unresolvedArtifact : getDependencyTree(dependencyType)) {
 			File file = getArtifactFile(unresolvedArtifact);
 
 			result += file.getAbsolutePath() + File.pathSeparator;
@@ -201,11 +280,9 @@ public class BotsingMojo extends AbstractMojo {
 		return result;
 	}
 
-	public List<Artifact> getDependencyTree() throws MojoExecutionException {
+	public List<Artifact> getDependencyTree(DependencyInputType dependencyType) throws MojoExecutionException {
 		try {
-			ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(
-					session.getProjectBuildingRequest());
-			buildingRequest.setProject(project);
+			ProjectBuildingRequest buildingRequest = getProjectbuildingRequest(dependencyType);
 
 			// TODO check if it is necessary to specify an artifact filter
 			DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null,
@@ -219,6 +296,40 @@ public class BotsingMojo extends AbstractMojo {
 		} catch (DependencyGraphBuilderException e) {
 			throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);
 		}
+	}
+
+	private ProjectBuildingRequest getProjectbuildingRequest(DependencyInputType dependencyType) throws MojoExecutionException {
+		ProjectBuildingRequest buildingRequest = null;
+
+		if (dependencyType == DependencyInputType.POM) {
+
+			// building request for project pom
+			buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+			buildingRequest.setProject(project);
+
+		} else if (dependencyType == DependencyInputType.ARTIFACT) {
+
+			// building request for input artifact
+			buildingRequest = new DefaultProjectBuildingRequest();
+			buildingRequest.setProcessPlugins( false );
+			buildingRequest.setRepositorySession( repoSession );
+			org.apache.maven.artifact.Artifact artifact = new org.apache.maven.artifact.DefaultArtifact(groupId,
+					artifactId, version, "compile", extension, classifier, new DefaultArtifactHandler());
+
+			try {
+				MavenProject project = projectBuilder.build(artifact, buildingRequest).getProject();
+				buildingRequest.setProject(project);
+
+			} catch (ProjectBuildingException e) {
+				throw new MojoExecutionException("Failed to build the POM for the artifact " + groupId + ":" + artifactId
+						+ ":" + extension + ":" + version + ".", e);
+			}
+
+		} else {
+			getLog().warn("Dependency type '"+dependencyType+"' not supported!");
+		}
+
+		return buildingRequest;
 	}
 
 	private void addChildDependencies(DependencyNode node, List<Artifact> list) {

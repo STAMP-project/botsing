@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,9 +30,16 @@ public class ProcessRunner {
 
 				log.info("Running Botsing with frame " + targetFrame);
 				success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar, configuration.getProperties(), log);
-				if (success) {
-					// TODO check that in the generated test does not contains "EvoSuite did not generate any tests"
+
+				// check that the generated test does not contains "EvoSuite did not generate any tests"
+				if (success && Paths.get(configuration.getTestDir()).toFile().list().length > 0) {
+
+					boolean emptyTest = FileUtility.search(configuration.getTestDir(), ".*EvoSuite did not generate any tests.*");
+					if (!emptyTest) {
+						break;
+					}
 				}
+
 				targetFrame = configuration.decreaseTargetFrame();
 			}
 		}
