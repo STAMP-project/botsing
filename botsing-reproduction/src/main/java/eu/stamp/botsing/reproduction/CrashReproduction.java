@@ -22,7 +22,6 @@ package eu.stamp.botsing.reproduction;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
-import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
 import eu.stamp.botsing.graphs.cfg.CFGGenerator;
 import org.evosuite.Properties;
 import org.evosuite.TimeController;
@@ -41,27 +40,18 @@ import org.evosuite.setup.DependencyAnalysis;
 import org.evosuite.statistics.RuntimeVariable;
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.evosuite.testcase.ConstantInliner;
-import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestFitnessFunction;
-import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.ExecutionTrace;
 import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testcase.execution.TestCaseExecutor;
 import org.evosuite.testcase.execution.reset.ClassReInitializer;
-import org.evosuite.testcase.statements.MethodStatement;
-import org.evosuite.testcase.statements.Statement;
-import org.evosuite.testcase.statements.StringPrimitiveStatement;
-import org.evosuite.testcase.statements.numeric.BooleanPrimitiveStatement;
-import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteMinimizer;
-import org.evosuite.utils.generic.GenericMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class CrashReproduction {
