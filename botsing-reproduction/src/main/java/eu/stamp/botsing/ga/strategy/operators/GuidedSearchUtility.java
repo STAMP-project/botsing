@@ -193,9 +193,9 @@ public class GuidedSearchUtility<T extends Chromosome> {
     protected void searchForNonPrivateMethods(BytecodeInstruction targetInstruction, String targetClass){
         List<BytecodeInstruction> instructions = null;
         if(CrashProperties.integrationTesting){
-            BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+            instructions=BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
         }else{
-            BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+            instructions=BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
         }
         searchForNonPrivateMethods(instructions, targetInstruction);
     }

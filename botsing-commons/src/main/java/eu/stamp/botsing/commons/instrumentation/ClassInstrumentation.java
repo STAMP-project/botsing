@@ -41,7 +41,9 @@ public class ClassInstrumentation {
                 LOG.warn("Error in loading {}",clazz);
             }
         }
-        instrumentClassByTestExecution(Properties.TARGET_CLASS);
+        if(instrumentedClassesName.contains(Properties.TARGET_CLASS)){
+            instrumentClassByTestExecution(Properties.TARGET_CLASS);
+        }
         return instrumentedClasses;
     }
 
