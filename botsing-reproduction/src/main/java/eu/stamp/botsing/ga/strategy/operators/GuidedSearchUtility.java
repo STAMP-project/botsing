@@ -2,6 +2,7 @@ package eu.stamp.botsing.ga.strategy.operators;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
@@ -112,7 +113,12 @@ public class GuidedSearchUtility<T extends Chromosome> {
         if (publicCalls.size() ==0){
             StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
             String targetClass = givenStackTrace.getTargetClass();
-            List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+            List<BytecodeInstruction> instructions;
+            if(CrashProperties.integrationTesting){
+                instructions = BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+            }else{
+                instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+            }
             publicCalls =  getPublicCalls(givenStackTrace, instructions);
         }
 
@@ -185,7 +191,12 @@ public class GuidedSearchUtility<T extends Chromosome> {
      * @param targetClass the class under test
      */
     protected void searchForNonPrivateMethods(BytecodeInstruction targetInstruction, String targetClass){
-        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+        List<BytecodeInstruction> instructions = null;
+        if(CrashProperties.integrationTesting){
+            BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+        }else{
+            BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+        }
         searchForNonPrivateMethods(instructions, targetInstruction);
     }
 
