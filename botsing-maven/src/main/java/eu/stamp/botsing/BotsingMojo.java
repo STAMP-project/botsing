@@ -1,6 +1,7 @@
 package eu.stamp.botsing;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -72,6 +73,11 @@ public class BotsingMojo extends AbstractMojo {
 	private Integer maxTargetFrame;
 
 	/**
+	 * Maximum value of target_frame to consider if frame is read from stacktrace file
+	 */
+	private static final Integer MAX_FRAME_LIMIT = 10;
+
+	/**
 	 * the size of the population that evolves during the search with a default
 	 * value of 100
 	 */
@@ -94,9 +100,9 @@ public class BotsingMojo extends AbstractMojo {
 
 	/**
 	 * the directory where the tests are generated with a default value of
-	 * `crashreproduction-tests`
+	 * `crash-reproduction-tests`
 	 */
-	@Parameter(property = "test_dir", defaultValue = "crashreproduction-tests")
+	@Parameter(property = "test_dir", defaultValue = "crash-reproduction-tests")
 	private String testDir;
 
 	/**
@@ -174,7 +180,7 @@ public class BotsingMojo extends AbstractMojo {
 		// TODO check properties
 
 		// set Botsing configuration
-		BotsingConfiguration configuration = new BotsingConfiguration(crashLog, targetFrame, getDependencies(),
+		BotsingConfiguration configuration = new BotsingConfiguration(crashLog, getTargetFrame(), getDependencies(),
 				population, searchBudget, globalTimeout, testDir, randomSeed, noRuntimeDependency, getLog());
 
 		// Start Botsing
@@ -203,6 +209,30 @@ public class BotsingMojo extends AbstractMojo {
 		}
 
 		getLog().info("Stopping Botsing");
+	}
+
+	private Integer getTargetFrame() throws MojoExecutionException {
+		if (targetFrame != null) {
+			return targetFrame;
+
+		} else if (maxTargetFrame != null) {
+			return null;
+
+		} else {
+			try {
+				// get row number from log file
+				long rowNumber = FileUtility.getRowNumber(crashLog);
+				if (rowNumber > MAX_FRAME_LIMIT) {
+					getLog().warn("target_frame set to " + MAX_FRAME_LIMIT + " because it exceed the maximum.");
+					return MAX_FRAME_LIMIT;
+				}
+				// remove the first line from the count
+				return (new Long(rowNumber-1)).intValue();
+
+			} catch (IOException e) {
+				throw new MojoExecutionException("Cannot read file '" + crashLog + "' line number");
+			}
+		}
 	}
 
 	/**

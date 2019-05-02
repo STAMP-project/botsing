@@ -2,11 +2,27 @@ package eu.stamp.botsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 
 public class FileUtility {
+
+	/**
+	 * @param file
+	 * @return number of rows in the file
+	 * @throws IOException
+	 */
+	public static long getRowNumber(String file) throws IOException {
+
+		try ( Stream<String> lines = Files.lines(Paths.get(file), Charset.defaultCharset()) ) {
+			return lines.count();
+		}
+	}
 
 	/**
 	 * Search inside the files of the folder and in subfolders for the regex

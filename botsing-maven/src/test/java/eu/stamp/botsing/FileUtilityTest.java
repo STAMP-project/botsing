@@ -51,8 +51,6 @@ public class FileUtilityTest {
 		File javaTestFile = new File(folderWithTest, "javaTestFile.java");
 		FileUtils.writeStringToFile(javaTestFile, javaTest, "UTF-8");
 
-		System.out.println("New file '" + javaTestFile.getAbsolutePath() + "' created.");
-
 		assertFalse(FileUtility.search(folderWithTest.getAbsolutePath(), ".*EvoSuite did not generate any tests.*"));
 	}
 
@@ -76,18 +74,13 @@ public class FileUtilityTest {
 		File emptyJavaTestFile = new File(folderWithEmptyTest, "emptyJavaTestFile.java");
 		FileUtils.writeStringToFile(emptyJavaTestFile, emptyJavaTest, "UTF-8");
 
-		System.out.println("New file '" + emptyJavaTestFile.getAbsolutePath() + "' created.");
-
 		assertTrue(FileUtility.search(folderWithEmptyTest.getAbsolutePath(), ".*EvoSuite did not generate any tests.*"));
 	}
 
 	@Test
 	public void searchInEmptyFolder() throws IOException {
 
-		// Write empty Java Test File
 		File emptyFolder = tmpFolder.newFolder();
-
-		System.out.println("Empty folder '" + emptyFolder.getAbsolutePath() + "' created.");
 
 		assertFalse(FileUtility.search(emptyFolder.getAbsolutePath(), ".*EvoSuite did not generate any tests.*"));
 	}
@@ -107,13 +100,24 @@ public class FileUtilityTest {
 				"  }\n" +
 				"}";
 
-		// Write empty Java Test File
 		File subfolder = tmpFolder.newFolder("eu", "stamp");
 		File emptyJavaTestFile = new File(subfolder, "emptyJavaTestFile.java");
 		FileUtils.writeStringToFile(emptyJavaTestFile, emptyJavaTest, "UTF-8");
 
-		System.out.println("New file '" + emptyJavaTestFile.getAbsolutePath() + "' created.");
-
 		assertTrue(FileUtility.search(subfolder.getAbsolutePath(), ".*EvoSuite did not generate any tests.*"));
+	}
+
+	@Test
+	public void getRowNumberTest() throws IOException {
+
+		String stacktrace = "java.lang.IndexOutOfBoundsException: Index: 3, Size: 2\n" +
+				"        at org.apache.commons.collections4.map.ListOrderedMap.put(ListOrderedMap.java:459)\n" +
+				"        at org.apache.commons.collections4.map.ListOrderedMap.putAll(ListOrderedMap.java:251)\n";
+
+		File folder = tmpFolder.newFolder();
+		File logFile = new File(folder, "logFile.java");
+		FileUtils.writeStringToFile(logFile, stacktrace, "UTF-8");
+
+		assertTrue(FileUtility.getRowNumber(logFile.getAbsolutePath()) == 3);
 	}
 }
