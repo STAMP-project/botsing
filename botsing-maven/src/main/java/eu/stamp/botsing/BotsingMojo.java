@@ -94,7 +94,7 @@ public class BotsingMojo extends AbstractMojo {
 	 * the directory where the tests are generated with a default value of
 	 * `crashreproduction-tests`
 	 */
-	@Parameter(property = "test_dir")
+	@Parameter(property = "test_dir", defaultValue = "crashreproduction-tests")
 	private String testDir;
 
 	/**

@@ -91,4 +91,29 @@ public class FileUtilityTest {
 
 		assertFalse(FileUtility.search(emptyFolder.getAbsolutePath(), ".*EvoSuite did not generate any tests.*"));
 	}
+
+	@Test
+	public void searchShouldFindEmptyRegexInSubFolders() throws IOException {
+
+		String emptyJavaTest = "package org.apache.commons.lang3;\n" +
+				"\n" +
+				"import org.junit.Test;\n" +
+				"import static org.junit.Assert.*;\n" +
+				"\n" +
+				"public class SerializationUtils_ESTest {\n" +
+				"  @Test\n" +
+				"  public void notGeneratedAnyTest() {\n" +
+				"    // EvoSuite did not generate any tests\n" +
+				"  }\n" +
+				"}";
+
+		// Write empty Java Test File
+		File subfolder = tmpFolder.newFolder("eu", "stamp");
+		File emptyJavaTestFile = new File(subfolder, "emptyJavaTestFile.java");
+		FileUtils.writeStringToFile(emptyJavaTestFile, emptyJavaTest, "UTF-8");
+
+		System.out.println("New file '" + emptyJavaTestFile.getAbsolutePath() + "' created.");
+
+		assertTrue(FileUtility.search(subfolder.getAbsolutePath(), ".*EvoSuite did not generate any tests.*"));
+	}
 }

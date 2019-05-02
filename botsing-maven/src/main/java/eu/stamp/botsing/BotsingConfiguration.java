@@ -119,7 +119,7 @@ public class BotsingConfiguration {
 
 				// parameter stored as "-DPARAM_NAME=PARAM_VALUE" (one string in the list)
 				int eqIndex = properties.get(i).indexOf("=");
-				value = properties.get(i).substring(eqIndex);
+				value = properties.get(i).substring(eqIndex + 1);
 				break;
 			}
 		}

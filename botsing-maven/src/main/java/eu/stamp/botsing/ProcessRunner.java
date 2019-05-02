@@ -29,6 +29,8 @@ public class ProcessRunner {
 			while (!success || targetFrame == 0) {
 
 				log.info("Running Botsing with frame " + targetFrame);
+				configuration.addTargetFrame(targetFrame);
+
 				success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar, configuration.getProperties(), log);
 
 				// check that the generated test does not contains "EvoSuite did not generate any tests"

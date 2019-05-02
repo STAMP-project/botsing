@@ -9,7 +9,7 @@ import org.apache.commons.io.LineIterator;
 public class FileUtility {
 
 	/**
-	 * Search inside the files of the folder for the regex
+	 * Search inside the files of the folder and in subfolders for the regex
 	 *
 	 * @param folder
 	 * @param regex
@@ -22,7 +22,10 @@ public class FileUtility {
 
 		for (File f : fold.listFiles()) {
 
-			if (searchInFile(f, regex)) {
+			if (f.isDirectory()) {
+				search(f.getAbsolutePath(), regex);
+
+			} else if (searchInFile(f, regex)) {
 				return true;
 			}
 		}
