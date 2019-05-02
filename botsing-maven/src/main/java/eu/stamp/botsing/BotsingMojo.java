@@ -29,6 +29,8 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
+import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
@@ -126,7 +128,7 @@ public class BotsingMojo extends AbstractMojo {
 	@Parameter(property = "classifier")
 	private String classifier;
 
-	@Parameter(property = "extension")
+	@Parameter(property = "extension", defaultValue = "jar")
 	private String extension;
 
 	@Parameter(property = "version")
@@ -246,7 +248,7 @@ public class BotsingMojo extends AbstractMojo {
 		}
 
 		// print dependencies for debug
-		getLog().debug("dependencies: " + dependencies);
+		getLog().info("Collected dependencies: " + dependencies);
 
 		return dependencies;
 	}
@@ -261,10 +263,15 @@ public class BotsingMojo extends AbstractMojo {
 
 		} else if (dependencyType == DependencyInputType.ARTIFACT) {
 
+			// artifact to get
+			DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, classifier, extension, version);
+
 			// add input artifact
-			File artifactFile = getArtifactFile(
-					new DefaultArtifact(groupId, artifactId, classifier, extension, version));
+			File artifactFile = getArtifactFile(artifact);
 			result += artifactFile.getAbsolutePath() + File.pathSeparator;
+
+			// download pom artifact
+			downloadArtifactDescriptorFile(artifact);
 
 		} else {
 			getLog().warn("Dependency type '"+dependencyType+"' not supported!");
@@ -382,6 +389,17 @@ public class BotsingMojo extends AbstractMojo {
 		}
 
 		return file;
+	}
+
+	private void downloadArtifactDescriptorFile(DefaultArtifact aetherArtifact) throws MojoExecutionException {
+
+		ArtifactDescriptorRequest descReq = new ArtifactDescriptorRequest().setRepositories(this.repositories).setArtifact(aetherArtifact);
+		try {
+			this.repoSystem.readArtifactDescriptor(this.repoSession, descReq);
+
+		} catch ( ArtifactDescriptorException e) {
+			throw new MojoExecutionException("Artifact Descriptor for " + aetherArtifact.getArtifactId() + " could not be resolved.", e);
+		}
 	}
 
 	public static String getDependenciesFromFolder(String dependenciesFolder) {
