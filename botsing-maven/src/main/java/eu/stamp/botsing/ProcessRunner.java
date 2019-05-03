@@ -7,19 +7,22 @@ import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.plugin.logging.Log;
 
 public class ProcessRunner {
 
-	public static Integer executeBotsing(File basedir, File botsingReproductionJar, BotsingConfiguration configuration, Integer maxTargetFrame, Log log) throws InterruptedException, IOException {
+	public static Integer executeBotsing(File basedir, File botsingReproductionJar, BotsingConfiguration configuration,
+			Integer maxTargetFrame, Log log) throws InterruptedException, IOException {
 
 		Integer targetFrame = configuration.getTargetFrame();
 		boolean success = false;
 		if (maxTargetFrame == null) {
 
 			// execute Botsing only in the target frame passed
-			success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar, configuration.getProperties(), log);
+			success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar,
+					new Long(configuration.getGlobalTimeout()), configuration.getProperties(), log);
 
 		} else {
 			// targetFrame (should be null) overridden from maxTargetFrame
@@ -31,7 +34,8 @@ public class ProcessRunner {
 				log.info("Running Botsing with frame " + targetFrame);
 				configuration.addTargetFrame(targetFrame);
 
-				success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar, configuration.getProperties(), log);
+				success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar,
+						new Long(configuration.getGlobalTimeout()), configuration.getProperties(), log);
 
 				// stop only if the generated test does not contains "EvoSuite did not generate any tests"
 				if (success) {
@@ -79,8 +83,8 @@ public class ProcessRunner {
 		}
 	}
 
-	private static boolean executeBotsing(File basedir, File botsingReproductionJar, List<String> properties, Log log)
-			throws InterruptedException, IOException {
+	private static boolean executeBotsing(File basedir, File botsingReproductionJar, long timeout,
+			List<String> properties, Log log) throws InterruptedException, IOException {
 
 		final String JAVA_CMD = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar
 				+ "java";
@@ -93,10 +97,10 @@ public class ProcessRunner {
 
 		jarCommand.addAll(properties);
 
-		return ProcessRunner.executeProcess(basedir, log, jarCommand.toArray(new String[0]));
+		return ProcessRunner.executeProcess(basedir, log, timeout, jarCommand.toArray(new String[0]));
 	}
 
-	private static boolean executeProcess(File workDir, Log log, String... command) throws InterruptedException, IOException {
+	private static boolean executeProcess(File workDir, Log log, long timeout, String... command) throws InterruptedException, IOException {
 		Process process = null;
 
 		if (log.isDebugEnabled()) {
@@ -112,13 +116,22 @@ public class ProcessRunner {
 			process = builder.start();
 			handleProcessOutput(process, log);
 
+			boolean exitResult = process.waitFor(timeout, TimeUnit.SECONDS);
 			int exitCode = process.waitFor();
 
+			// process did not complete before timeout
+			if (!exitResult) {
+				log.error("botsing-reproduction terminated because it took more than " + timeout + "s to complete");
+				return false;
+			}
+
 			if (exitCode != 0) {
+				// process terminated abnormally
 				log.error("Error executing botsing-reproduction");
 				return false;
 
 			} else {
+				// process terminated normally
 				log.debug("botsing-reproduction terminated");
 			}
 

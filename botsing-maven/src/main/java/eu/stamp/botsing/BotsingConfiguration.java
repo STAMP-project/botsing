@@ -127,6 +127,11 @@ public class BotsingConfiguration {
 		return value;
 	}
 
+	public Integer getGlobalTimeout() {
+
+		return getOrDecreaseParameterValue("global_timeout", false);
+	}
+
 	public Integer getTargetFrame() {
 
 		return getOrDecreaseParameterValue(TARGET_FRAME_OPT, false);
@@ -158,7 +163,7 @@ public class BotsingConfiguration {
 
 				// parameter stored as "-DPARAM_NAME=PARAM_VALUE" (one string in the list)
 				int eqIndex = properties.get(i).indexOf("=");
-				value = Integer.parseInt(properties.get(i).substring(eqIndex));
+				value = Integer.parseInt(properties.get(i).substring(eqIndex + 1));
 
 				if (decrease) {
 					value = value - 1;
