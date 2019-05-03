@@ -180,7 +180,7 @@ public class BotsingMojo extends AbstractMojo {
 		// TODO check properties
 
 		// set Botsing configuration
-		BotsingConfiguration configuration = new BotsingConfiguration(crashLog, getTargetFrame(), getDependencies(),
+		BotsingConfiguration configuration = new BotsingConfiguration(crashLog, targetFrame, getDependencies(),
 				population, searchBudget, globalTimeout, testDir, randomSeed, noRuntimeDependency, getLog());
 
 		// Start Botsing
@@ -195,7 +195,7 @@ public class BotsingMojo extends AbstractMojo {
 					new DefaultArtifact("eu.stamp-project", "botsing-reproduction", "", "jar", botsingVersion));
 
 			Integer actualTargetFrame = ProcessRunner.executeBotsing(project.getBasedir(), botsingReproductionJar,
-					configuration, maxTargetFrame, getLog());
+					configuration, getMaxTargetFrame(), getLog());
 
 			if (actualTargetFrame <= 0) {
 				throw new MojoFailureException("Failed to reproduce the stacktrace.");
@@ -211,12 +211,17 @@ public class BotsingMojo extends AbstractMojo {
 		getLog().info("Stopping Botsing");
 	}
 
-	private Integer getTargetFrame() throws MojoExecutionException {
+	/**
+	 * if maxTargetFrame and targetFrame are not set, set maxTargetFrame from crashLog rows
+	 * @return
+	 * @throws MojoExecutionException
+	 */
+	private Integer getMaxTargetFrame() throws MojoExecutionException {
 		if (targetFrame != null) {
-			return targetFrame;
+			return maxTargetFrame;
 
 		} else if (maxTargetFrame != null) {
-			return null;
+			return maxTargetFrame;
 
 		} else {
 			try {

@@ -42,7 +42,7 @@ Botsing Maven plugin will search in the Maven repository for this artifact and a
 The command will be something like: 
 
 ```
-mvn eu.stamp-project:botsing-maven:1.0.5-SNAPSHOT:botsing -Dcrash_log=ACC-474.log -Dmax_target_frame=2 -Dgroup_id=org.apache.commons -Dartifact_id=commons-collections4 -Dversion=4.0
+mvn eu.stamp-project:botsing-maven:botsing -Dcrash_log=ACC-474.log -Dmax_target_frame=2 -Dgroup_id=org.apache.commons -Dartifact_id=commons-collections4 -Dversion=4.0
 ```
 
 ### Dependencies from folder
@@ -60,3 +60,11 @@ The target_frame lets you specify how many rows of the stacktrace Botsing has to
 1. directly using target_frame (e.g. -Dtarget_frame=2)
 1. specifying the maximum value (e.g. -Dmax_target_frame=2), in this case it will start from the maximum value provided and decrease it until a reproduction test have been found
 1. reading it from the maximum rows of the stacktrace, no parameter for the target frame should be provided
+
+## Help
+
+To view a list of all the parameters that can be set use this command:
+
+```
+mvn eu.stamp-project:botsing-maven:help -Ddetail=true -Dgoal=botsing
+```

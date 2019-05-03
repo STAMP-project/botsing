@@ -51,7 +51,7 @@ public class FileUtilityTest {
 		File javaTestFile = new File(folderWithTest, "javaTestFile.java");
 		FileUtils.writeStringToFile(javaTestFile, javaTest, "UTF-8");
 
-		assertFalse(FileUtility.search(folderWithTest.getAbsolutePath(), ".*EvoSuite did not generate any tests.*"));
+		assertFalse(FileUtility.search(folderWithTest.getAbsolutePath(), ".*EvoSuite did not generate any tests.*", new String[] {"java"}));
 	}
 
 	@Test
@@ -74,7 +74,7 @@ public class FileUtilityTest {
 		File emptyJavaTestFile = new File(folderWithEmptyTest, "emptyJavaTestFile.java");
 		FileUtils.writeStringToFile(emptyJavaTestFile, emptyJavaTest, "UTF-8");
 
-		assertTrue(FileUtility.search(folderWithEmptyTest.getAbsolutePath(), ".*EvoSuite did not generate any tests.*"));
+		assertTrue(FileUtility.search(folderWithEmptyTest.getAbsolutePath(), ".*EvoSuite did not generate any tests.*", new String[] {"java"}));
 	}
 
 	@Test
@@ -82,7 +82,7 @@ public class FileUtilityTest {
 
 		File emptyFolder = tmpFolder.newFolder();
 
-		assertFalse(FileUtility.search(emptyFolder.getAbsolutePath(), ".*EvoSuite did not generate any tests.*"));
+		assertFalse(FileUtility.search(emptyFolder.getAbsolutePath(), ".*EvoSuite did not generate any tests.*", new String[] {"java"}));
 	}
 
 	@Test
@@ -104,7 +104,7 @@ public class FileUtilityTest {
 		File emptyJavaTestFile = new File(subfolder, "emptyJavaTestFile.java");
 		FileUtils.writeStringToFile(emptyJavaTestFile, emptyJavaTest, "UTF-8");
 
-		assertTrue(FileUtility.search(subfolder.getAbsolutePath(), ".*EvoSuite did not generate any tests.*"));
+		assertTrue(FileUtility.search(subfolder.getAbsolutePath(), ".*EvoSuite did not generate any tests.*", new String[] {"java"}));
 	}
 
 	@Test
@@ -120,4 +120,5 @@ public class FileUtilityTest {
 
 		assertTrue(FileUtility.getRowNumber(logFile.getAbsolutePath()) == 3);
 	}
+
 }

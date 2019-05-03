@@ -33,12 +33,14 @@ public class ProcessRunner {
 
 				success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar, configuration.getProperties(), log);
 
-				// check that the generated test does not contains "EvoSuite did not generate any tests"
-				if (success && Paths.get(configuration.getTestDir()).toFile().list().length > 0) {
+				// stop only if the generated test does not contains "EvoSuite did not generate any tests"
+				if (success) {
 
-					boolean emptyTest = FileUtility.search(configuration.getTestDir(), ".*EvoSuite did not generate any tests.*");
-					if (!emptyTest) {
+					if (hasReproductionTestBeenGenerated(configuration)) {
 						break;
+
+					} else {
+						success = false;
 					}
 				}
 
@@ -52,6 +54,28 @@ public class ProcessRunner {
 
 		} else {
 			return -1;
+		}
+	}
+
+	private static boolean hasReproductionTestBeenGenerated(BotsingConfiguration configuration) throws IOException {
+
+		if (Paths.get(configuration.getTestDir()).toFile().list().length > 0) {
+
+			boolean emptyTest = FileUtility.search(configuration.getTestDir(),
+					".*EvoSuite did not generate any tests.*", new String[] { "java" });
+
+			if (!emptyTest) {
+				// generated test are NOT empty
+				return true;
+
+			} else {
+				// generated test are empty
+				return false;
+			}
+
+		} else {
+			// nothing has been generated
+			return false;
 		}
 	}
 

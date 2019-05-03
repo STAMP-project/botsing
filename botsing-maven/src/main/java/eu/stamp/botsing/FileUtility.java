@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -32,19 +33,16 @@ public class FileUtility {
 	 * @return true if the regex is found inside any file
 	 * @throws IOException
 	 */
-	public static boolean search(String folder, String regex) throws IOException {
+	public static boolean search(String folder, String regex, String[] extensions) throws IOException {
 
-		File fold = new File(folder);
+		Collection<File> files = FileUtils.listFiles(new File(folder), extensions, true);
 
-		for (File f : fold.listFiles()) {
+        for (File file : files) {
 
-			if (f.isDirectory()) {
-				search(f.getAbsolutePath(), regex);
-
-			} else if (searchInFile(f, regex)) {
+        	if (searchInFile(file, regex)) {
 				return true;
 			}
-		}
+        }
 
 		return false;
 	}
