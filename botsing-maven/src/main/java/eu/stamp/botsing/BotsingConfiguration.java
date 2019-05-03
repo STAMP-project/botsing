@@ -154,6 +154,7 @@ public class BotsingConfiguration {
 
 				if (decrease) {
 					value = value - 1;
+					properties.remove(i + 1);
 					properties.add(i + 1, (value) + "");
 				}
 
@@ -167,6 +168,7 @@ public class BotsingConfiguration {
 
 				if (decrease) {
 					value = value - 1;
+					properties.remove(i);
 					properties.add(i, "-D" + parameterName + "=" + value);
 				}
 

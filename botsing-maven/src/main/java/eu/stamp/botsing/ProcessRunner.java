@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,7 @@ public class ProcessRunner {
 			targetFrame = maxTargetFrame;
 
 			// execute Botsing decreasing target frame until a Botsing is executed successfully
-			while (!success || targetFrame == 0) {
+			while (!success && targetFrame > 0) {
 
 				log.info("Running Botsing with frame " + targetFrame);
 				configuration.addTargetFrame(targetFrame);
@@ -45,6 +47,8 @@ public class ProcessRunner {
 
 					} else {
 						success = false;
+						// clean output folder
+						FileUtility.deleteFolder(configuration.getTestDir());
 					}
 				}
 
@@ -63,7 +67,8 @@ public class ProcessRunner {
 
 	private static boolean hasReproductionTestBeenGenerated(BotsingConfiguration configuration) throws IOException {
 
-		if (Paths.get(configuration.getTestDir()).toFile().list().length > 0) {
+		Path testDirPath = Paths.get(configuration.getTestDir());
+		if (Files.exists(testDirPath) && testDirPath.toFile().list().length > 0) {
 
 			boolean emptyTest = FileUtility.search(configuration.getTestDir(),
 					".*EvoSuite did not generate any tests.*", new String[] { "java" });
@@ -117,13 +122,15 @@ public class ProcessRunner {
 			handleProcessOutput(process, log);
 
 			boolean exitResult = process.waitFor(timeout, TimeUnit.SECONDS);
-			int exitCode = process.waitFor();
 
-			// process did not complete before timeout
+			// process did not complete before timeout, kill it
 			if (!exitResult) {
 				log.error("botsing-reproduction terminated because it took more than " + timeout + "s to complete");
-				return false;
+				throw new InterruptedException();
 			}
+
+			// Get process exitcode
+			int exitCode = process.waitFor();
 
 			if (exitCode != 0) {
 				// process terminated abnormally
