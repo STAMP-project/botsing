@@ -355,6 +355,7 @@ public class BotsingMojo extends AbstractMojo {
 			buildingRequest = new DefaultProjectBuildingRequest();
 			buildingRequest.setProcessPlugins( false );
 			buildingRequest.setRepositorySession( repoSession );
+			buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
 			org.apache.maven.artifact.Artifact artifact = new org.apache.maven.artifact.DefaultArtifact(groupId,
 					artifactId, version, "compile", extension, classifier, new DefaultArtifactHandler());
 

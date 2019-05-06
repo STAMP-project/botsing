@@ -36,6 +36,10 @@ public class ProcessRunner {
 				log.info("Running Botsing with frame " + targetFrame);
 				configuration.addTargetFrame(targetFrame);
 
+				// clean output folder
+				FileUtility.deleteFolder(configuration.getTestDir());
+
+				// execute Botsing
 				success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar,
 						new Long(configuration.getGlobalTimeout()), configuration.getProperties(), log);
 
@@ -47,8 +51,6 @@ public class ProcessRunner {
 
 					} else {
 						success = false;
-						// clean output folder
-						FileUtility.deleteFolder(configuration.getTestDir());
 					}
 				}
 
