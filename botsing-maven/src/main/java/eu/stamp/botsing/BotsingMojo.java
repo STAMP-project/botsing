@@ -1,6 +1,7 @@
 package eu.stamp.botsing;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,6 +30,8 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
+import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
@@ -70,6 +73,11 @@ public class BotsingMojo extends AbstractMojo {
 	private Integer maxTargetFrame;
 
 	/**
+	 * Maximum value of target_frame to consider if frame is read from stacktrace file
+	 */
+	private static final Integer MAX_FRAME_LIMIT = 10;
+
+	/**
 	 * the size of the population that evolves during the search with a default
 	 * value of 100
 	 */
@@ -92,9 +100,9 @@ public class BotsingMojo extends AbstractMojo {
 
 	/**
 	 * the directory where the tests are generated with a default value of
-	 * `crashreproduction-tests`
+	 * `crash-reproduction-tests`
 	 */
-	@Parameter(property = "test_dir")
+	@Parameter(property = "test_dir", defaultValue = "crash-reproduction-tests")
 	private String testDir;
 
 	/**
@@ -126,7 +134,7 @@ public class BotsingMojo extends AbstractMojo {
 	@Parameter(property = "classifier")
 	private String classifier;
 
-	@Parameter(property = "extension")
+	@Parameter(property = "extension", defaultValue = "jar")
 	private String extension;
 
 	@Parameter(property = "version")
@@ -187,7 +195,7 @@ public class BotsingMojo extends AbstractMojo {
 					new DefaultArtifact("eu.stamp-project", "botsing-reproduction", "", "jar", botsingVersion));
 
 			Integer actualTargetFrame = ProcessRunner.executeBotsing(project.getBasedir(), botsingReproductionJar,
-					configuration, maxTargetFrame, getLog());
+					configuration, getMaxTargetFrame(), getLog());
 
 			if (actualTargetFrame <= 0) {
 				throw new MojoFailureException("Failed to reproduce the stacktrace.");
@@ -201,6 +209,35 @@ public class BotsingMojo extends AbstractMojo {
 		}
 
 		getLog().info("Stopping Botsing");
+	}
+
+	/**
+	 * if maxTargetFrame and targetFrame are not set, set maxTargetFrame from crashLog rows
+	 * @return
+	 * @throws MojoExecutionException
+	 */
+	private Integer getMaxTargetFrame() throws MojoExecutionException {
+		if (targetFrame != null) {
+			return maxTargetFrame;
+
+		} else if (maxTargetFrame != null) {
+			return maxTargetFrame;
+
+		} else {
+			try {
+				// get row number from log file
+				long rowNumber = FileUtility.getRowNumber(crashLog);
+				if (rowNumber > MAX_FRAME_LIMIT) {
+					getLog().warn("target_frame set to " + MAX_FRAME_LIMIT + " because it exceed the maximum.");
+					return MAX_FRAME_LIMIT;
+				}
+				// remove the first line from the count
+				return (new Long(rowNumber-1)).intValue();
+
+			} catch (IOException e) {
+				throw new MojoExecutionException("Cannot read file '" + crashLog + "' line number");
+			}
+		}
 	}
 
 	/**
@@ -246,7 +283,7 @@ public class BotsingMojo extends AbstractMojo {
 		}
 
 		// print dependencies for debug
-		getLog().debug("dependencies: " + dependencies);
+		getLog().info("Collected dependencies: " + dependencies);
 
 		return dependencies;
 	}
@@ -261,10 +298,15 @@ public class BotsingMojo extends AbstractMojo {
 
 		} else if (dependencyType == DependencyInputType.ARTIFACT) {
 
+			// artifact to get
+			DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, classifier, extension, version);
+
 			// add input artifact
-			File artifactFile = getArtifactFile(
-					new DefaultArtifact(groupId, artifactId, classifier, extension, version));
+			File artifactFile = getArtifactFile(artifact);
 			result += artifactFile.getAbsolutePath() + File.pathSeparator;
+
+			// download pom artifact
+			downloadArtifactDescriptorFile(artifact);
 
 		} else {
 			getLog().warn("Dependency type '"+dependencyType+"' not supported!");
@@ -313,6 +355,7 @@ public class BotsingMojo extends AbstractMojo {
 			buildingRequest = new DefaultProjectBuildingRequest();
 			buildingRequest.setProcessPlugins( false );
 			buildingRequest.setRepositorySession( repoSession );
+			buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
 			org.apache.maven.artifact.Artifact artifact = new org.apache.maven.artifact.DefaultArtifact(groupId,
 					artifactId, version, "compile", extension, classifier, new DefaultArtifactHandler());
 
@@ -382,6 +425,17 @@ public class BotsingMojo extends AbstractMojo {
 		}
 
 		return file;
+	}
+
+	private void downloadArtifactDescriptorFile(DefaultArtifact aetherArtifact) throws MojoExecutionException {
+
+		ArtifactDescriptorRequest descReq = new ArtifactDescriptorRequest().setRepositories(this.repositories).setArtifact(aetherArtifact);
+		try {
+			this.repoSystem.readArtifactDescriptor(this.repoSession, descReq);
+
+		} catch ( ArtifactDescriptorException e) {
+			throw new MojoExecutionException("Artifact Descriptor for " + aetherArtifact.getArtifactId() + " could not be resolved.", e);
+		}
 	}
 
 	public static String getDependenciesFromFolder(String dependenciesFolder) {

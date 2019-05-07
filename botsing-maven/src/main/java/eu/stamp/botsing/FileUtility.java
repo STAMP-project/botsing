@@ -2,6 +2,11 @@ package eu.stamp.botsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -9,23 +14,35 @@ import org.apache.commons.io.LineIterator;
 public class FileUtility {
 
 	/**
-	 * Search inside the files of the folder for the regex
+	 * @param file
+	 * @return number of rows in the file
+	 * @throws IOException
+	 */
+	public static long getRowNumber(String file) throws IOException {
+
+		try ( Stream<String> lines = Files.lines(Paths.get(file), Charset.defaultCharset()) ) {
+			return lines.count();
+		}
+	}
+
+	/**
+	 * Search inside the files of the folder and in subfolders for the regex
 	 *
 	 * @param folder
 	 * @param regex
 	 * @return true if the regex is found inside any file
 	 * @throws IOException
 	 */
-	public static boolean search(String folder, String regex) throws IOException {
+	public static boolean search(String folder, String regex, String[] extensions) throws IOException {
 
-		File fold = new File(folder);
+		Collection<File> files = FileUtils.listFiles(new File(folder), extensions, true);
 
-		for (File f : fold.listFiles()) {
+        for (File file : files) {
 
-			if (searchInFile(f, regex)) {
+        	if (searchInFile(file, regex)) {
 				return true;
 			}
-		}
+        }
 
 		return false;
 	}
@@ -49,5 +66,10 @@ public class FileUtility {
 		}
 
 		return result;
+	}
+
+	public static void deleteFolder(String testDir) throws IOException {
+		FileUtils.deleteDirectory(new File(testDir));
+
 	}
 }
