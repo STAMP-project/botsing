@@ -96,6 +96,14 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         if (ga.getBestIndividual().getFitness() == 0.0) {
             TestChromosome solution = (TestChromosome) ga.getBestIndividual();
             LOG.info("* The target crash is covered. The generated test is: "+solution.getTestCase().toCode());
+            LOG.info("{} thrown exception(s) are detected in the solution: ",solution.getLastExecutionResult().getAllThrownExceptions().size());
+            for(Throwable t: solution.getLastExecutionResult().getAllThrownExceptions()){
+                LOG.info(t.toString());
+                for(StackTraceElement frame:t.getStackTrace()){
+                    LOG.info(frame.toString());
+                }
+
+            }
             suite.addTest(solution);
 
 
