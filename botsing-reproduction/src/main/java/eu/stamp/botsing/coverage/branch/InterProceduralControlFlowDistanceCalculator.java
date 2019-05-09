@@ -118,18 +118,21 @@ public class InterProceduralControlFlowDistanceCalculator extends ControlFlowDis
             // branch was traced in given path
             ControlFlowDistance r = new ControlFlowDistance(0, Double.MAX_VALUE);
 
-            for (Integer branchTracePosition : branchTracePositions)
-                if (value)
+            for (Integer branchTracePosition : branchTracePositions){
+                if (value) {
                     r.setBranchDistance(Math.min(r.getBranchDistance(),
                             trueDistances.get(branchTracePosition)));
-                else
+                } else {
                     r.setBranchDistance(Math.min(r.getBranchDistance(),
                             falseDistances.get(branchTracePosition)));
+                }
+        }
 
-            if (r.getBranchDistance() == Double.MAX_VALUE)
+
+            if (r.getBranchDistance() == Double.MAX_VALUE){
                 throw new IllegalStateException("should be impossible");
+            }
 
-            //			result.intermediateDistances.put(branch, r);
             return r;
         }
 
@@ -177,8 +180,9 @@ public class InterProceduralControlFlowDistanceCalculator extends ControlFlowDis
         Set<ControlDependency> nextToLookAt = instruction.getControlDependencies();
 
         for (ControlDependency next : nextToLookAt) {
-            if (instruction.equals(next.getBranch().getInstruction()))
+            if (instruction.equals(next.getBranch().getInstruction())) {
                 continue; // avoid loops
+            }
 
             boolean nextValue = next.getBranchExpressionValue();
             ControlFlowDistance nextDistance = getNonRootDistance(result, call,
