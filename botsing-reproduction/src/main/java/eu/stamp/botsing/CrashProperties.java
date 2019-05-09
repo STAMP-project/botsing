@@ -64,7 +64,8 @@ public class CrashProperties {
 
     public enum FitnessFunction {
         WeightedSum,
-        SimpleSum;
+        SimpleSum,
+        IntegrationSingleObjective;
 
         FitnessFunction() {
         }
@@ -87,7 +88,7 @@ public class CrashProperties {
 
 
     @Properties.Parameter(key = "FitnessFunctions", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
-    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.WeightedSum};
+    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.IntegrationSingleObjective};
 
 
 

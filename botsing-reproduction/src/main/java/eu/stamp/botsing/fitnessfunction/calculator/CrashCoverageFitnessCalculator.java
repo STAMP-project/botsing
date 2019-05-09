@@ -22,6 +22,8 @@ package eu.stamp.botsing.fitnessfunction.calculator;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
+import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageFactory;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.branch.BranchCoverageFactory;
@@ -44,6 +46,29 @@ public class CrashCoverageFitnessCalculator {
     public double getLineCoverageFitness(ExecutionResult result , int lineNumber) {
         StackTrace trace = CrashProperties.getInstance().getStackTrace();
         return getLineCoverageFitness(result, trace, lineNumber);
+    }
+
+    public double getLineCoverageForFrame(ExecutionResult result, int frameLevel){
+        StackTrace trace = CrashProperties.getInstance().getStackTrace();
+        StackTraceElement targetFrame = trace.getFrame(frameLevel);
+        String methodName = derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getMethodName(), targetFrame.getLineNumber());
+        int lineNumber = targetFrame.getLineNumber();
+        List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
+        double lineCoverageFitness;
+        if (result.getTrace().getCoverageData().containsKey(targetFrame.getClassName()) && result.getTrace().getCoverageData().get(targetFrame.getClassName()).containsKey(methodName)&& result.getTrace().getCoveredLines().contains(lineNumber)) {
+            lineCoverageFitness = 0.0;
+        } else {
+            lineCoverageFitness = Double.MAX_VALUE;
+            // Indicate minimum distance
+            for (BranchCoverageTestFitness branchFitness : branchFitnesses) {
+                // let's calculate the branch distance
+                double distance = computeBranchDistance(branchFitness, result);
+                lineCoverageFitness = Math.min(lineCoverageFitness, distance);
+            }
+
+        }
+
+        return lineCoverageFitness;
     }
 
     protected double getLineCoverageFitness(ExecutionResult result, StackTrace trace, int lineNumber) {
@@ -137,7 +162,7 @@ public class CrashCoverageFitnessCalculator {
 
 
     private List<BranchCoverageTestFitness> setupDependencies(String className , String methodName, int lineNumber ) {
-        BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
+        BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(getTestGenerationContextClassLoader()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
         List<BranchCoverageTestFitness> branchCoverages = new ArrayList<>();
         if(goalInstruction == null){
             return branchCoverages;
@@ -147,11 +172,22 @@ public class CrashCoverageFitnessCalculator {
 
         // Add control dependencies for calculating branch distances + approach level
         for (ControlDependency cd : deps) {
-            BranchCoverageTestFitness singlefitness = BranchCoverageFactory.createBranchCoverageTestFitness(cd);
+            BranchCoverageTestFitness singlefitness = null;
+            if(CrashProperties.integrationTesting){
+                singlefitness = IntegrationTestingBranchCoverageFactory.createBranchCoverageTestFitness(cd);
+            }else{
+                singlefitness = BranchCoverageFactory.createBranchCoverageTestFitness(cd);
+            }
+
             branchCoverages.add(singlefitness);
         }
         if (goalInstruction.isRootBranchDependent()) {
-            branchCoverages.add(BranchCoverageFactory.createRootBranchTestFitness(goalInstruction));
+            if(CrashProperties.integrationTesting){
+                branchCoverages.add(IntegrationTestingBranchCoverageFactory.createRootBranchTestFitness(goalInstruction));
+            }else{
+                branchCoverages.add(BranchCoverageFactory.createRootBranchTestFitness(goalInstruction));
+            }
+
         }
 
         if (deps.isEmpty() && !goalInstruction.isRootBranchDependent()) {
@@ -183,7 +219,7 @@ public class CrashCoverageFitnessCalculator {
 
 
     private  String derivingMethodFromBytecode(String className, String methodName, int lineNumber){
-        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(className);
+        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(getTestGenerationContextClassLoader()).getInstructionsIn(className);
         if (instructions != null) {
             for (BytecodeInstruction ins : instructions) {
                 if(ins != null) {
@@ -200,6 +236,14 @@ public class CrashCoverageFitnessCalculator {
             LOG.error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this class " + className +" was null!");
         }
         return null;
+    }
+
+    private ClassLoader getTestGenerationContextClassLoader(){
+        if(CrashProperties.integrationTesting){
+            return BotsingTestGenerationContext.getInstance().getClassLoaderForSUT();
+        }else{
+            return TestGenerationContext.getInstance().getClassLoaderForSUT();
+        }
     }
 
 }

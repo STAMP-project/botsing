@@ -47,6 +47,8 @@ public class FitnessFunctionHelper {
         switch (CrashProperties.fitnessFunctions[index]){
             case WeightedSum:
                 return new WeightedSum();
+            case IntegrationSingleObjective:
+                return new IntegrationTestingFF();
             default:
                 return new WeightedSum();
         }
