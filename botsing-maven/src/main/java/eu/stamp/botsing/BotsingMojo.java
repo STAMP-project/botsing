@@ -95,7 +95,7 @@ public class BotsingMojo extends AbstractMojo {
 	 * is stuck with a default value of 1800 (the timeout is only reached if the
 	 * search does not improve after 1800 seconds)
 	 */
-	@Parameter(property = "global_timeout")
+	@Parameter(property = "global_timeout", defaultValue = "1800")
 	private Integer globalTimeout;
 
 	/**
@@ -109,7 +109,7 @@ public class BotsingMojo extends AbstractMojo {
 	 * Botsing version to use
 	 * TODO remove default value
 	 */
-	@Parameter(property = "botsing_version", defaultValue = "1.0.5-SNAPSHOT")
+	@Parameter(property = "botsing_version")
 	private String botsingVersion;
 
 	/**
