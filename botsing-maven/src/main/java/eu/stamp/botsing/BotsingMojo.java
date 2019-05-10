@@ -36,6 +36,9 @@ import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 
+import eu.stamp.botsing.setup.BotsingConfiguration;
+import eu.stamp.botsing.setup.FileUtility;
+
 /**
  * Mojo class to run Botsing
  *

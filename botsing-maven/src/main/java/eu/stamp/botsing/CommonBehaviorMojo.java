@@ -48,6 +48,9 @@ public class CommonBehaviorMojo extends AbstractMojo {
 	@Parameter(property = EvoSuiteConfiguration.CLASS_OPT)
 	private String clazz;
 
+	@Parameter(property = EvoSuiteConfiguration.EVO_SUITE_JAR)
+	private String evoSuitePathJar;
+
 	// optional parameters
 	@Parameter(property = EvoSuiteConfiguration.TEST_DIR_OPT)
 	private String testDir;
@@ -96,7 +99,7 @@ public class CommonBehaviorMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		getLog().info("Starting Common Behavior" + clazz);
+		getLog().info("Starting Common Behavior");
 
 		ModelGenerationConfiguration modelGenerationConf = new ModelGenerationConfiguration(projectCP, projectPrefix,
 				outDir, getLog());
@@ -118,13 +121,12 @@ public class CommonBehaviorMojo extends AbstractMojo {
 					"botsing-model-generation", "", "jar", modelGenerationVersion));
 
 			try {
-				// boolean success =
-				// ProcessRunner.executeBotsingModelGeneration(project.getBasedir(),
-				// botsingModelGenerationJar, modelGenerationConf, getLog());
-				boolean success = true;
+				boolean success = ProcessRunner.executeBotsingModelGeneration(project.getBasedir(),
+						botsingModelGenerationJar, modelGenerationConf, getLog());
+
 				if (success) {
-					// get evosuite jar
-					File evoSuiteJar = new File(evoSuite);
+					// get file EvoSuite jar
+					File evoSuiteJar = new File(evoSuitePathJar);
 					ProcessRunner.executeEvoSuite(project.getBasedir(), evoSuiteJar, evoSuiteConf, getLog());
 				}
 			} catch (Exception e) {
