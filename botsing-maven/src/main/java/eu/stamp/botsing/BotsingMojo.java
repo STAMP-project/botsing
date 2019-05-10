@@ -35,6 +35,9 @@ import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.VersionRangeRequest;
+import org.eclipse.aether.resolution.VersionRangeResolutionException;
+import org.eclipse.aether.resolution.VersionRangeResult;
 
 /**
  * Mojo class to run Botsing
@@ -185,11 +188,6 @@ public class BotsingMojo extends AbstractMojo {
 
 		// Start Botsing
 		try {
-
-			// TODO find a way to get the latest version of botsing-reproduction
-			// tried "[1.0.4, )" for version but
-			// Could not find artifact eu.stamp-project:botsing-reproduction:jar:[1.0.4, )
-			// in central (https://repo.maven.apache.org/maven2) -> [Help 1]
 
 			File botsingReproductionJar = getArtifactFile(
 					new DefaultArtifact("eu.stamp-project", "botsing-reproduction", "", "jar", botsingVersion));
@@ -411,7 +409,23 @@ public class BotsingMojo extends AbstractMojo {
 		ArtifactRequest req = new ArtifactRequest().setRepositories(this.repositories).setArtifact(aetherArtifact);
 		ArtifactResult resolutionResult;
 		try {
+			// search for Highest version of the artifact if none is declared
+			if (aetherArtifact.getVersion() == null || aetherArtifact.getVersion().isEmpty()) {
+
+				VersionRangeRequest request = new VersionRangeRequest().setRepositories(this.repositories)
+						.setArtifact(aetherArtifact.setVersion("(0,]"));
+				VersionRangeResult versionResult = repoSystem.resolveVersionRange(repoSession, request);
+				getLog().debug("Highest version found for " + aetherArtifact + " is: " + versionResult.getHighestVersion());
+
+				// Add the artifact with the highest version to the request
+				req = new ArtifactRequest().setRepositories(this.repositories)
+						.setArtifact(aetherArtifact.setVersion(versionResult.getHighestVersion().toString()));
+			}
+
 			resolutionResult = this.repoSystem.resolveArtifact(this.repoSession, req);
+
+		} catch (VersionRangeResolutionException e) {
+			throw new MojoExecutionException("Latest version of artifact " + aetherArtifact.getArtifactId() + " could not be resolved.", e);
 
 		} catch (ArtifactResolutionException e) {
 			throw new MojoExecutionException("Artifact " + aetherArtifact.getArtifactId() + " could not be resolved.", e);
