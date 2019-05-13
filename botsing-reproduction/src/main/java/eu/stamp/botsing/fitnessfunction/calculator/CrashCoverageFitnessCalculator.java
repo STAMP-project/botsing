@@ -35,9 +35,7 @@ import org.evosuite.testcase.execution.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class CrashCoverageFitnessCalculator {
 
@@ -55,7 +53,7 @@ public class CrashCoverageFitnessCalculator {
         int lineNumber = targetFrame.getLineNumber();
         List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
         double lineCoverageFitness;
-        if (result.getTrace().getCoverageData().containsKey(targetFrame.getClassName()) && result.getTrace().getCoverageData().get(targetFrame.getClassName()).containsKey(methodName)&& result.getTrace().getCoveredLines().contains(lineNumber)) {
+        if (result.getTrace().getCoverageData().containsKey(targetFrame.getClassName()) && result.getTrace().getCoverageData().get(targetFrame.getClassName()).containsKey(methodName)&& result.getTrace().getCoverageData().get(targetFrame.getClassName()).get(methodName).containsKey(lineNumber)) {
             lineCoverageFitness = 0.0;
         } else {
             lineCoverageFitness = Double.MAX_VALUE;
@@ -70,6 +68,60 @@ public class CrashCoverageFitnessCalculator {
 
         return lineCoverageFitness;
     }
+
+//
+//    protected Map<String, Map<String, Map<Integer, Integer>>> getStackCoverage(ExecutionResult result){
+//        Map<String, Map<String, Map<Integer, Integer>>> finalCoverage =  new HashMap<>();
+//        Map<String, Map<String, Map<Integer, Integer>>> untouchedCoverage = new HashMap<>(result.getTrace().getCoverageData());
+//        List<MethodCall> finishedMethods = new ArrayList<>(result.getTrace().getMethodCalls());
+//        // Finished methods cannot be in the stack coverage
+//        for(String className: untouchedCoverage.keySet()) {
+//            for (String methodName : untouchedCoverage.get(className).keySet()) {
+//                Map<Integer,Integer> finishedCount = countFinishedMethodLines(finishedMethods,className,methodName);
+//                for (Integer line : untouchedCoverage.get(className).get(methodName).keySet()) {
+//                    int lineCount = untouchedCoverage.get(className).get(methodName).get(line).intValue();
+//                    if(finishedCount.containsKey(line)){
+//                        if(finishedCount.get(line).intValue() < lineCount){
+//                            updateFinalCoverage(finalCoverage,className,methodName,line,lineCount-finishedCount.get(line).intValue());
+//                        }
+//                    }else{
+//                        updateFinalCoverage(finalCoverage,className,methodName,line,lineCount);
+//                    }
+//                }
+//            }
+//        }
+//
+//        return result.getTrace().getCoverageData();
+//    }
+//
+//    private Map<Integer,Integer> countFinishedMethodLines(List<MethodCall> finishedMethods, String className, String methodName) {
+//        Map<Integer,Integer> count = new HashMap<>();
+//        for(MethodCall method: finishedMethods){
+//            if(method.className.equals(className) && method.methodName.equals(methodName)){
+//                for(Integer line: method.lineTrace){
+//                    if(count.containsKey(line)){
+//                        int oldCount = count.get(line).intValue();
+//                        count.put(line,new Integer(oldCount+1));
+//                    }else{
+//                        count.put(line,new Integer(1));
+//                    }
+//                }
+//            }
+//        }
+//
+//        return count;
+//    }
+//
+//    private void updateFinalCoverage(Map<String,Map<String,Map<Integer,Integer>>> finalCoverage, String className, String methodName, Integer line, int count) {
+//        if(!finalCoverage.containsKey(className)){
+//            finalCoverage.put(className,new HashMap<>());
+//        }
+//
+//        if(!finalCoverage.get(className).containsKey(methodName)){
+//            finalCoverage.get(className).put(methodName,new HashMap<>());
+//        }
+//        finalCoverage.get(className).get(methodName).put(line, new Integer(count));
+//    }
 
     protected double getLineCoverageFitness(ExecutionResult result, StackTrace trace, int lineNumber) {
         int targetFrameLevel = trace.getNumberOfFrames();
