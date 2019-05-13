@@ -25,6 +25,7 @@ public class ClassInstrumentation {
     public List<Class> instrumentClasses(List<String> interestingClasses){
         List<Class> instrumentedClasses = new ArrayList<>();
         List<String> instrumentedClassesName = new ArrayList<>();
+        String targetClassName = interestingClasses.get(interestingClasses.size()-1);
 
         for(String clazz: interestingClasses){
             if(instrumentedClassesName.contains(clazz)){
@@ -35,15 +36,16 @@ public class ClassInstrumentation {
             try {
                 Properties.TARGET_CLASS=clazz;
                 cls = Class.forName(clazz,false, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+                if(!clazz.contains(targetClassName)){
+                    instrumentClassByTestExecution(Properties.TARGET_CLASS);
+                }
                 instrumentedClasses.add(cls);
                 instrumentedClassesName.add(clazz);
             } catch (ClassNotFoundException | NoClassDefFoundError e) {
                 LOG.warn("Error in loading {}",clazz);
             }
         }
-        if(instrumentedClassesName.contains(Properties.TARGET_CLASS)){
-            instrumentClassByTestExecution(Properties.TARGET_CLASS);
-        }
+
         return instrumentedClasses;
     }
 
