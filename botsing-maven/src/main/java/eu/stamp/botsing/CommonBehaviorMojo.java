@@ -74,9 +74,9 @@ public class CommonBehaviorMojo extends AbstractMojo {
 	private Boolean noRuntimeDependency;
 
 	/**
-	 * Botsing Model Generation version to use TODO remove default value
+	 * Botsing Model Generation version to use
 	 */
-	@Parameter(property = "model_geneation_version", defaultValue = "1.0.5-SNAPSHOT")
+	@Parameter(property = "model_geneation_version", defaultValue = "1.0.6-SNAPSHOT")
 	private String modelGenerationVersion;
 
 	/**
@@ -104,13 +104,15 @@ public class CommonBehaviorMojo extends AbstractMojo {
 		ModelGenerationConfiguration modelGenerationConf = new ModelGenerationConfiguration(projectCP, projectPrefix,
 				outDir, getLog());
 
-		// We are using the same classpath for both configurations
 		// The outDir folder contains the models
-		if (testDir == null)
+		if (testDir == null) {
 			testDir = outDir + File.separator + "evosuite-test";
-		if (reportDir == null)
+		}
+		if (reportDir == null) {
 			reportDir = outDir + File.separator + "evosuite-report";
+		}
 
+		// We are using the same classpath for both configurations
 		EvoSuiteConfiguration evoSuiteConf = new EvoSuiteConfiguration(clazz, projectCP,
 				outDir + File.separator + "models", testDir, reportDir, algorithm, searchBudget, seedClone,
 				onlineModelSeeding, noRuntimeDependency, getLog());
@@ -120,6 +122,8 @@ public class CommonBehaviorMojo extends AbstractMojo {
 			File botsingModelGenerationJar = getArtifactFile(new DefaultArtifact("eu.stamp-project",
 					"botsing-model-generation", "", "jar", modelGenerationVersion));
 
+			getLog().info("botsingModelGenerationJar " + botsingModelGenerationJar.getAbsolutePath());
+
 			try {
 				boolean success = ProcessRunner.executeBotsingModelGeneration(project.getBasedir(),
 						botsingModelGenerationJar, modelGenerationConf, getLog());
@@ -127,15 +131,21 @@ public class CommonBehaviorMojo extends AbstractMojo {
 				if (success) {
 					// get file EvoSuite jar
 					File evoSuiteJar = new File(evoSuitePathJar);
-					ProcessRunner.executeEvoSuite(project.getBasedir(), evoSuiteJar, evoSuiteConf, getLog());
+					if (evoSuiteJar.exists()) {
+						ProcessRunner.executeEvoSuite(project.getBasedir(), evoSuiteJar, evoSuiteConf, getLog());
+					} else {
+						throw new MojoFailureException("EvoSuite path file (" + evoSuitePathJar + ") does not exist");
+					}
 				}
 			} catch (Exception e) {
 				throw new MojoExecutionException("Error executing Common Behavior", e);
 			}
+
 		} else {
 			throw new MojoFailureException("Error executing Common Behavior: missing required options");
 		}
 
+		getLog().info("Results generated with successful in " + outDir + " folder");
 	}
 
 	private File getArtifactFile(DefaultArtifact aetherArtifact) throws MojoExecutionException {

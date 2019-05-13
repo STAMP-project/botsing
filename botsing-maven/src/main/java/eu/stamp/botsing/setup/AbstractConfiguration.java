@@ -71,8 +71,8 @@ public abstract class AbstractConfiguration {
 		}
 	}
 
-	protected void addOptionalProperty(String name, Object value) {
-		if (value != null && value.toString().length() > 0) {
+	protected void addDProperty(String name, String value) {
+		if (value != null && value.length() > 0) {
 			properties.add("-D" + name + "=" + value);
 		}
 	}

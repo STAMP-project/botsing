@@ -36,17 +36,17 @@ public class EvoSuiteConfiguration extends AbstractConfiguration {
 		// mandatory parameters
 		addMandatoryProperty(EvoSuiteConfiguration.CLASS_OPT, clazz);
 		addMandatoryProperty(EvoSuiteConfiguration.PROJECT_CP_OPT, getDependencies(projectClasspath));
-		addMandatoryProperty(EvoSuiteConfiguration.MODEL_PATH_OPT, modelPath);
 
-		addMandatoryProperty(EvoSuiteConfiguration.TEST_DIR_OPT, testDir);
-		addMandatoryProperty(EvoSuiteConfiguration.REPORT_DIR_OPT, reportDir);
+		addDProperty(EvoSuiteConfiguration.MODEL_PATH_OPT, modelPath);
+		addDProperty(EvoSuiteConfiguration.TEST_DIR_OPT, testDir);
+		addDProperty(EvoSuiteConfiguration.REPORT_DIR_OPT, reportDir);
 
-		// default if not provided
-		addOptionalProperty(EvoSuiteConfiguration.ALGORITHM_OPT, algorithm);
-		addOptionalProperty(EvoSuiteConfiguration.SEARCH_BUDGET_OPT, searchBudget.toString());
-		addOptionalProperty(EvoSuiteConfiguration.SEED_CLONE_OPT, seedClone.toString());
-		addOptionalProperty(EvoSuiteConfiguration.ONLINE_MODEL_SEEDING_OPT, onlineModelSeeding.toString());
-		addOptionalProperty(EvoSuiteConfiguration.NO_RUNTIME_DEPENDENCY_OPT, noRuntimeDependency.toString());
+		// default (if not provided)
+		addDProperty(EvoSuiteConfiguration.ALGORITHM_OPT, algorithm);
+		addDProperty(EvoSuiteConfiguration.SEARCH_BUDGET_OPT, searchBudget.toString());
+		addDProperty(EvoSuiteConfiguration.SEED_CLONE_OPT, seedClone.toString());
+		addDProperty(EvoSuiteConfiguration.ONLINE_MODEL_SEEDING_OPT, onlineModelSeeding.toString());
+		addDProperty(EvoSuiteConfiguration.NO_RUNTIME_DEPENDENCY_OPT, noRuntimeDependency.toString());
 
 	}
 

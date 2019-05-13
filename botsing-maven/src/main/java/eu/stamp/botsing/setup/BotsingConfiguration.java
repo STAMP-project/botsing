@@ -50,13 +50,13 @@ public class BotsingConfiguration extends AbstractConfiguration {
 		addMandatoryProperty(BotsingConfiguration.CRASH_LOG_OPT, crashLog);
 		addMandatoryProperty(BotsingConfiguration.TARGET_FRAME_OPT, targetFrame.toString());
 
-		// optional parameters
-		addOptionalProperty(BotsingConfiguration.POPULATION_OPT, population);
-		addOptionalProperty(BotsingConfiguration.SEARCH_BUDGET_OPT, searchBudget);
-		addOptionalProperty(BotsingConfiguration.GLOBAL_TIMEOUT_OPT, globalTimeout);
-		addOptionalProperty(BotsingConfiguration.TEST_DIR_OPT, testDir);
-		addOptionalProperty(BotsingConfiguration.RANDOM_SEED_OPT, randomSeed);
-		addOptionalProperty(BotsingConfiguration.NO_RUNTIME_DEPENDENCY_OPT, noRuntimeDependency);
+		// add D optional parameters
+		addDProperty(BotsingConfiguration.POPULATION_OPT, population.toString());
+		addDProperty(BotsingConfiguration.SEARCH_BUDGET_OPT, searchBudget.toString());
+		addDProperty(BotsingConfiguration.GLOBAL_TIMEOUT_OPT, globalTimeout.toString());
+		addDProperty(BotsingConfiguration.TEST_DIR_OPT, testDir);
+		addDProperty(BotsingConfiguration.RANDOM_SEED_OPT, randomSeed.toString());
+		addDProperty(BotsingConfiguration.NO_RUNTIME_DEPENDENCY_OPT, noRuntimeDependency);
 	}
 
 	public Integer getGlobalTimeout() {
