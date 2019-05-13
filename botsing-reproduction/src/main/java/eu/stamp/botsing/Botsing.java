@@ -37,6 +37,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 
@@ -82,7 +84,6 @@ public class Botsing {
     }
 
     private void setupModelSeedingRelatedProperties( CommandLine commands) {
-
         int numberOfCrashes = CrashProperties.getInstance().getCrashesSize();
         for (int crashIndex=0; crashIndex<numberOfCrashes; crashIndex++){
             for (StackTraceElement ste: CrashProperties.getInstance().getStackTrace(crashIndex).getAllFrames()){
@@ -127,8 +128,31 @@ public class Botsing {
 
     public void setupStackTrace(CrashProperties crashProperties, CommandLine commands){
         // Setup given stack trace
-        crashProperties.setupStackTrace(commands.getOptionValue(CRASH_LOG_OPT),
-                Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
+        Path log_dir = new File(commands.getOptionValue(CRASH_LOG_OPT)).toPath();
+        if(Files.isDirectory(log_dir)){
+            // We need to setup multiple crashes
+            File directory = new File(commands.getOptionValue(CRASH_LOG_OPT));
+            File[] directoryListing = directory.listFiles();
+            if (directoryListing != null) {
+                for (File file : directoryListing) {
+                    if(!file.getName().contains(".log")){
+                        continue;
+                    }
+                    String logPath = file.getAbsolutePath();
+                    LOG.info("Detected log: {}",logPath);
+                    crashProperties.setupStackTrace(logPath,
+                            Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
+                }
+            }else{
+                throw new IllegalArgumentException("Log directory is empty!");
+            }
+        }else {
+            // We need to setup only one crash
+            crashProperties.setupStackTrace(commands.getOptionValue(CRASH_LOG_OPT),
+                    Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
+        }
+
+
     }
 
     protected void setupProjectClasspath(CrashProperties crashProperties, CommandLine commands){
