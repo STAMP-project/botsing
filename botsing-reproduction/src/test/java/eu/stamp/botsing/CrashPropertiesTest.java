@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-
+import java.io.File;
 
 import static org.junit.Assert.*;
 
@@ -65,7 +65,7 @@ public class CrashPropertiesTest {
     @Test
     public void testSetClasspath() {
         CrashProperties properties = CrashProperties.getInstance();
-        properties.setClasspath("jar1:jar2");
+        properties.setClasspath("jar1" + File.pathSeparator + "jar2");
         String[] jars = properties.getProjectClassPaths();
 
         assertEquals("jar1", jars[0]);
