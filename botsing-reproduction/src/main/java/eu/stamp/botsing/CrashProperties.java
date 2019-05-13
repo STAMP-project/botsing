@@ -258,6 +258,8 @@ public class CrashProperties {
         return crashes.get(index).getTargetClasses();
     }
 
-    public int getCrashesSize(){return crashes.size();}
+    public int getCrashesSize(){
+        return crashes.size();
+    }
 
 }

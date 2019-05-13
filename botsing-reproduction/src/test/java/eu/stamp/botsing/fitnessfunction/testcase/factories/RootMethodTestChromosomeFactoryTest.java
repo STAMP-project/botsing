@@ -1,7 +1,6 @@
 package eu.stamp.botsing.fitnessfunction.testcase.factories;
 
 import ch.qos.logback.classic.Level;
-import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.Properties;
@@ -16,14 +15,10 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
@@ -32,8 +27,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.anyString;
+
 
 public class RootMethodTestChromosomeFactoryTest {
 
@@ -49,24 +43,19 @@ public class RootMethodTestChromosomeFactoryTest {
     };
 
     @Before
-    public void initialize() throws FileNotFoundException {
+    public void initialize() {
         Properties.RANDOM_SEED = (long) 1;
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.INFO);
-
-
-        BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
-                "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
-                "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
-        StackTrace target = Mockito.spy(new StackTrace());
-        Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
-        target.setup("", 2);
-        CrashProperties.getInstance().setupStackTrace(target);
     }
 
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testChromosomeMethod() throws NoSuchMethodException {
+        StackTrace trace = Mockito.mock(StackTrace.class);
+        Mockito.when(trace.getTargetClass()).thenReturn("ClassA");
+        Mockito.when(trace.getTargetLine()).thenReturn(12);
+
         Object obj = new String();
         Class<?>[] classes = new Class<?>[1];
         classes[0] = String.class;
@@ -89,7 +78,7 @@ public class RootMethodTestChromosomeFactoryTest {
         publicCalls.add("doubleValue");
         publicCalls.add("equal");
         Mockito.when(utility.getPublicCalls(Mockito.anyString(),Mockito.anyInt())).thenReturn(publicCalls);
-        RootMethodTestChromosomeFactory rm = new RootMethodTestChromosomeFactory(CrashProperties.getInstance().getStackTrace(0), utility);
+        RootMethodTestChromosomeFactory rm = new RootMethodTestChromosomeFactory(trace, utility);
         TestChromosome generatedChromosome = rm.getChromosome();
         assertFalse(generatedChromosome.getTestCase().isEmpty());
         assertTrue(generatedChromosome.getTestCase().isValid());
@@ -117,7 +106,7 @@ public class RootMethodTestChromosomeFactoryTest {
 
         publicCalls.add(c.getName());
 
-        rm = new RootMethodTestChromosomeFactory(CrashProperties.getInstance().getStackTrace(0), utility);
+        rm = new RootMethodTestChromosomeFactory(trace, utility);
 
         generatedChromosome = rm.getChromosome();
 

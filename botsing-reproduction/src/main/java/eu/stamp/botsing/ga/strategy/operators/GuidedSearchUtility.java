@@ -1,7 +1,6 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import org.evosuite.TestGenerationContext;
