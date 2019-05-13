@@ -23,6 +23,7 @@ public class ProcessRunner {
 		List<String> properties = new ArrayList<String>();
 		properties.add("-i=" + crashLogInPath);
 		properties.add("-o=" + crashLogOutPath);
+		properties.add("-e");
 
 		if (packageFilter != null && !packageFilter.isEmpty()) {
 			properties.add("-f");
