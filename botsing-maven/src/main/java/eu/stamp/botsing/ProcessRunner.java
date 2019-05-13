@@ -15,7 +15,33 @@ import org.apache.maven.plugin.logging.Log;
 
 public class ProcessRunner {
 
-	public static Integer executeBotsing(File basedir, File botsingReproductionJar, BotsingConfiguration configuration,
+	public static boolean executeBotsingPreprocessing(File basedir, File botsingPreprocessingJar, String crashLogInPath,
+			String crashLogOutPath, String packageFilter, Integer timeout, Log log)
+			throws InterruptedException, IOException {
+		boolean success = false;
+
+		List<String> properties = new ArrayList<String>();
+		properties.add("-i=" + crashLogInPath);
+		properties.add("-o=" + crashLogOutPath);
+
+		if (packageFilter != null && !packageFilter.isEmpty()) {
+			properties.add("-f");
+			properties.add("-p=" + packageFilter);
+		}
+
+		// execute Botsing only in the target frame passed
+		success = ProcessRunner.executeJar(basedir, botsingPreprocessingJar, new Long(timeout), properties, log);
+
+		// check if cleaned log has been created
+		File cleanedCrash = new File(crashLogOutPath);
+		if (!cleanedCrash.exists()) {
+			success = false;
+		}
+
+		return success;
+	}
+
+	public static Integer executeBotsingReproduction(File basedir, File botsingReproductionJar, BotsingConfiguration configuration,
 			Integer maxTargetFrame, Log log) throws InterruptedException, IOException {
 
 		Integer targetFrame = configuration.getTargetFrame();
@@ -23,7 +49,7 @@ public class ProcessRunner {
 		if (maxTargetFrame == null) {
 
 			// execute Botsing only in the target frame passed
-			success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar,
+			success = ProcessRunner.executeJar(basedir, botsingReproductionJar,
 					new Long(configuration.getGlobalTimeout()), configuration.getProperties(), log);
 
 		} else {
@@ -33,14 +59,14 @@ public class ProcessRunner {
 			// execute Botsing decreasing target frame until a Botsing is executed successfully
 			while (!success && targetFrame > 0) {
 
-				log.info("Running Botsing with frame " + targetFrame);
+				log.info("Running botsing-reproduction with frame " + targetFrame);
 				configuration.addTargetFrame(targetFrame);
 
 				// clean output folder
 				FileUtility.deleteFolder(configuration.getTestDir());
 
 				// execute Botsing
-				success = ProcessRunner.executeBotsing(basedir, botsingReproductionJar,
+				success = ProcessRunner.executeJar(basedir, botsingReproductionJar,
 						new Long(configuration.getGlobalTimeout()), configuration.getProperties(), log);
 
 				// stop only if the generated test does not contains "EvoSuite did not generate any tests"
@@ -90,7 +116,7 @@ public class ProcessRunner {
 		}
 	}
 
-	private static boolean executeBotsing(File basedir, File botsingReproductionJar, long timeout,
+	private static boolean executeJar(File basedir, File botsingReproductionJar, long timeout,
 			List<String> properties, Log log) throws InterruptedException, IOException {
 
 		final String JAVA_CMD = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar
@@ -127,7 +153,7 @@ public class ProcessRunner {
 
 			// process did not complete before timeout, kill it
 			if (!exitResult) {
-				log.error("botsing-reproduction terminated because it took more than " + timeout + "s to complete");
+				log.error("Process terminated because it took more than " + timeout + "s to complete");
 				throw new InterruptedException();
 			}
 
@@ -136,12 +162,12 @@ public class ProcessRunner {
 
 			if (exitCode != 0) {
 				// process terminated abnormally
-				log.error("Error executing botsing-reproduction");
+				log.error("Error executing process");
 				return false;
 
 			} else {
 				// process terminated normally
-				log.debug("botsing-reproduction terminated");
+				log.debug("Process terminated");
 			}
 
 		} catch (InterruptedException e) {

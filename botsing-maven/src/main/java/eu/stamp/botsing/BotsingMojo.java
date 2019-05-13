@@ -51,6 +51,20 @@ public class BotsingMojo extends AbstractMojo {
 		FOLDER, POM, ARTIFACT
 	}
 
+	/*
+	 * botsing-preprocessing parameters
+	 */
+
+	/**
+	 * Package regex to specify which log lines consider for stacktrace reproduction
+	 */
+	@Parameter(property = "package_filter")
+	private String packageFilter;
+
+	/*
+	 * botsing-reproduction parameters
+	 */
+
 	/**
 	 * Folder with dependencies to run the project
 	 */
@@ -109,8 +123,7 @@ public class BotsingMojo extends AbstractMojo {
 	private String testDir;
 
 	/**
-	 * Botsing version to use
-	 * TODO remove default value
+	 * Botsing version to use, if not specified the highest version available will be used
 	 */
 	@Parameter(property = "botsing_version")
 	private String botsingVersion;
@@ -125,25 +138,41 @@ public class BotsingMojo extends AbstractMojo {
 	@Parameter(property = "no_runtime_dependency", defaultValue = "false")
 	private String noRuntimeDependency;
 
-	/**
+	/*
 	 * Parameters to get dependencies from artifactId
+	 */
+
+	/**
+	 * Group id to search artifact in Maven
 	 */
 	@Parameter(property = "group_id")
 	private String groupId;
 
+	/**
+	 * Artifact id to search artifact in Maven
+	 */
 	@Parameter(property = "artifact_id")
 	private String artifactId;
 
+	/**
+	 * Classifier to search artifact in Maven
+	 */
 	@Parameter(property = "classifier")
 	private String classifier;
 
+	/**
+	 * Extension to search artifact in Maven (default value is "jar")
+	 */
 	@Parameter(property = "extension", defaultValue = "jar")
 	private String extension;
 
+	/**
+	 * Version to search artifact in Maven, if not specified the highest version available will be used
+	 */
 	@Parameter(property = "version")
 	private String version;
 
-	/**
+	/*
 	 * Maven variables
 	 */
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
@@ -182,18 +211,36 @@ public class BotsingMojo extends AbstractMojo {
 
 		// TODO check properties
 
+		// Run botsing-preprocessing to clean crash log
+		String cleanedCrashLog = crashLog + "-CLEAN.log";
+		try {
+
+			File botsingPreprocessingJar = getArtifactFile(
+					new DefaultArtifact("eu.stamp-project", "botsing-preprocessing", "jar-with-dependencies", "jar", botsingVersion));
+
+			boolean success = ProcessRunner.executeBotsingPreprocessing(project.getBasedir(), botsingPreprocessingJar,
+					crashLog, cleanedCrashLog, packageFilter, globalTimeout, getLog());
+
+			if (!success) {
+				throw new MojoFailureException("Error cleaning the stacktrace.");
+			}
+
+		} catch (Exception e) {
+			throw new MojoExecutionException("Error executing botsing-preprocessing", e);
+		}
+
 		// set Botsing configuration
-		BotsingConfiguration configuration = new BotsingConfiguration(crashLog, targetFrame, getDependencies(),
+		BotsingConfiguration configuration = new BotsingConfiguration(cleanedCrashLog, targetFrame, getDependencies(),
 				population, searchBudget, globalTimeout, testDir, randomSeed, noRuntimeDependency, getLog());
 
-		// Start Botsing
+		// Start botsing-reproduction
 		try {
 
 			File botsingReproductionJar = getArtifactFile(
 					new DefaultArtifact("eu.stamp-project", "botsing-reproduction", "", "jar", botsingVersion));
 
-			Integer actualTargetFrame = ProcessRunner.executeBotsing(project.getBasedir(), botsingReproductionJar,
-					configuration, getMaxTargetFrame(), getLog());
+			Integer actualTargetFrame = ProcessRunner.executeBotsingReproduction(project.getBasedir(), botsingReproductionJar,
+					configuration, getMaxTargetFrame(cleanedCrashLog), getLog());
 
 			if (actualTargetFrame <= 0) {
 				throw new MojoFailureException("Failed to reproduce the stacktrace.");
@@ -214,7 +261,7 @@ public class BotsingMojo extends AbstractMojo {
 	 * @return
 	 * @throws MojoExecutionException
 	 */
-	private Integer getMaxTargetFrame() throws MojoExecutionException {
+	private Integer getMaxTargetFrame(String crashLog) throws MojoExecutionException {
 		if (targetFrame != null) {
 			return maxTargetFrame;
 
@@ -223,12 +270,15 @@ public class BotsingMojo extends AbstractMojo {
 
 		} else {
 			try {
+
 				// get row number from log file
 				long rowNumber = FileUtility.getRowNumber(crashLog);
+
 				if (rowNumber > MAX_FRAME_LIMIT) {
 					getLog().warn("target_frame set to " + MAX_FRAME_LIMIT + " because it exceed the maximum.");
 					return MAX_FRAME_LIMIT;
 				}
+
 				// remove the first line from the count
 				return (new Long(rowNumber-1)).intValue();
 

@@ -46,7 +46,6 @@ public class BotsingMojoTest {
 		goals.add("clean");
 		goals.add("compile");
 		goals.add("eu.stamp-project:botsing-maven:botsing");
-		//goals.add("eu.stamp-project:botsing-maven:botsing");
 
 		try {
 			// execute goals
@@ -61,7 +60,6 @@ public class BotsingMojoTest {
 			assertNotNull(message, outputDirToCheck);
 			assertNotNull(message, outputDirToCheck.list());
 			assertTrue(message, outputDirToCheck.list().length > 0);
-
 
 		} catch (Exception e) {
 			e.printStackTrace();
