@@ -49,12 +49,14 @@ public class CrashReproductionGoalFactoryTest {
 
     @Before
     public void setUp() throws Exception {
+
         BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
                 "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
         StackTrace target = Mockito.spy(new StackTrace());
         Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
         target.setup("", 2);
+        CrashProperties.getInstance().clearStackTraceList();
         CrashProperties.getInstance().setupStackTrace(target);
         CrashProperties.testGenerationStrategy = CrashProperties.TestGenerationStrategy.Single_GA;
 

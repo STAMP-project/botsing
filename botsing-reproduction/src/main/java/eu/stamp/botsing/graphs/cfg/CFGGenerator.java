@@ -25,21 +25,27 @@ public class CFGGenerator {
     private ControlDependenceGraph controlDependenceInterProceduralGraph;
 
     public void generateInterProceduralCFG() {
-        List<String> interestingClasses = CrashProperties.getInstance().getTargetClasses();
-        List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses);
-        if(!instrumentedClasses.isEmpty()){
-            collectCFGS(instrumentedClasses);
-        }else{
-            throw new IllegalArgumentException("There is no instrumented classes!");
+        int numberOfStackTraces = CrashProperties.getInstance().getCrashesSize();
+        List<String> interestingClasses = new ArrayList<>();
+        for (int crashIndex=0; crashIndex<numberOfStackTraces;crashIndex++){
+            interestingClasses = CrashProperties.getInstance().getTargetClasses(crashIndex);
+            List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses);
+            if(!instrumentedClasses.isEmpty()){
+                collectCFGS(instrumentedClasses);
+            }else{
+                throw new IllegalArgumentException("There is no instrumented classes!");
+            }
+
+            generateRawGraph(crashIndex);
+            actualInterProceduralGraph = new BotsingActualControlFlowGraph(rawInterProceduralGraph);
+            GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerActualCFG(actualInterProceduralGraph);
+            controlDependenceInterProceduralGraph = new ControlDependenceGraph(actualInterProceduralGraph);
+            GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerControlDependence(controlDependenceInterProceduralGraph);
+
+            logGeneratedCDG();
+
         }
 
-        generateRawGraph();
-        actualInterProceduralGraph = new BotsingActualControlFlowGraph(rawInterProceduralGraph);
-        GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerActualCFG(actualInterProceduralGraph);
-        controlDependenceInterProceduralGraph = new ControlDependenceGraph(actualInterProceduralGraph);
-        GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerControlDependence(controlDependenceInterProceduralGraph);
-
-        logGeneratedCDG();
     }
 
     // Logging the generated control dependence graph
@@ -73,11 +79,11 @@ public class CFGGenerator {
         return new BotsingRawControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"IntegrationTestingGraph","methodsIntegration",methodAccess);
     }
 
-    protected void generateRawGraph(){
+    protected void generateRawGraph(int crashIndex){
         // Collect interesting method's cfgs
-        if(frameCFGs.size() != CrashProperties.getInstance().getStackTrace().getNumberOfFrames()){
+        if(frameCFGs.size() != CrashProperties.getInstance().getStackTrace(crashIndex).getNumberOfFrames()){
             frameCFGs.clear();
-            CollectInterestingCFGs();
+            CollectInterestingCFGs(crashIndex);
 
             BytecodeInstruction src = null;
             int cfgCounter = 0;
@@ -114,9 +120,9 @@ public class CFGGenerator {
 
     }
 
-    protected void CollectInterestingCFGs() {
-        ArrayList<StackTraceElement> frames = CrashProperties.getInstance().getStackTrace().getAllFrames();
-        int targetFrameLevel = CrashProperties.getInstance().getStackTrace().getTargetFrameLevel();
+    protected void CollectInterestingCFGs(int crashIndex) {
+        ArrayList<StackTraceElement> frames = CrashProperties.getInstance().getStackTrace(crashIndex).getAllFrames();
+        int targetFrameLevel = CrashProperties.getInstance().getStackTrace(crashIndex).getTargetFrameLevel();
         int frameCounter = 1;
         boolean lastMethodWasPrivate=false;
         for (StackTraceElement f: frames){
@@ -164,7 +170,7 @@ public class CFGGenerator {
                 HashMap<RawControlFlowGraph,List<BytecodeInstruction>> candidates = estimateTheRightLine(className,methodName,lineNumber,frameCounter,frames);
                 if(frameCounter>1 && isIrrelevantFrame(className,methodName,lineNumber,frameCounter,frames)){
                     LOG.info("Frame level {} is an irrelevant frame. We do not count it in the InterProcedural graph",frameCounter);
-                    CrashProperties.getInstance().getStackTrace().addIrrelevantFrameLevel(frameCounter);
+                    CrashProperties.getInstance().getStackTrace(crashIndex).addIrrelevantFrameLevel(frameCounter);
                     fixed=true;
                 }else if(candidates.size()>0) {
                     LOG.info("Found {} candidates to repair the stack trace line number",frameCounter);
@@ -181,7 +187,7 @@ public class CFGGenerator {
                 }else{
                     LOG.info("could not find any candidate.");
                     LOG.info("Probably, Frame level {} is an irrelevant frame. We do not count it in the InterProcedural graph",frameCounter);
-                    CrashProperties.getInstance().getStackTrace().addIrrelevantFrameLevel(frameCounter);
+                    CrashProperties.getInstance().getStackTrace(crashIndex).addIrrelevantFrameLevel(frameCounter);
                     fixed=true;
                 }
 

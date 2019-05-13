@@ -53,7 +53,7 @@ public class WeightedSum extends TestFitnessFunction {
         double exceptionCoverage = 1.0;
         double frameSimilarity = 1.0;
         // Priority 1) Line coverage
-        double LineCoverageFitness = fitnessCalculator.getLineCoverageFitness( executionResult, CrashProperties.getInstance().getStackTrace().getTargetLine());
+        double LineCoverageFitness = fitnessCalculator.getLineCoverageFitness( 0, executionResult, CrashProperties.getInstance().getStackTrace(0).getTargetLine());
 
         if(LineCoverageFitness == 0.0){
             //Priority 2) Exception coverage
@@ -61,10 +61,10 @@ public class WeightedSum extends TestFitnessFunction {
                 String thrownException = ExceptionCoverageHelper.getExceptionClass(executionResult, ExceptionLocator).getName();
                 exceptionCoverage = 1;
                 frameSimilarity = 1;
-                if (thrownException.equals(CrashProperties.getInstance().getStackTrace().getExceptionType())){
+                if (thrownException.equals(CrashProperties.getInstance().getStackTrace(0).getExceptionType())){
                     exceptionCoverage = 0.0;
                     // Priority 3) Frame similarity
-                    double tempFitness = fitnessCalculator.calculateFrameSimilarity(executionResult.getExceptionThrownAtPosition(ExceptionLocator).getStackTrace());
+                    double tempFitness = fitnessCalculator.calculateFrameSimilarity(0, executionResult.getExceptionThrownAtPosition(ExceptionLocator).getStackTrace());
                     if (tempFitness == 0.0){
                         frameSimilarity = 0.0;
                         break;
@@ -91,7 +91,7 @@ public class WeightedSum extends TestFitnessFunction {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( CrashProperties.getInstance().getStackTrace().hashCode());
+        result = prime * result + ( CrashProperties.getInstance().getStackTrace(0).hashCode());
         return result;
     }
 
@@ -108,12 +108,12 @@ public class WeightedSum extends TestFitnessFunction {
 
     @Override
     public String getTargetClass() {
-        return CrashProperties.getInstance().getStackTrace().getTargetClass();
+        return CrashProperties.getInstance().getStackTrace(0).getTargetClass();
     }
 
     @Override
     public String getTargetMethod() {
-        return CrashProperties.getInstance().getStackTrace().getTargetMethod();
+        return CrashProperties.getInstance().getStackTrace(0).getTargetMethod();
     }
 
 

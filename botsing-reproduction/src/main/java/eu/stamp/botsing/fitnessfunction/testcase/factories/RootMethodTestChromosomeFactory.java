@@ -21,6 +21,7 @@ package eu.stamp.botsing.fitnessfunction.testcase.factories;
  */
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.Properties;
 import org.evosuite.ga.ConstructionFailedException;
@@ -38,6 +39,7 @@ import org.evosuite.utils.Randomness;
 import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,12 +54,12 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 
     private static List<GenericAccessibleObject<?>> allMethods = new LinkedList<GenericAccessibleObject<?>>();
 
-    public RootMethodTestChromosomeFactory(GuidedSearchUtility utility){
+    public RootMethodTestChromosomeFactory(StackTrace trace, GuidedSearchUtility utility){
         this.utility = utility;
         allMethods.clear();
         allMethods.addAll(TestCluster.getInstance().getTestCalls());
         Randomness.shuffle(allMethods);
-        reset();
+        reset(trace);
     }
 
     @Override
@@ -187,14 +189,14 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
         return test;
     }
 
-    public void reset(){
-        fillPublicCalls();
+    public void reset(StackTrace trace){
+        fillPublicCalls(trace);
         attemptedPublicParents.clear();
     }
 
-    private void fillPublicCalls(){
+    private void fillPublicCalls(StackTrace trace){
         if (utility != null){
-            Iterator<String> iterateParents = utility.getPublicCalls().iterator();
+            Iterator<String> iterateParents = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine()).iterator();
 
             // Fill up the set of parent calls by assessing the method names
             while (iterateParents.hasNext()) {

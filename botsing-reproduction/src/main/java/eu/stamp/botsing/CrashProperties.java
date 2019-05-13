@@ -31,6 +31,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -40,7 +41,7 @@ public class CrashProperties {
     public static final String CONFIG_PROPERTIES_FILE_NAME = "config.properties";
 
     private static CrashProperties instance = null;
-    private StackTrace crash = new StackTrace();
+    private List<StackTrace> crashes = new ArrayList<>();
     private String[] projectClassPaths;
 
 
@@ -188,11 +189,12 @@ public class CrashProperties {
     }
 
     public void setupStackTrace(String stacktraceFile, int targetFrame) {
-        crash.setup(stacktraceFile, targetFrame);
+        crashes.add(new StackTrace());
+        crashes.get(crashes.size() - 1).setup(stacktraceFile, targetFrame);
     }
 
     public void setupStackTrace(StackTrace crash) {
-        this.crash = crash;
+        this.crashes.add(crash);
     }
 
     public void setClasspath(String projectClassPath) {
@@ -208,30 +210,54 @@ public class CrashProperties {
         return projectClassPaths;
     }
 
-    public StackTrace getStackTrace() {
-        return crash;
+    public StackTrace getStackTrace(int index) {
+        if(crashes.size() <= index){
+            throw new IndexOutOfBoundsException("The given index for crashes is out of bounds");
+        }
+
+        return crashes.get(index);
     }
 
     public Properties.StoppingCondition getStoppingCondition() {
         return Properties.STOPPING_CONDITION;
     }
 
-    public Throwable getTargetException() {
-        StackTraceElement[] stackArray = new StackTraceElement[crash.getNumberOfFrames()];
-        stackArray = crash.getFrames().toArray(stackArray);
+    public Throwable getTargetException(int crashIndex) {
+        if(crashes.size() <= crashIndex){
+            throw new IndexOutOfBoundsException("The given index for crashes is out of bounds");
+        }
+
+
+        StackTraceElement[] stackArray = new StackTraceElement[crashes.get(crashIndex).getNumberOfFrames()];
+        stackArray = crashes.get(crashIndex).getFrames().toArray(stackArray);
         Throwable targetException = new Exception();
         targetException.setStackTrace(stackArray);
         return targetException;
     }
 
 
-    public void resetStackTrace() {
-        crash = new StackTrace();
+    public void resetStackTrace(int index) {
+        if(crashes.size() <= index){
+            throw new IndexOutOfBoundsException("The given index for crashes is out of bounds");
+        }
+
+        crashes.set(index,new StackTrace());
+    }
+
+    public void clearStackTraceList(){
+        crashes.clear();
     }
 
 
-    public List<String> getTargetClasses() {
-        return crash.getTargetClasses();
+    public List<String> getTargetClasses(int index) {
+
+        if(crashes.size() <= index){
+            throw new IndexOutOfBoundsException("The given index for crashes is out of bounds");
+        }
+
+        return crashes.get(index).getTargetClasses();
     }
+
+    public int getCrashesSize(){return crashes.size();}
 
 }

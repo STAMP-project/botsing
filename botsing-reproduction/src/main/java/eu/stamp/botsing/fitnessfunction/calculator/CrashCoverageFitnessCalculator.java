@@ -41,13 +41,13 @@ public class CrashCoverageFitnessCalculator {
 
     private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageFitnessCalculator.class);
 
-    public double getLineCoverageFitness(ExecutionResult result , int lineNumber) {
-        StackTrace trace = CrashProperties.getInstance().getStackTrace();
+    public double getLineCoverageFitness(int crashIndex, ExecutionResult result , int lineNumber) {
+        StackTrace trace = CrashProperties.getInstance().getStackTrace(crashIndex);
         return getLineCoverageFitness(result, trace, lineNumber);
     }
 
-    public double getLineCoverageForFrame(ExecutionResult result, int frameLevel){
-        StackTrace trace = CrashProperties.getInstance().getStackTrace();
+    public double getLineCoverageForFrame(int crashIndex, ExecutionResult result, int frameLevel){
+        StackTrace trace = CrashProperties.getInstance().getStackTrace(crashIndex);
         StackTraceElement targetFrame = trace.getFrame(frameLevel);
         String methodName = derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getMethodName(), targetFrame.getLineNumber());
         int lineNumber = targetFrame.getLineNumber();
@@ -159,8 +159,8 @@ public class CrashCoverageFitnessCalculator {
     }
 
 
-    public double calculateFrameSimilarity(StackTraceElement[] trace) {
-        StackTrace targetTrace = CrashProperties.getInstance().getStackTrace();
+    public double calculateFrameSimilarity(int crashIndex, StackTraceElement[] trace) {
+        StackTrace targetTrace = CrashProperties.getInstance().getStackTrace(crashIndex);
         return calculateFrameSimilarity(trace, targetTrace);
     }
 

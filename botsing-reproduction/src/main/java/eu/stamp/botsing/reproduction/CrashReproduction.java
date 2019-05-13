@@ -94,10 +94,11 @@ public class CrashReproduction {
 
         // In the first step initialize the target class
         try{
+            // TODO: make a factroy for class(es) initialization
             if(CrashProperties.integrationTesting){
-                initializeMultipleTargetClasses();
+                initializeMultipleTargetClasses(0);
             }else{
-                initializeTargetClass();
+                initializeTargetClass(0);
             }
         }catch (Exception e){
             LOG.error("Error in target initialization:");
@@ -141,14 +142,14 @@ public class CrashReproduction {
 //        LOG.info("Analysing dependencies done!");
 //    }
 
-    private static void initializeMultipleTargetClasses() {
+    private static void initializeMultipleTargetClasses(int crashIndex) {
         CFGGenerator cfgGenerator = new CFGGenerator();
         cfgGenerator.generateInterProceduralCFG();
 
         String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
-        Properties.TARGET_CLASS=CrashProperties.getInstance().getStackTrace().getTargetClass();
+        Properties.TARGET_CLASS=CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass();
         try {
-            DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+            DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -194,15 +195,15 @@ public class CrashReproduction {
     }
 
 
-    private static void initializeTargetClass() throws ClassNotFoundException {
+    private static void initializeTargetClass(int crashIndex) throws ClassNotFoundException {
         // Instrument the single target class
-        ClassInstrumentation.instrumentClassByTestExecution(CrashProperties.getInstance().getStackTrace().getTargetClass());
+        ClassInstrumentation.instrumentClassByTestExecution(CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass());
 
         // Analyze dependencies
         String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
         List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
         LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
-        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
         LOG.info("Analysing dependencies done!");
     }
 

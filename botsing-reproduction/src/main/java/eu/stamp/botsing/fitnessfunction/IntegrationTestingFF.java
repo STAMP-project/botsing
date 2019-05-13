@@ -21,13 +21,13 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     }
     @Override
     public double getFitness(TestChromosome testChromosome, ExecutionResult executionResult) {
-        int targetFrame = CrashProperties.getInstance().getStackTrace().getTargetFrameLevel();
+        int targetFrame = CrashProperties.getInstance().getStackTrace(0).getTargetFrameLevel();
         double fitnessValue=0;
         boolean covering = true;
         for(int frameLevel = targetFrame; frameLevel > 0 ; frameLevel--){
             if(covering){
-                double lineCoverageFitness = fitnessCalculator.getLineCoverageForFrame(executionResult,frameLevel);
-                if(lineCoverageFitness != 0 && !CrashProperties.getInstance().getStackTrace().isIrrelevantFrame(frameLevel)){
+                double lineCoverageFitness = fitnessCalculator.getLineCoverageForFrame(0, executionResult,frameLevel);
+                if(lineCoverageFitness != 0 && !CrashProperties.getInstance().getStackTrace(0).isIrrelevantFrame(frameLevel)){
                     fitnessValue = lineCoverageFitness;
                     covering=false;
                 }
@@ -56,7 +56,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
         for (Integer ExceptionLocator : executionResult.getPositionsWhereExceptionsWereThrown()) {
             if(ExceptionCoverageHelper.isExplicit(executionResult,ExceptionLocator)){
                 String thrownException = ExceptionCoverageHelper.getExceptionClass(executionResult, ExceptionLocator).getName();
-                if (thrownException.equals(CrashProperties.getInstance().getStackTrace().getExceptionType())){
+                if (thrownException.equals(CrashProperties.getInstance().getStackTrace(0).getExceptionType())){
                     exceptionCoverage = 0.0;
                     break;
                 }
@@ -74,7 +74,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( CrashProperties.getInstance().getStackTrace().hashCode());
+        result = prime * result + ( CrashProperties.getInstance().getStackTrace(0).hashCode());
         return result;
     }
 
@@ -91,11 +91,11 @@ public class IntegrationTestingFF extends TestFitnessFunction {
 
     @Override
     public String getTargetClass() {
-        return CrashProperties.getInstance().getStackTrace().getFrame(1).getClassName();
+        return CrashProperties.getInstance().getStackTrace(0).getFrame(1).getClassName();
     }
 
     @Override
     public String getTargetMethod() {
-        return CrashProperties.getInstance().getStackTrace().getFrame(1).getMethodName();
+        return CrashProperties.getInstance().getStackTrace(0).getFrame(1).getMethodName();
     }
 }

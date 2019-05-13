@@ -43,7 +43,7 @@ public class ModelSeedingHelper {
     }
 
     private void fetchUsefulClasses() {
-        StackTrace crash = CrashProperties.getInstance().getStackTrace();
+        StackTrace crash = CrashProperties.getInstance().getStackTrace(0);
         for(StackTraceElement frame : crash.getAllFrames()){
             if(!seedingClasses.contains(frame.getClassName())) {
                 seedingClasses.add(frame.getClassName());

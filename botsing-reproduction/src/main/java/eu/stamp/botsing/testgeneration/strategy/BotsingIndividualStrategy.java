@@ -129,7 +129,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     }
 
     private ChromosomeFactory<TestChromosome> getChromosomeFactory() {
-        return new RootMethodTestChromosomeFactory(new GuidedSearchUtility());
+        return new RootMethodTestChromosomeFactory(CrashProperties.getInstance().getStackTrace(0), new GuidedSearchUtility());
     }
 
     private TestFitnessFunction getFF(){

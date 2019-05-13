@@ -6,6 +6,7 @@ import eu.stamp.botsing.fitnessfunction.calculator.CrashCoverageFitnessCalculato
 import org.evosuite.coverage.mutation.WeakMutationSuiteFitness;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.execution.ExecutionResult;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -51,6 +52,12 @@ public class WeightedSumTest {
     @InjectMocks
     WeightedSum weightedSum = new WeightedSum();
 
+
+    @Before
+    public void resetCrashes(){
+        CrashProperties.getInstance().clearStackTraceList();
+    }
+
     @Test
     public void testGetFitness_LineNotCovered() throws FileNotFoundException {
 
@@ -67,7 +74,7 @@ public class WeightedSumTest {
         TestChromosome testChromosomeAsInput = new TestChromosome();
 
         // Mock the value of getLineCoverageFitness
-        Mockito.doReturn(0.5).when(fitnessCalculator).getLineCoverageFitness(null,20);
+        Mockito.doReturn(0.5).when(fitnessCalculator).getLineCoverageFitness(0, null,20);
 
         assertEquals(4.5, weightedSum.getFitness(testChromosomeAsInput,null),0.0);
     }
@@ -101,7 +108,7 @@ public class WeightedSumTest {
         Mockito.when(executionResult.getPositionsWhereExceptionsWereThrown()).thenReturn(locations);
 
         // Mock the value of getLineCoverageFitness to zero
-        Mockito.doReturn(0.0).when(fitnessCalculator).getLineCoverageFitness(executionResult,20);
+        Mockito.doReturn(0.0).when(fitnessCalculator).getLineCoverageFitness(0, executionResult,20);
 
         assertEquals(3.0, weightedSum.getFitness(testChromosomeAsInput,executionResult),0.0);
     }
@@ -135,8 +142,8 @@ public class WeightedSumTest {
         Mockito.when(executionResult.getPositionsWhereExceptionsWereThrown()).thenReturn(locations);
 
         // Mock the value of getLineCoverageFitness and calculateFrameSimilarity in CrashCoverageFitnessCalculator
-        Mockito.doReturn(0.0).when(fitnessCalculator).getLineCoverageFitness(executionResult,20);
-        Mockito.doReturn(0.7).when(fitnessCalculator).calculateFrameSimilarity(tt);
+        Mockito.doReturn(0.0).when(fitnessCalculator).getLineCoverageFitness(0, executionResult,20);
+        Mockito.doReturn(0.7).when(fitnessCalculator).calculateFrameSimilarity(0, tt);
 
         assertEquals(0.7, weightedSum.getFitness(testChromosomeAsInput,executionResult),0.0);
     }
@@ -170,8 +177,8 @@ public class WeightedSumTest {
 
 
         // Mock the value of getLineCoverageFitness and calculateFrameSimilarity in CrashCoverageFitnessCalculator into the zero value
-        Mockito.doReturn(0.0).when(fitnessCalculator).getLineCoverageFitness(executionResult,20);
-        Mockito.doReturn(0.0).when(fitnessCalculator).calculateFrameSimilarity(tt);
+        Mockito.doReturn(0.0).when(fitnessCalculator).getLineCoverageFitness(0, executionResult,20);
+        Mockito.doReturn(0.0).when(fitnessCalculator).calculateFrameSimilarity(0, tt);
 
         assertEquals(0.0, weightedSum.getFitness(testChromosomeAsInput,executionResult),0.0);
     }

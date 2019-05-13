@@ -82,15 +82,18 @@ public class Botsing {
     }
 
     private void setupModelSeedingRelatedProperties( CommandLine commands) {
-        for (StackTraceElement ste: CrashProperties.getInstance().getStackTrace().getAllFrames()){
-            try {
-                Class.forName(ste.getClassName(), true,
-                        TestGenerationContext.getInstance().getClassLoaderForSUT());
-            } catch (Exception| Error e) {
-                e.printStackTrace();
+
+        int numberOfCrashes = CrashProperties.getInstance().getCrashesSize();
+        for (int crashIndex=0; crashIndex<numberOfCrashes; crashIndex++){
+            for (StackTraceElement ste: CrashProperties.getInstance().getStackTrace(crashIndex).getAllFrames()){
+                try {
+                    Class.forName(ste.getClassName(), true,
+                            TestGenerationContext.getInstance().getClassLoaderForSUT());
+                } catch (Exception| Error e) {
+                    e.printStackTrace();
+                }
             }
         }
-
         String modelPath = commands.getOptionValue(MODEL_PATH_OPT);
         Properties.MODEL_PATH = modelPath;
     }

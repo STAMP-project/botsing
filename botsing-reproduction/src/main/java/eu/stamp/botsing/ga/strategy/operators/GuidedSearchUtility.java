@@ -31,9 +31,9 @@ public class GuidedSearchUtility<T extends Chromosome> {
     public Set<String> publicCalls = new HashSet<String>();
 
     public boolean includesPublicCall (T individual) {
-        if(publicCalls.size()==0){
-            getPublicCalls();
-        }
+//        if(publicCalls.size()==0){
+//            getPublicCalls();
+//        }
         Iterator<String> publicCallsIterator = publicCalls.iterator();
         TestChromosome candidateChrom = (TestChromosome) individual;
         TestCase candidate = candidateChrom.getTestCase();
@@ -70,10 +70,10 @@ public class GuidedSearchUtility<T extends Chromosome> {
         return false;
     }
 
-    protected Set<String> getPublicCalls(StackTrace trace, List<BytecodeInstruction> instructions){
+    protected Set<String> getPublicCalls(String targetClass, int targetLine, List<BytecodeInstruction> instructions){
         LOG.info("Detecting the target method call(s) ...");
-        int targetLine = trace.getTargetLine();
-        String targetClass = trace.getTargetClass();
+//        int targetLine = trace.getTargetLine();
+//        String targetClass = trace.getTargetClass();
 
         BytecodeInstruction targetInstruction = getTargetInstruction(instructions, targetLine);
 
@@ -109,17 +109,17 @@ public class GuidedSearchUtility<T extends Chromosome> {
     }
 
 
-    public Set<String> getPublicCalls() {
+    public Set<String> getPublicCalls(String targetClass, int targetLine) {
         if (publicCalls.size() ==0){
-            StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
-            String targetClass = givenStackTrace.getTargetClass();
+//            StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
+//            String targetClass = givenStackTrace.getTargetClass();
             List<BytecodeInstruction> instructions;
             if(CrashProperties.integrationTesting){
                 instructions = BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
             }else{
                 instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
             }
-            publicCalls =  getPublicCalls(givenStackTrace, instructions);
+            publicCalls =  getPublicCalls(targetClass,targetLine, instructions);
         }
 
         return publicCalls;
