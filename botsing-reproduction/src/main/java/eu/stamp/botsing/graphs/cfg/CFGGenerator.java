@@ -164,6 +164,7 @@ public class CFGGenerator {
                 HashMap<RawControlFlowGraph,List<BytecodeInstruction>> candidates = estimateTheRightLine(className,methodName,lineNumber,frameCounter,frames);
                 if(frameCounter>1 && isIrrelevantFrame(className,methodName,lineNumber,frameCounter,frames)){
                     LOG.info("Frame level {} is an irrelevant frame. We do not count it in the InterProcedural graph",frameCounter);
+                    CrashProperties.getInstance().getStackTrace().addIrrelevantFrameLevel(frameCounter);
                     fixed=true;
                 }else if(candidates.size()>0) {
                     LOG.info("Found {} candidates to repair the stack trace line number",frameCounter);
@@ -180,6 +181,7 @@ public class CFGGenerator {
                 }else{
                     LOG.info("could not find any candidate.");
                     LOG.info("Probably, Frame level {} is an irrelevant frame. We do not count it in the InterProcedural graph",frameCounter);
+                    CrashProperties.getInstance().getStackTrace().addIrrelevantFrameLevel(frameCounter);
                     fixed=true;
                 }
 

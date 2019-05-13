@@ -27,7 +27,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
         for(int frameLevel = targetFrame; frameLevel > 0 ; frameLevel--){
             if(covering){
                 double lineCoverageFitness = fitnessCalculator.getLineCoverageForFrame(executionResult,frameLevel);
-                if(lineCoverageFitness != 0){
+                if(lineCoverageFitness != 0 && !CrashProperties.getInstance().getStackTrace().isIrrelevantFrame(frameLevel)){
                     fitnessValue = lineCoverageFitness;
                     covering=false;
                 }
@@ -54,10 +54,12 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     private double exceptionCoverage(ExecutionResult executionResult) {
         double exceptionCoverage = 1.0;
         for (Integer ExceptionLocator : executionResult.getPositionsWhereExceptionsWereThrown()) {
-            String thrownException = ExceptionCoverageHelper.getExceptionClass(executionResult, ExceptionLocator).getName();
-            if (thrownException.equals(CrashProperties.getInstance().getStackTrace().getExceptionType())){
-                exceptionCoverage = 0.0;
-                break;
+            if(ExceptionCoverageHelper.isExplicit(executionResult,ExceptionLocator)){
+                String thrownException = ExceptionCoverageHelper.getExceptionClass(executionResult, ExceptionLocator).getName();
+                if (thrownException.equals(CrashProperties.getInstance().getStackTrace().getExceptionType())){
+                    exceptionCoverage = 0.0;
+                    break;
+                }
             }
         }
         return exceptionCoverage;

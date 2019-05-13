@@ -38,6 +38,7 @@ public class StackTrace {
     private int targetFrameLevel;
     private String targetClass;
     private ArrayList<StackTraceElement> allFrames;
+    private ArrayList<Integer> irrelevantFrames = new ArrayList<>();
 
     /**
      * Sets up this object with the stack trace read from the given file and having the given target frame.
@@ -175,5 +176,26 @@ public class StackTrace {
             LOG.debug(frame.getClassName());
         }
         return classes;
+    }
+
+    public void addIrrelevantFrameLevel(int frameLevel){
+        if(frameLevel > this.targetFrameLevel){
+            throw new IllegalArgumentException("The passed irrelevant frame (frame level "+frameLevel+") is higher than the target frame level.");
+        }
+        if(!this.irrelevantFrames.contains(frameLevel)){
+            this.irrelevantFrames.add(frameLevel);
+        }
+    }
+
+
+    public boolean isIrrelevantFrame(int frameLevel){
+        if(frameLevel > this.targetFrameLevel){
+            throw new IllegalArgumentException("The passed irrelevant frame (frame level "+frameLevel+") is higher than the target frame level.");
+        }
+        if(this.irrelevantFrames.contains(frameLevel)){
+            return true;
+        }
+
+        return false;
     }
 }
