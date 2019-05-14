@@ -73,15 +73,16 @@ public class CrashProperties {
     }
 
     public enum SearchAlgorithm {
-        Single_Objective_GGA;
+        Single_Objective_GGA,
+        Guided_MOSA;
 
         SearchAlgorithm() {
         }
     }
 
 
-    @Properties.Parameter(key = "testGenerationStrategy", group = "Crash reproduction", description = "Which mode to use for crash reproduction")
-    public static CrashProperties.TestGenerationStrategy testGenerationStrategy = CrashProperties.TestGenerationStrategy.Single_GA;
+//    @Properties.Parameter(key = "testGenerationStrategy", group = "Crash reproduction", description = "Which mode to use for crash reproduction")
+//    public static CrashProperties.TestGenerationStrategy testGenerationStrategy = CrashProperties.TestGenerationStrategy.Single_GA;
 
 
     @Properties.Parameter(key = "SearchAlgorithm", group = "Crash reproduction", description = "Which search algorithm to use for crash reproduction")
