@@ -4,7 +4,7 @@
 
     <groupId>eu.stamp-project</groupId>
     <artifactId>botsing</artifactId>
-    <version>1.0.5-SNAPSHOT</version>
+    <version>1.0.6-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Botsing</name>
@@ -273,7 +273,7 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <!-- <version>${coveralls-maven-plugin.version}</version> -->
-		</plugin>
+		    </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
