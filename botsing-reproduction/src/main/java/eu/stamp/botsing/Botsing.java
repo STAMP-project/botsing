@@ -148,6 +148,7 @@ public class Botsing {
             }
         }else {
             // We need to setup only one crash
+            crashProperties.clearStackTraceList();
             crashProperties.setupStackTrace(commands.getOptionValue(CRASH_LOG_OPT),
                     Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
         }
