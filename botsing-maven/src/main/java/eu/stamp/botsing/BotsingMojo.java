@@ -212,12 +212,18 @@ public class BotsingMojo extends AbstractMojo {
 		// TODO check properties
 
 		// Run botsing-preprocessing to clean crash log
-		String cleanedCrashLog = crashLog + "-CLEAN.log";
+		String cleanedCrashLog = null;
 		try {
+
+			// create clean stacktrace temporary file
+			File cleanedCrashLogTmpFile =  File.createTempFile(crashLog, extension);
+			cleanedCrashLogTmpFile.deleteOnExit();
+			cleanedCrashLog = cleanedCrashLogTmpFile.getAbsolutePath();
 
 			File botsingPreprocessingJar = getArtifactFile(
 					new DefaultArtifact("eu.stamp-project", "botsing-preprocessing", "jar-with-dependencies", "jar", botsingVersion));
 
+			// Run botsing-preprocessing
 			boolean success = ProcessRunner.executeBotsingPreprocessing(project.getBasedir(), botsingPreprocessingJar,
 					crashLog, cleanedCrashLog, packageFilter, globalTimeout, getLog());
 
@@ -349,9 +355,11 @@ public class BotsingMojo extends AbstractMojo {
 			// artifact to get
 			DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, classifier, extension, version);
 
-			// add input artifact
-			File artifactFile = getArtifactFile(artifact);
-			result += artifactFile.getAbsolutePath() + File.pathSeparator;
+			// add input artifact if not a war file
+			if (!artifact.getExtension().equals("war")) {
+				File artifactFile = getArtifactFile(artifact);
+				result += artifactFile.getAbsolutePath() + File.pathSeparator;
+			}
 
 			// download pom artifact
 			downloadArtifactDescriptorFile(artifact);
