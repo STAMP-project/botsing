@@ -1,2 +1,0 @@
-java.lang.ArithmeticException: / by zero
-    at eu.stamp.botsing.Fraction.getShiftedValue(Fraction.java:24)

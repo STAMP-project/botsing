@@ -41,8 +41,7 @@ public class ModelGenerationTest {
     public void testParseCommandLine() throws Exception{
         String user_dir = System.getProperty("user.dir"); // the current directory is the module <b>botsing-model-generation</b>
         File file = new File(user_dir);
-        String base_dir = Paths.get(file.getParent(), "botsing-examples").toString();
-        String  bin_path = Paths.get(base_dir, "src","main","resources","sample_dep").toString();
+        String bin_path = Paths.get(user_dir, "src","test","resources","sample_dep").toString();
         String classPrefix = "org.tudelft";
         File outputDir = Paths.get(user_dir, "target", "generated-models").toFile();
         //run Botsing

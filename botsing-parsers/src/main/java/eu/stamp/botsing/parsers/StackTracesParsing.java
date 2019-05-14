@@ -1,6 +1,6 @@
 package eu.stamp.botsing.parsers;
 
-import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.CrashStackTrace;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -18,7 +18,7 @@ public class StackTracesParsing {
      * @param input The input to parse.
      * @return A list with the stack traces parsed from the given input.
      */
-    public static List<StackTrace> parseStackTraces(String input){
+    public static List<CrashStackTrace> parseStackTraces(String input){
         CharStream text = CharStreams.fromString(input);
         StackTracesLexer lexer = new StackTracesLexer(text);
         CommonTokenStream tokens = new CommonTokenStream(lexer);

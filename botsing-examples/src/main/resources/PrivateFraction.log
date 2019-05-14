@@ -1,3 +1,0 @@
-java.lang.ArithmeticException: / by zero
-	at eu.stamp.botsing.PrivateFraction.getValue(PrivateFraction.java:14)
-	at eu.stamp.botsing.PrivateFraction.getShiftedValue(PrivateFraction.java:10)

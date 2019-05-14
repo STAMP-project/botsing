@@ -14,17 +14,17 @@ import static com.google.common.base.Preconditions.checkArgument;
  * last frame of a stack trace is either a regular frame or an ellipsis indicating that the remainder of the stack trace
  * has been stripped.
  */
-public class StackTrace implements Iterable<Frame> {
+public class CrashStackTrace implements Iterable<Frame> {
 
     private String exceptionClass;
     private String errorMessage;
     private List<Frame> frames;
-    private StackTrace cause = null;
+    private CrashStackTrace cause = null;
 
     /**
      * Creates a new empty stack trace.
      */
-    public StackTrace() {
+    public CrashStackTrace() {
         this(null, null);
     }
 
@@ -34,7 +34,7 @@ public class StackTrace implements Iterable<Frame> {
      * @param exceptionClass The exception class name.
      * @param errorMessage The error message for this stack trace.
      */
-    public StackTrace(String exceptionClass, String errorMessage) {
+    public CrashStackTrace(String exceptionClass, String errorMessage) {
         this(exceptionClass, errorMessage, null);
     }
 
@@ -45,7 +45,7 @@ public class StackTrace implements Iterable<Frame> {
      * @param errorMessage The error message for this stack trace. May be null.
      * @param cause The cause of this stack trace. May be null.
      */
-    public StackTrace(String exceptionClass, String errorMessage, StackTrace cause) {
+    public CrashStackTrace(String exceptionClass, String errorMessage, CrashStackTrace cause) {
         this.exceptionClass = exceptionClass;
         this.errorMessage = errorMessage;
         this.frames = new ArrayList<>();
@@ -93,7 +93,7 @@ public class StackTrace implements Iterable<Frame> {
      *
      * @return The cause of this stack trace.
      */
-    public StackTrace getCause() {
+    public CrashStackTrace getCause() {
         return cause;
     }
 
@@ -102,7 +102,7 @@ public class StackTrace implements Iterable<Frame> {
      *
      * @param stackTrace The new cause of this stack trace. There should be no cycle in the stack trace causes.
      */
-    public void setCause(StackTrace stackTrace) {
+    public void setCause(CrashStackTrace stackTrace) {
         this.cause = stackTrace;
     }
 
@@ -170,7 +170,7 @@ public class StackTrace implements Iterable<Frame> {
         if(o == null || getClass() != o.getClass()) {
             return false;
         }
-        StackTrace stackTrace = (StackTrace) o;
+        CrashStackTrace stackTrace = (CrashStackTrace) o;
         return Objects.equals(exceptionClass, stackTrace.exceptionClass) && Objects.equals(errorMessage,
                 stackTrace.errorMessage) && Objects.equals(frames, stackTrace.frames) && Objects.equals(cause,
                 stackTrace.cause);

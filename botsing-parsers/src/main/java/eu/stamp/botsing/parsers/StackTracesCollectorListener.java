@@ -2,7 +2,7 @@ package eu.stamp.botsing.parsers;
 
 import eu.stamp.botsing.EllipsisFrame;
 import eu.stamp.botsing.Frame;
-import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.CrashStackTrace;
 import org.antlr.v4.runtime.misc.Interval;
 
 import java.util.ArrayList;
@@ -15,9 +15,9 @@ import java.util.List;
  */
 public class StackTracesCollectorListener extends StackTracesParserBaseListener {
 
-    private List<StackTrace> stackTraces;
+    private List<CrashStackTrace> stackTraces;
 
-    private StackTrace current = null;
+    private CrashStackTrace current = null;
 
     private String message = null;
     private String className = null;
@@ -39,7 +39,7 @@ public class StackTracesCollectorListener extends StackTracesParserBaseListener 
 
     @Override
     public void enterRootStackTrace(StackTracesParser.RootStackTraceContext ctx) {
-        current = new StackTrace();
+        current = new CrashStackTrace();
         stackTraces.add(current);
     }
 
@@ -61,7 +61,7 @@ public class StackTracesCollectorListener extends StackTracesParserBaseListener 
 
     @Override
     public void enterCausedByLine(StackTracesParser.CausedByLineContext ctx) {
-        StackTrace cause = new StackTrace();
+        CrashStackTrace cause = new CrashStackTrace();
         current.setCause(cause);
         current = cause;
     }
@@ -119,7 +119,7 @@ public class StackTracesCollectorListener extends StackTracesParserBaseListener 
      *
      * @return The collected stack traces.
      */
-    public List<StackTrace> getStackTraces() {
+    public List<CrashStackTrace> getStackTraces() {
         return stackTraces;
     }
 }
