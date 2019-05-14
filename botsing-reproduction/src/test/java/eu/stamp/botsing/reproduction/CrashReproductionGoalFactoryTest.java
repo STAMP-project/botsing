@@ -58,7 +58,7 @@ public class CrashReproductionGoalFactoryTest {
         target.setup("", 2);
         CrashProperties.getInstance().clearStackTraceList();
         CrashProperties.getInstance().setupStackTrace(target);
-        CrashProperties.testGenerationStrategy = CrashProperties.TestGenerationStrategy.Single_GA;
+
 
 
         MockitoAnnotations.initMocks(this);
@@ -66,10 +66,9 @@ public class CrashReproductionGoalFactoryTest {
 
     @Test
     public void testCrashReproductionGoalFactory() {
-
+        // ToDo: We should update this test with the acceptance of list of crashes feature
         assertEquals("class eu.stamp.botsing.fitnessfunction.WeightedSum", crashReproductionGoalFactory.getCoverageGoals().get(0).getClass().toString());
 
-        CrashProperties.testGenerationStrategy = CrashProperties.TestGenerationStrategy.Multi_GA;
         crashReproductionGoalFactory = new CrashReproductionGoalFactory();
         assertEquals("class eu.stamp.botsing.fitnessfunction.WeightedSum", crashReproductionGoalFactory.getCoverageGoals().get(0).getClass().toString());
 
