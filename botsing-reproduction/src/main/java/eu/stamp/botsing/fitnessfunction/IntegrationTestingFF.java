@@ -1,6 +1,6 @@
 package eu.stamp.botsing.fitnessfunction;
 
-import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.fitnessfunction.calculator.CrashCoverageFitnessCalculator;
 import org.evosuite.coverage.exception.ExceptionCoverageHelper;
 import org.evosuite.testcase.TestChromosome;
@@ -15,19 +15,21 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTestingFF.class);
     @Resource
     CrashCoverageFitnessCalculator fitnessCalculator;
+    private StackTrace targetCrash;
 
-    public IntegrationTestingFF(){
-        fitnessCalculator = new CrashCoverageFitnessCalculator();
+    public IntegrationTestingFF(StackTrace crash){
+        fitnessCalculator = new CrashCoverageFitnessCalculator(crash);
+        targetCrash = crash;
     }
     @Override
     public double getFitness(TestChromosome testChromosome, ExecutionResult executionResult) {
-        int targetFrame = CrashProperties.getInstance().getStackTrace(0).getTargetFrameLevel();
+        int targetFrame = targetCrash.getTargetFrameLevel();
         double fitnessValue=0;
         boolean covering = true;
         for(int frameLevel = targetFrame; frameLevel > 0 ; frameLevel--){
             if(covering){
-                double lineCoverageFitness = fitnessCalculator.getLineCoverageForFrame(0, executionResult,frameLevel);
-                if(lineCoverageFitness != 0 && !CrashProperties.getInstance().getStackTrace(0).isIrrelevantFrame(frameLevel)){
+                double lineCoverageFitness = fitnessCalculator.getLineCoverageForFrame(executionResult,frameLevel);
+                if(lineCoverageFitness != 0 && !targetCrash.isIrrelevantFrame(frameLevel)){
                     fitnessValue = lineCoverageFitness;
                     covering=false;
                 }
@@ -56,7 +58,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
         for (Integer ExceptionLocator : executionResult.getPositionsWhereExceptionsWereThrown()) {
             if(ExceptionCoverageHelper.isExplicit(executionResult,ExceptionLocator)){
                 String thrownException = ExceptionCoverageHelper.getExceptionClass(executionResult, ExceptionLocator).getName();
-                if (thrownException.equals(CrashProperties.getInstance().getStackTrace(0).getExceptionType())){
+                if (thrownException.equals(targetCrash.getExceptionType())){
                     exceptionCoverage = 0.0;
                     break;
                 }
@@ -74,7 +76,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( CrashProperties.getInstance().getStackTrace(0).hashCode());
+        result = prime * result + (targetCrash.hashCode());
         return result;
     }
 
@@ -91,11 +93,11 @@ public class IntegrationTestingFF extends TestFitnessFunction {
 
     @Override
     public String getTargetClass() {
-        return CrashProperties.getInstance().getStackTrace(0).getFrame(1).getClassName();
+        return targetCrash.getFrame(1).getClassName();
     }
 
     @Override
     public String getTargetMethod() {
-        return CrashProperties.getInstance().getStackTrace(0).getFrame(1).getMethodName();
+        return targetCrash.getFrame(1).getMethodName();
     }
 }

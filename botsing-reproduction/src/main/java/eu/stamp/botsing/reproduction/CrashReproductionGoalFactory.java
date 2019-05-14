@@ -40,19 +40,23 @@ public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFit
 
     public CrashReproductionGoalFactory(){
         fitnessFunctionHelper = new FitnessFunctionHelper();
-        if(CrashProperties.testGenerationStrategy == CrashProperties.TestGenerationStrategy.Single_GA){
-            TestFitnessFunction goal = fitnessFunctionHelper.getSingleObjective(0);
-            String key = getKey(goal);
-            if (!goals.containsKey(key)) {
-                goals.put(key, goal);
-            }
-        }else{
-            TestFitnessFunction[] rawGoals = fitnessFunctionHelper.getMultiObjectives();
-            for (TestFitnessFunction goal: rawGoals){
+        goals.clear();
+        if(CrashProperties.getInstance().getCrashesSize() > 1){
+            // multi-objectives
+            TestFitnessFunction[] fetchedGoals = fitnessFunctionHelper.getMultiObjectives();
+            for(TestFitnessFunction goal: fetchedGoals){
                 String key = getKey(goal);
                 if (!goals.containsKey(key)) {
                     goals.put(key, goal);
                 }
+            }
+
+        }else{
+            // single Objective
+            TestFitnessFunction goal = fitnessFunctionHelper.getSingleObjective();
+            String key = getKey(goal);
+            if (!goals.containsKey(key)) {
+                goals.put(key, goal);
             }
         }
     }
@@ -61,6 +65,10 @@ public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFit
     public List<TestFitnessFunction> getCoverageGoals() {
         return  new ArrayList<TestFitnessFunction>(goals.values());
     }
+
+
+
+
 
 
     public String getKey(TestFitnessFunction goal){

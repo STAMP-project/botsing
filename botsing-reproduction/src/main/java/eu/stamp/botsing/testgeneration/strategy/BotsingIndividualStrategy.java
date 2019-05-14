@@ -22,12 +22,9 @@ package eu.stamp.botsing.testgeneration.strategy;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
-import eu.stamp.botsing.fitnessfunction.testcase.factories.RootMethodTestChromosomeFactory;
-import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
-import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
+import eu.stamp.botsing.reproduction.CrashReproductionGoalFactory;
 import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
-import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.GlobalTimeStoppingCondition;
 import org.evosuite.ga.stoppingconditions.MaxTimeStoppingCondition;
@@ -40,14 +37,18 @@ import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testsuite.TestSuiteChromosome;
+import org.evosuite.utils.ResourceController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 // This strategy selects one coverage goal. In the current version, this single goal is crash coverage
 public class BotsingIndividualStrategy extends TestGenerationStrategy {
     private static final Logger LOG = LoggerFactory.getLogger(BotsingIndividualStrategy.class);
+
+    private TestGenerationUtility utility = new TestGenerationUtility();
 
     @Resource
     FitnessFunctionHelper fitnessFunctionHelper =  new FitnessFunctionHelper();
@@ -66,21 +67,25 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
             e.printStackTrace();
         }
         ExecutionTracer.enableTraceCalls();
-        GeneticAlgorithm ga = getGA();
+        GeneticAlgorithm ga = utility.getGA();
 
         if (Properties.CHECK_BEST_LENGTH) {
             org.evosuite.testcase.RelativeTestLengthBloatControl bloat_control = new org.evosuite.testcase.RelativeTestLengthBloatControl();
             ga.addBloatControl(bloat_control);
             ga.addListener(bloat_control);
         }
+        ga.addListener(new ResourceController());
         ga.addStoppingCondition(stoppingCondition);
         ga.addStoppingCondition(new ZeroFitnessStoppingCondition());
 
         if (!(stoppingCondition instanceof MaxTimeStoppingCondition)) {
             ga.addStoppingCondition(new GlobalTimeStoppingCondition());
         }
-        TestFitnessFunction ff = getFF();
-        ga.addFitnessFunction(ff);
+
+        List<TestFitnessFunction> fitnessFunctions = getFitnessFunctionList();
+        for(TestFitnessFunction ff : fitnessFunctions){
+            ga.addFitnessFunction(ff);
+        }
 
         // prepare model seeding before generating the solution
         if(Properties.MODEL_PATH != null){
@@ -119,20 +124,9 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         return suite;
     }
 
-    private GeneticAlgorithm getGA(){
-        switch (CrashProperties.searchAlgorithm){
-            case Single_Objective_GGA:
-                return new GuidedGeneticAlgorithm(getChromosomeFactory());
-            default:
-                return new GuidedGeneticAlgorithm(getChromosomeFactory());
-        }
-    }
 
-    private ChromosomeFactory<TestChromosome> getChromosomeFactory() {
-        return new RootMethodTestChromosomeFactory(CrashProperties.getInstance().getStackTrace(0), new GuidedSearchUtility());
-    }
-
-    private TestFitnessFunction getFF(){
-        return fitnessFunctionHelper.getSingleObjective(0);
+    private List<TestFitnessFunction> getFitnessFunctionList(){
+        CrashReproductionGoalFactory goalFactory = new CrashReproductionGoalFactory();
+        return goalFactory.getCoverageGoals();
     }
 }
