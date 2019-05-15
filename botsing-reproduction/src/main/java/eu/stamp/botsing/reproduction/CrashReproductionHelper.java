@@ -20,13 +20,19 @@ package eu.stamp.botsing.reproduction;
  * #L%
  */
 
+import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.testgeneration.strategy.BotsingIndividualStrategy;
+import eu.stamp.botsing.testgeneration.strategy.MOSuiteStrategy;
 import org.evosuite.strategy.TestGenerationStrategy;
 
 public class CrashReproductionHelper {
 
     public static TestGenerationStrategy getTestGenerationFactory(){
-                return new BotsingIndividualStrategy();
-                // ToDo: Extend this after defining new test generation strategies
+                switch (CrashProperties.searchAlgorithm){
+                    case Guided_MOSA:
+                        return new MOSuiteStrategy();
+                    default:
+                        return new BotsingIndividualStrategy();
+                }
         }
     }
