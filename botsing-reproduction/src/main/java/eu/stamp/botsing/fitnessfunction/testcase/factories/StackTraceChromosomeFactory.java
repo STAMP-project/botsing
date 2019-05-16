@@ -44,8 +44,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFactory {
-    private static final Logger LOG = LoggerFactory.getLogger(RootMethodTestChromosomeFactory.class);
+public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(StackTraceChromosomeFactory.class);
     private GuidedSearchUtility utility;
 
     private static Set<GenericAccessibleObject<?>> publicParentCalls = new HashSet<GenericAccessibleObject<?>>();
@@ -53,7 +53,7 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
 
     private static List<GenericAccessibleObject<?>> allMethods = new LinkedList<GenericAccessibleObject<?>>();
 
-    public RootMethodTestChromosomeFactory(StackTrace trace, GuidedSearchUtility utility){
+    public StackTraceChromosomeFactory(StackTrace trace, GuidedSearchUtility utility){
         this.utility = utility;
         allMethods.clear();
         allMethods.addAll(TestCluster.getInstance().getTestCalls());
@@ -189,13 +189,13 @@ public class RootMethodTestChromosomeFactory extends AllMethodsTestChromosomeFac
     }
 
     public void reset(StackTrace trace){
-        fillPublicCalls(trace);
+        fillPublicCalls();
         attemptedPublicParents.clear();
     }
 
-    private void fillPublicCalls(StackTrace trace){
+    private void fillPublicCalls(){
         if (utility != null){
-            Iterator<String> iterateParents = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine()).iterator();
+            Iterator<String> iterateParents = utility.collectPublicCalls().iterator();
 
             // Fill up the set of parent calls by assessing the method names
             while (iterateParents.hasNext()) {

@@ -1,7 +1,6 @@
 package eu.stamp.botsing.fitnessfunction.testcase.factories;
 
 import ch.qos.logback.classic.Level;
-import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.Properties;
 import org.evosuite.setup.TestCluster;
@@ -29,9 +28,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-public class RootMethodTestChromosomeFactoryTest {
+public class StackTraceChromosomeFactoryTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RootMethodTestChromosomeFactoryTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StackTraceChromosomeFactoryTest.class);
 
     @Rule
     public TestRule watcher = new TestWatcher() {
@@ -52,7 +51,7 @@ public class RootMethodTestChromosomeFactoryTest {
 
     @Test
     public void testChromosomeMethod() throws NoSuchMethodException {
-        StackTrace trace = Mockito.mock(StackTrace.class);
+        eu.stamp.botsing.StackTrace trace = Mockito.mock(eu.stamp.botsing.StackTrace.class);
         Mockito.when(trace.getTargetClass()).thenReturn("ClassA");
         Mockito.when(trace.getTargetLine()).thenReturn(12);
 
@@ -78,7 +77,7 @@ public class RootMethodTestChromosomeFactoryTest {
         publicCalls.add("doubleValue");
         publicCalls.add("equal");
         Mockito.when(utility.getPublicCalls(Mockito.anyString(),Mockito.anyInt())).thenReturn(publicCalls);
-        RootMethodTestChromosomeFactory rm = new RootMethodTestChromosomeFactory(trace, utility);
+        StackTraceChromosomeFactory rm = new StackTraceChromosomeFactory(trace, utility);
         TestChromosome generatedChromosome = rm.getChromosome();
         assertFalse(generatedChromosome.getTestCase().isEmpty());
         assertTrue(generatedChromosome.getTestCase().isValid());
@@ -106,7 +105,7 @@ public class RootMethodTestChromosomeFactoryTest {
 
         publicCalls.add(c.getName());
 
-        rm = new RootMethodTestChromosomeFactory(trace, utility);
+        rm = new StackTraceChromosomeFactory(trace, utility);
 
         generatedChromosome = rm.getChromosome();
 
