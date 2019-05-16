@@ -46,9 +46,7 @@ public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFit
             TestFitnessFunction[] fetchedGoals = fitnessFunctionHelper.getMultiObjectives();
             for(TestFitnessFunction goal: fetchedGoals){
                 String key = getKey(goal);
-                if (!goals.containsKey(key)) {
-                    goals.put(key, goal);
-                }
+                goals.put(key, goal);
             }
 
         }else{
@@ -72,7 +70,14 @@ public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFit
 
 
     public String getKey(TestFitnessFunction goal){
-        return goal.getTargetClass()+"_"+goal.getTargetMethod();
+        String classMethodName = goal.getTargetClass()+"_"+goal.getTargetMethod();
+        int counter = 1;
+        for (String key: goals.keySet()){
+            if(key.startsWith(classMethodName)){
+                counter++;
+            }
+        }
+        return goal.getTargetClass()+"_"+goal.getTargetMethod()+counter;
 
     }
 }
