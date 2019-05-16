@@ -2,6 +2,7 @@ package eu.stamp.botsing.reproduction;
 
 import static org.junit.Assert.assertEquals;
 
+import eu.stamp.botsing.CrashProperties;
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,7 +29,7 @@ public class CrashReproductionHelperTest {
     @Test
     public void testGetTestGenerationFactory() {
         CrashReproductionHelper helper = new CrashReproductionHelper();
-//        CrashProperties.testGenerationStrategy = CrashProperties.TestGenerationStrategy.Single_GA;
+        CrashProperties.searchAlgorithm = CrashProperties.SearchAlgorithm.Single_Objective_GGA;
         TestGenerationStrategy strategy = CrashReproductionHelper.getTestGenerationFactory();
         String strategyClassName = strategy.getClass().toString().substring(strategy.getClass().toString().indexOf("class ") + 6);
         assertEquals("eu.stamp.botsing.testgeneration.strategy.BotsingIndividualStrategy", strategyClassName);
