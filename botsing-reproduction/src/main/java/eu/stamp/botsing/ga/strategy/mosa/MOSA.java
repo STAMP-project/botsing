@@ -12,7 +12,6 @@ import java.util.*;
 
 import org.evosuite.ga.comparators.OnlyCrowdingComparator;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
-import org.evosuite.rmi.ClientServices;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testsuite.TestSuiteChromosome;
@@ -239,8 +238,8 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
                 // if time tracker does not include the target, we add it with the current search time
                 if (!fitnessTimeTracker.containsKey(fitnessFunction)) {
                     fitnessTimeTracker.put((TestFitnessFunction) fitnessFunction, searchTime);
-                } // since the goal is included already, if the fitness score improved, we track the time
-                else if (fitnessTimeTracker.containsKey(fitnessFunction) && fitnessTracker.get(fitnessFunction) > value) {
+                } else if (fitnessTimeTracker.containsKey(fitnessFunction) && fitnessTracker.get(fitnessFunction) > value) {
+                    // since the goal is included already, if the fitness score improved, we track the time
                     fitnessTimeTracker.put((TestFitnessFunction) fitnessFunction, searchTime);
                 }
 //            }
@@ -260,8 +259,9 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         if (archive.containsKey(covered)){
             int bestSize = this.archive.get(covered).size();
             int size = solution.size();
-            if (size < bestSize)
+            if (size < bestSize){
                 this.archive.put(covered, solution);
+            }
         } else {
             archive.put(covered, solution);
             this.uncoveredGoals.remove(covered);
@@ -329,13 +329,16 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         if (this.getNumberOfCoveredGoals()==0) {
             return getArchive();
         }
-        if (archive.size() == 0)
+        if (archive.size() == 0){
             if (population.size() > 0) {
                 ArrayList<T> list = new ArrayList<T>();
                 list.add(population.get(population.size() - 1));
                 return list;
-            } else
+            } else{
                 return getArchive();
+            }
+        }
+
         List<T> final_tests = getArchive();
         List<T> tests = this.getNonDominatedSolutions(final_tests);
         return tests;

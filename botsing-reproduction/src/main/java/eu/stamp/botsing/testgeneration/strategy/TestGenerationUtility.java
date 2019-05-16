@@ -5,13 +5,9 @@ import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeF
 import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
 import eu.stamp.botsing.ga.strategy.mosa.MOSA;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
-import eu.stamp.botsing.reproduction.CrashReproductionGoalFactory;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.testcase.TestChromosome;
-import org.evosuite.testcase.TestFitnessFunction;
-
-import java.util.List;
 
 
 public class TestGenerationUtility {
