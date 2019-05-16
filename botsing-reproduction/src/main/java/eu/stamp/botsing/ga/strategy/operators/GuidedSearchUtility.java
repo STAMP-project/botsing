@@ -31,11 +31,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
 
     public boolean includesPublicCall (T individual) {
         if(publicCalls.size()==0) {
-            if (CrashProperties.getInstance().getCrashesSize() == 1) {
-                getPublicCalls(CrashProperties.getInstance().getStackTrace(0).getTargetClass(), CrashProperties.getInstance().getStackTrace(0).getTargetLine());
-            } else {
-                throw new IllegalStateException("Public calls are empty");
-            }
+            collectPublicCalls();
         }
         Iterator<String> publicCallsIterator = publicCalls.iterator();
         TestChromosome candidateChrom = (TestChromosome) individual;
@@ -56,6 +52,38 @@ public class GuidedSearchUtility<T extends Chromosome> {
             }
         }
         return false;
+    }
+
+
+    public  Set<String> collectPublicCalls(){
+        if (CrashProperties.getInstance().getCrashesSize() == 1) {
+            getPublicCalls(CrashProperties.getInstance().getStackTrace(0).getTargetClass(), CrashProperties.getInstance().getStackTrace(0).getTargetLine());
+        } else if (CrashProperties.getInstance().getCrashesSize() > 1){
+            getPublicCallsFromMultipleCrashes();
+        } else{
+            throw new IllegalStateException("Public calls are empty");
+        }
+
+        return publicCalls;
+    }
+
+    public void getPublicCallsFromMultipleCrashes() {
+        if(CrashProperties.getInstance().getCrashesSize() < 2){
+            throw new IllegalStateException("We do not have multiple crashes!");
+        }
+        if (publicCalls.size() == 0) {
+            for (int crashIndex = 0; crashIndex < CrashProperties.getInstance().getCrashesSize(); crashIndex++) {
+                String targetClass = CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass();
+                int targetLine = CrashProperties.getInstance().getStackTrace(crashIndex).getTargetLine();
+                List<BytecodeInstruction> instructions;
+                if (CrashProperties.integrationTesting) {
+                    instructions = BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+                } else {
+                    instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+                }
+                getPublicCalls(targetClass, targetLine, instructions);
+            }
+        }
     }
 
     protected boolean isCall2Method(String callName, Statement currentStatement){
