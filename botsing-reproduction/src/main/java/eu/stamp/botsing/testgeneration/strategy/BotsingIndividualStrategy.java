@@ -21,6 +21,7 @@ package eu.stamp.botsing.testgeneration.strategy;
  */
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -85,7 +86,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
 
         // Add fitnes function(s)
-        List<TestFitnessFunction> fitnessFunctions = utility.getFitnessFunctionList();
+        List<TestFitnessFunction> fitnessFunctions = FitnessFunctions.getFitnessFunctionList();
 //        for(TestFitnessFunction ff : fitnessFunctions){
         ga.addFitnessFunctions(fitnessFunctions);
 //        }

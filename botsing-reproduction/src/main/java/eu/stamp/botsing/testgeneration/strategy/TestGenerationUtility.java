@@ -1,7 +1,7 @@
 package eu.stamp.botsing.testgeneration.strategy;
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.testcase.factories.RootMethodTestChromosomeFactory;
+import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
 import eu.stamp.botsing.ga.strategy.mosa.MOSA;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
@@ -30,14 +30,10 @@ public class TestGenerationUtility {
 
 
     private ChromosomeFactory<TestChromosome> getChromosomeFactory() {
-        return new RootMethodTestChromosomeFactory(CrashProperties.getInstance().getStackTrace(0), new GuidedSearchUtility());
+        return new StackTraceChromosomeFactory(CrashProperties.getInstance().getStackTrace(0), new GuidedSearchUtility());
     }
 
 
-    public List<TestFitnessFunction> getFitnessFunctionList(){
-        CrashReproductionGoalFactory goalFactory = new CrashReproductionGoalFactory();
-        return goalFactory.getCoverageGoals();
-    }
 
 
 
