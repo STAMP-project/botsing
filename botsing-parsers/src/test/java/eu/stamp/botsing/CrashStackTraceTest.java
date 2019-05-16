@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 
-public class StackTraceTest {
+public class CrashStackTraceTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StackTraceTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CrashStackTraceTest.class);
 
     @Rule
     public TestRule watcher = new TestWatcher() {
@@ -28,7 +28,7 @@ public class StackTraceTest {
     public void testNewSimpleStackTrace() {
         String exception = "NullPointerOfCourse";
         String message = "because why not!";
-        StackTrace st = new StackTrace(exception, message);
+        CrashStackTrace st = new CrashStackTrace(exception, message);
 
         assertThat(st.getExceptionClass(), equalTo(exception));
         assertThat(st.getErrorMessage(), equalTo(message));
@@ -44,7 +44,7 @@ public class StackTraceTest {
     public void testAddFrame() {
         String exception = "NullPointerOfCourse";
         String message = "because why not!";
-        StackTrace st = new StackTrace(exception, message);
+        CrashStackTrace st = new CrashStackTrace(exception, message);
         st.addFrame(new Frame("clazz", "method"));
         st.addFrame(new Frame("clazz2", "method2"));
 
@@ -59,7 +59,7 @@ public class StackTraceTest {
     public void testRemoveFrame() {
         String exception = "NullPointerOfCourse";
         String message = "because why not!";
-        StackTrace st = new StackTrace(exception, message);
+        CrashStackTrace st = new CrashStackTrace(exception, message);
         st.addFrame(new Frame("clazz", "method"));
         st.addFrame(new Frame("clazz2", "method2"));
 
@@ -79,7 +79,7 @@ public class StackTraceTest {
     public void testAddEllipsisFrame() {
         String exception = "NullPointerOfCourse";
         String message = "because why not!";
-        StackTrace st = new StackTrace(exception, message);
+        CrashStackTrace st = new CrashStackTrace(exception, message);
         st.addFrame(new Frame("clazz", "method"));
         st.addFrame(new Frame("clazz2", "method2"));
 
@@ -99,14 +99,14 @@ public class StackTraceTest {
     public void testEquals() {
         String exception = "NullPointerOfCourse";
         String message = "because why not!";
-        StackTrace st = new StackTrace(exception, message);
-        StackTrace st2 = new StackTrace();
+        CrashStackTrace st = new CrashStackTrace(exception, message);
+        CrashStackTrace st2 = new CrashStackTrace();
         st2.setExceptionClass(exception);
         st2.setErrorMessage(message);
 
         assertThat(st.equals(st), is(true));
         assertThat(st.equals(st2), is(true));
-        assertThat(st.equals(new StackTrace(exception, message, st2)), is(false));
+        assertThat(st.equals(new CrashStackTrace(exception, message, st2)), is(false));
 
         st.addFrame(new Frame("clazz", "method"));
         st.addFrame(new Frame("clazz2", "method2"));
@@ -118,11 +118,11 @@ public class StackTraceTest {
         assertThat(st.equals(st), is(true));
         assertThat(st.equals(st2), is(true));
 
-        st.setCause(new StackTrace("except", message));
+        st.setCause(new CrashStackTrace("except", message));
         assertThat(st.equals(st), is(true));
         assertThat(st.equals(st2), is(false));
 
-        st2.setCause(new StackTrace("except", message));
+        st2.setCause(new CrashStackTrace("except", message));
         assertThat(st.equals(st), is(true));
         assertThat(st.equals(st2), is(true));
     }
@@ -131,15 +131,15 @@ public class StackTraceTest {
     public void testHashCode() {
         String exception = "NullPointerOfCourse";
         String message = "because why not!";
-        StackTrace st = new StackTrace(exception, message);
-        StackTrace st2 = new StackTrace(exception, message);
+        CrashStackTrace st = new CrashStackTrace(exception, message);
+        CrashStackTrace st2 = new CrashStackTrace(exception, message);
 
         assertThat("Hash codes generated on the same objects should be equal!",
                 st.hashCode(), equalTo(st.hashCode()));
         assertThat("Hash codes generated on equal objects should be equal!",
                 st.hashCode(), equalTo(st2.hashCode()));
         assertThat("Hash codes generated on non equal objects should be different!",
-                st.hashCode(), not(new StackTrace(exception, message, st2).hashCode()));
+                st.hashCode(), not(new CrashStackTrace(exception, message, st2).hashCode()));
 
         st.addFrame(new Frame("clazz", "method"));
         st.addFrame(new Frame("clazz2", "method2"));
@@ -157,14 +157,14 @@ public class StackTraceTest {
         assertThat("Hash codes generated on equal objects should be equal!",
                 st.hashCode(), equalTo(st2.hashCode()));
 
-        st.setCause(new StackTrace("except", message));
+        st.setCause(new CrashStackTrace("except", message));
 
         assertThat("Hash codes generated on the same objects should be equal!",
                 st.hashCode(), equalTo(st.hashCode()));
         assertThat("Hash codes generated on non equal objects should be different!",
                 st.hashCode(), not(st2.hashCode()));
 
-        st2.setCause(new StackTrace("except", message));
+        st2.setCause(new CrashStackTrace("except", message));
 
         assertThat("Hash codes generated on the same objects should be equal!",
                 st.hashCode(), equalTo(st.hashCode()));
@@ -176,9 +176,9 @@ public class StackTraceTest {
     public void testToString() {
         String exception = "NullPointerOfCourse";
         String message = "because why not!";
-        StackTrace st = new StackTrace(exception, message);
+        CrashStackTrace st = new CrashStackTrace(exception, message);
         st.addFrame(new Frame("clazz", "method"));
-        st.setCause(new StackTrace("except", message));
+        st.setCause(new CrashStackTrace("except", message));
         LOG.debug("Stack trace is: {}", st);
         assertThat(st.toString(), not(emptyString()));
     }

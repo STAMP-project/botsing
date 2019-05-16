@@ -2,7 +2,7 @@ package eu.stamp.botsing.parsers;
 
 import eu.stamp.botsing.EllipsisFrame;
 import eu.stamp.botsing.Frame;
-import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.CrashStackTrace;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -37,10 +37,10 @@ public class StackTracesParsingTest {
                 "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n" +
                 "\tat sun.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)\n" +
                 "\t... 44 more";
-        List<StackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
+        List<CrashStackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
         assertThat(stackTraces, hasSize(1));
 
-        StackTrace st = stackTraces.get(0);
+        CrashStackTrace st = stackTraces.get(0);
         LOG.trace("Stack trace is {}", st);
         assertThat(st.getExceptionClass(), equalTo("org.apache.commons.lang3.SerializationException"));
         assertThat(st.getErrorMessage(), equalTo("ClassNotFoundException while reading cloned object data"));
@@ -63,10 +63,10 @@ public class StackTracesParsingTest {
                 "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n" +
                 "\tat sun.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)\n" +
                 "\t... 44 more";
-        List<StackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
+        List<CrashStackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
         assertThat(stackTraces, hasSize(1));
 
-        StackTrace st = stackTraces.get(0);
+        CrashStackTrace st = stackTraces.get(0);
         LOG.trace("Stack trace is {}", st);
         assertThat(st.getExceptionClass(), equalTo("org.apache.commons.lang3.SerializationException"));
         assertThat(st.getErrorMessage(), equalTo("ClassNotFoundException while reading cloned object data"));
@@ -94,17 +94,17 @@ public class StackTracesParsingTest {
                 "\tat org.apache.tools.ant.AntClassLoader.findClassInComponents(AntClassLoader.java:1365)\n" +
                 "\tat java.io.ObjectInputStream.readNonProxyDesc(ObjectInputStream.java:1613)\n";
 
-        List<StackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
+        List<CrashStackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
         assertThat(stackTraces, hasSize(1));
 
-        StackTrace st = stackTraces.get(0);
+        CrashStackTrace st = stackTraces.get(0);
         LOG.trace("Stack trace is {}", st);
         assertThat(st.getExceptionClass(), equalTo("org.apache.commons.lang3.SerializationException"));
         assertThat(st.getErrorMessage(), equalTo("ClassNotFoundException while reading cloned object data"));
         assertThat(st.highestFrameLevel(), equalTo(1));
         assertThat(st.getCause(), notNullValue());
 
-        StackTrace causeSt = StackTracesParsing.parseStackTraces(cause).get(0);
+        CrashStackTrace causeSt = StackTracesParsing.parseStackTraces(cause).get(0);
         assertThat(st.getCause(), equalTo(causeSt));
     }
 
@@ -123,11 +123,11 @@ public class StackTracesParsingTest {
                 "\tat org.apache.tools.ant.AntClassLoader.findClassInComponents(AntClassLoader.java:1365)\n" +
                 "\tat java.io.ObjectInputStream.readNonProxyDesc(ObjectInputStream.java:1613)\n";
 
-        List<StackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
+        List<CrashStackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
         assertThat(stackTraces, hasSize(2));
 
-        StackTrace firstSt = StackTracesParsing.parseStackTraces(first).get(0);
-        StackTrace secondSt = StackTracesParsing.parseStackTraces(second).get(0);
+        CrashStackTrace firstSt = StackTracesParsing.parseStackTraces(first).get(0);
+        CrashStackTrace secondSt = StackTracesParsing.parseStackTraces(second).get(0);
 
         assertThat(stackTraces.get(0), equalTo(firstSt));
         assertThat(stackTraces.get(1), equalTo(secondSt));
@@ -136,7 +136,7 @@ public class StackTracesParsingTest {
     @Test
     public void testInvalidInput() {
         String input = "Lorem ipsum dolor sit amet";
-        List<StackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
+        List<CrashStackTrace> stackTraces = StackTracesParsing.parseStackTraces(input);
         assertThat(stackTraces, hasSize(0));
     }
 
