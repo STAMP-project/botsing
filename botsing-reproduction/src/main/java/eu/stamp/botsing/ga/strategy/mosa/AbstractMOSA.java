@@ -1,22 +1,32 @@
 package eu.stamp.botsing.ga.strategy.mosa;
 
+import eu.stamp.botsing.fitnessfunction.CrashCoverageSuiteFitness;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.evosuite.ga.FitnessFunction;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class AbstractMOSA<T extends Chromosome> extends org.evosuite.ga.metaheuristics.mosa.AbstractMOSA<T> {
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractMOSA.class);
 
 
 
     public AbstractMOSA(ChromosomeFactory<T> factory) {
-        super(new ArrayList<ChromosomeFactory<T>>(Arrays.asList(factory)));
+        super(factory);
     }
 
+    @Override
+    protected void setupSuiteFitness(){
+        getSuiteFitnessFunctions();
+        }
+
+
+    protected void getSuiteFitnessFunctions(){
+        for (FitnessFunction ff: FitnessFunctions.getFitnessFunctionList()){
+
+            this.suiteFitnessFunctions.put(new CrashCoverageSuiteFitness(),ff.getClass());
+        }
+    }
 
     @Override
     protected void evolve() {
