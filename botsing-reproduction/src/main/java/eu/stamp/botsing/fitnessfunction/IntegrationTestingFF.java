@@ -56,13 +56,13 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     private double exceptionCoverage(ExecutionResult executionResult) {
         double exceptionCoverage = 1.0;
         for (Integer ExceptionLocator : executionResult.getPositionsWhereExceptionsWereThrown()) {
-            if(ExceptionCoverageHelper.isExplicit(executionResult,ExceptionLocator)){
+//            if(ExceptionCoverageHelper.isExplicit(executionResult,ExceptionLocator)){
                 String thrownException = ExceptionCoverageHelper.getExceptionClass(executionResult, ExceptionLocator).getName();
                 if (thrownException.equals(targetCrash.getExceptionType())){
                     exceptionCoverage = 0.0;
                     break;
                 }
-            }
+//            }
         }
         return exceptionCoverage;
     }
