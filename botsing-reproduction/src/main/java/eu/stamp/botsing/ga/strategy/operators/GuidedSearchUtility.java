@@ -102,38 +102,34 @@ public class GuidedSearchUtility<T extends Chromosome> {
     }
 
     protected Set<String> getPublicCalls(String targetClass, int targetLine, List<BytecodeInstruction> instructions){
-        LOG.info("Detecting the target method call(s) ...");
+        LOG.debug("Detecting the target method call(s) ...");
 //        int targetLine = trace.getTargetLine();
 //        String targetClass = trace.getTargetClass();
 
         BytecodeInstruction targetInstruction = getTargetInstruction(instructions, targetLine);
 
         if (!isPrivateMethod(targetInstruction.getActualCFG())){
-            LOG.info("The target method is public!");
+            LOG.debug("The target method is public!");
 
             if(fitnessFunctionHelper.isConstructor(targetInstruction)){
-                LOG.info("The target is a constructor!");
+                LOG.debug("The target is a constructor!");
                 publicCalls.add(targetClass);
             } else {
-                LOG.info("The target is a method!");
+                LOG.debug("The target is a method!");
                 publicCalls.add(cleanMethodName(targetInstruction.getMethodName()));
             }
 
         } else {
             // The target call is private
-            LOG.info("The target call '{}' is private!", targetInstruction.getMethodName());
-            LOG.info("Searching for public callers");
+            LOG.debug("The target call '{}' is private!", targetInstruction.getMethodName());
+            LOG.debug("Searching for public callers");
             searchForNonPrivateMethods(targetInstruction, targetClass);
         }
 
-        LOG.info("Botsing found "+publicCalls.size()+" Target call(s):");
         Iterator<String> iterateParents = publicCalls.iterator();
 
-        int counter = 1;
         while (iterateParents.hasNext()) {
             String nextCall = iterateParents.next();
-            LOG.info("Target method #{} is {}",counter,nextCall);
-            counter++;
         }
 
         return publicCalls;

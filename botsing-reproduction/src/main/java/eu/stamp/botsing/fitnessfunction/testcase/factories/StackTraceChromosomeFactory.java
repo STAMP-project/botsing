@@ -195,11 +195,15 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
 
     private void fillPublicCalls(){
         if (utility != null){
-            Iterator<String> iterateParents = utility.collectPublicCalls().iterator();
-
+            Set<String> publicCalls =  utility.collectPublicCalls();
+            LOG.info("Botsing found {} Target call(s):",publicCalls.size());
+            Iterator<String> iterateParents =publicCalls.iterator();
+            int counter = 1;
             // Fill up the set of parent calls by assessing the method names
             while (iterateParents.hasNext()) {
                 String nextCall = iterateParents.next();
+                LOG.info("Target method #{} is {}",counter,nextCall);
+                counter++;
                 for (int i=0; i<allMethods.size(); i++) {
                     if (allMethods.get(i).getName().equals(nextCall)) {
                         publicParentCalls.add(allMethods.get(i));
