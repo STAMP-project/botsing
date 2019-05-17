@@ -1,0 +1,26 @@
+- name: About
+  url: /index
+
+- name: Documentation
+  url:
+  children:
+     - name: Crash reproduction
+       url: /pages/crashreproduction
+     - name: Preprocessing
+       url: /pages/preprocessing
+     - name: Model seeding
+       url: /pages/modelseeding
+     - name: Tutorials
+       url: /pages/tutorials
+
+
+- name: Contributing
+  url: /pages/contributing
+
+- name: Other
+  url:
+  children:
+    - name: Background
+      url: /pages/background
+    - name: Credits
+      url: /pages/contributors

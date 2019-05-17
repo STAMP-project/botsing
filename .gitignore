@@ -50,3 +50,7 @@ Thumbs.db
 **/test/**/botsing/local/
 **/test/**/botsing/model/generation/local/
 
+
+# Generated website
+_site/
+Gemfile.lock
