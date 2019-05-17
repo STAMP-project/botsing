@@ -22,9 +22,8 @@ package eu.stamp.botsing.fitnessfunction.calculator;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
-import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageFactory;
-import org.evosuite.TestGenerationContext;
+import eu.stamp.botsing.testgeneration.TestGenerationContextUtility;
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.branch.BranchCoverageFactory;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
@@ -219,7 +218,7 @@ public class CrashCoverageFitnessCalculator {
 
 
     private List<BranchCoverageTestFitness> setupDependencies(String className , String methodName, int lineNumber ) {
-        BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(getTestGenerationContextClassLoader()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
+        BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
         List<BranchCoverageTestFitness> branchCoverages = new ArrayList<>();
         if(goalInstruction == null){
             return branchCoverages;
@@ -229,7 +228,7 @@ public class CrashCoverageFitnessCalculator {
 
         // Add control dependencies for calculating branch distances + approach level
         for (ControlDependency cd : deps) {
-            BranchCoverageTestFitness singlefitness = null;
+            BranchCoverageTestFitness singlefitness ;
             if(CrashProperties.integrationTesting){
                 singlefitness = IntegrationTestingBranchCoverageFactory.createBranchCoverageTestFitness(cd);
             }else{
@@ -276,7 +275,7 @@ public class CrashCoverageFitnessCalculator {
 
 
     private  String derivingMethodFromBytecode(String className, String methodName, int lineNumber){
-        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(getTestGenerationContextClassLoader()).getInstructionsIn(className);
+        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader()).getInstructionsIn(className);
         if (instructions != null) {
             for (BytecodeInstruction ins : instructions) {
                 if(ins != null) {
@@ -295,12 +294,6 @@ public class CrashCoverageFitnessCalculator {
         return null;
     }
 
-    private ClassLoader getTestGenerationContextClassLoader(){
-        if(CrashProperties.integrationTesting){
-            return BotsingTestGenerationContext.getInstance().getClassLoaderForSUT();
-        }else{
-            return TestGenerationContext.getInstance().getClassLoaderForSUT();
-        }
-    }
+
 
 }
