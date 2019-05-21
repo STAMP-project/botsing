@@ -4,7 +4,6 @@ import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageFactory;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
-import org.evosuite.ga.metaheuristics.mosa.structural.BranchFitnessGraph;
 import org.evosuite.ga.metaheuristics.mosa.structural.MultiCriteriatManager;
 
 

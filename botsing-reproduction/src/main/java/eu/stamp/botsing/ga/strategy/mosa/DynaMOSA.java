@@ -1,6 +1,8 @@
 package eu.stamp.botsing.ga.strategy.mosa;
 
 import eu.stamp.botsing.ga.strategy.mosa.structural.BotsingMultiCriteriatManager;
+import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
+import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
@@ -23,6 +25,8 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
     public DynaMOSA(ChromosomeFactory<T> factory) {
         super(factory);
+        mutation = new GuidedMutation<>();
+        this.crossoverFunction = new GuidedSinglePointCrossover();
     }
 
 

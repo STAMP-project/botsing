@@ -6,13 +6,12 @@ import eu.stamp.botsing.testgeneration.TestGenerationContextUtility;
 import org.evosuite.coverage.branch.Branch;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.graphs.GraphPool;
+import org.evosuite.graphs.cdg.ControlDependenceGraph;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class IntegrationTestingBranchCoverageFactory {
 
@@ -48,14 +47,35 @@ public class IntegrationTestingBranchCoverageFactory {
     private List<BranchCoverageTestFitness> computeCoverageGoals(int traceNumber) {
         long start = System.currentTimeMillis();
         List<BranchCoverageTestFitness> goals = new ArrayList<BranchCoverageTestFitness>();
-        String className = CrashProperties.getInstance().getStackTrace(traceNumber).getTargetClass();
-        String methodName = CrashProperties.getInstance().getStackTrace(traceNumber).getTargetMethod();
-        int lineNumber = CrashProperties.getInstance().getStackTrace(traceNumber).getTargetLine();
-        BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
-        // collect branches in the path to the target node
-        Set<ControlDependency> targetCDs = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getCDG("IntegrationTestingGraph","methodsIntegration").getControlDependentBranches(goalInstruction.getBasicBlock());
-        for(ControlDependency cd: targetCDs){
-            goals.add(createBranchCoverageTestFitness(cd.getBranch(),cd.getBranchExpressionValue()));
+        List<Branch> addedBranches = new ArrayList<>();
+
+        // Get deepest frame instruction
+        String className = CrashProperties.getInstance().getStackTrace(traceNumber).getFrame(1).getClassName();
+        int lineNumber = CrashProperties.getInstance().getStackTrace(traceNumber).getFrame(1).getLineNumber();
+        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(className, lineNumber);
+        BytecodeInstruction deepestFrameInstruction = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
+
+        // Collect branches in the path to the target node
+        ControlDependenceGraph IntegrationCDG = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getCDG("IntegrationTestingGraph","methodsIntegration");
+        LinkedList<BytecodeInstruction> unhandledInstructions = new LinkedList<>();
+        unhandledInstructions.add(deepestFrameInstruction);
+
+        while(!unhandledInstructions.isEmpty()){
+            BytecodeInstruction currentInstruction = unhandledInstructions.pop();
+            Set<ControlDependency> currentCDs = IntegrationCDG.getControlDependentBranches(currentInstruction.getBasicBlock());
+            for(ControlDependency cd: currentCDs){
+                if(addedBranches.contains(cd.getBranch())){
+                    continue;
+                }
+                goals.add(createBranchCoverageTestFitness(cd.getBranch(),cd.getBranchExpressionValue()));
+                addedBranches.add(cd.getBranch());
+                Set<ControlDependency> nextCDs = IntegrationCDG.getControlDependentBranches(cd.getBranch().getInstruction().getBasicBlock());
+                for(ControlDependency next: nextCDs){
+//                    if(!addedBranches.contains(next.getBranch())){
+                        unhandledInstructions.add(next.getBranch().getInstruction());
+//                    }
+                }
+            }
         }
         goalComputationTime = System.currentTimeMillis() - start;
         return goals;
