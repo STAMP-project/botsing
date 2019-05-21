@@ -62,9 +62,12 @@ public class Botsing {
             printHelpMessage(options);
         } else {// Otherwise, proceed to crash reproduction
             java.util.Properties properties = commands.getOptionProperties(D_OPT);
-            updateProperties(properties);
+            updateEvoSuiteProperties(properties);
             setupStackTrace(crashProperties, commands);
             setupProjectClasspath(crashProperties, commands);
+            if(commands.hasOption(SEARCH_ALGORITHM)){
+                setSearchAlgorithm(commands.getOptionValue(SEARCH_ALGORITHM));
+            }
 
             if(commands.hasOption(INTEGRATION_TESTING)){
                 crashProperties.integrationTesting = true;
@@ -74,6 +77,10 @@ public class Botsing {
                 crashProperties.lineEstimation = false;
             }
 
+            if(commands.hasOption(IO_DIVERSITY)){
+                crashProperties.IODiversity = true;
+            }
+
             if(commands.hasOption(MODEL_PATH_OPT)){
                 setupModelSeedingRelatedProperties(commands);
             }
@@ -81,6 +88,13 @@ public class Botsing {
         }
         return null;
 
+    }
+
+    private void setSearchAlgorithm(String algorithm) {
+
+        CrashProperties.searchAlgorithm = CrashProperties.SearchAlgorithm.valueOf(algorithm);
+        LOG.info(CrashProperties.searchAlgorithm.name());
+//        Properties.SELECTION_FUNCTION = Properties.SelectionFunction.RANK_CROWD_DISTANCE_TOURNAMENT;
     }
 
     private void setupModelSeedingRelatedProperties( CommandLine commands) {
@@ -112,7 +126,7 @@ public class Botsing {
         return commands;
     }
 
-    protected void updateProperties(java.util.Properties properties){
+    protected void updateEvoSuiteProperties(java.util.Properties properties){
         for (String property : properties.stringPropertyNames()) {
             if (Properties.hasParameter(property)) {
                 try {
