@@ -1,5 +1,7 @@
 package eu.stamp.botsing.ga.strategy.mosa;
 
+import eu.stamp.botsing.fitnessfunction.IntegrationTestingFF;
+import eu.stamp.botsing.fitnessfunction.WeightedSum;
 import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
 import org.evosuite.ga.Chromosome;
@@ -95,6 +97,25 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
             remain = 0;
         }
 
+        try{
+//            LOG.info(""+this.rankingFunction.getSubfront(0).get(0).getFitnessValues());
+            for(FitnessFunction<T> g: this.archive.keySet()){
+                LOG.info(""+g);
+            }
+
+
+            Map<FitnessFunction<?>, Double> front0= this.rankingFunction.getSubfront(0).get(0).getFitnessValues();
+            for(FitnessFunction<?> g: front0.keySet()){
+                if(g instanceof IntegrationTestingFF){
+                    LOG.info(""+g+": "+front0.get(g));
+                }
+            }
+        }catch (Exception e){
+            LOG.info("SubFront is empty!");
+
+        }
+
+
 
         this.currentIteration++;
     }
@@ -108,6 +129,8 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         for (FitnessFunction<T> goal : fitnessFunctions) {
             uncoveredGoals.add(goal);
         }
+        fitnessFunctions.clear();
+        fitnessFunctions.addAll(uncoveredGoals);
 
         //initialize population
         if (this.population.isEmpty()) {
@@ -121,12 +144,23 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         }
 
 
-        while (!this.isFinished() && this.getNumberOfCoveredGoals()<this.fitnessFunctions.size()) {
+        while (!this.isFinished() && this.getNumberOfCoveredGoals()<this.fitnessFunctions.size() && ! crashReproduced()) {
             this.evolve();
             LOG.info("generation #{} is created.",this.currentIteration);
             LOG.info("Number of covered goals are {}/{}",this.getNumberOfCoveredGoals(),this.fitnessFunctions.size());
+
             this.notifyIteration();
         }
+    }
+
+
+    public boolean crashReproduced() {
+        for (FitnessFunction<T> goal: this.uncoveredGoals){
+            if(goal instanceof IntegrationTestingFF || goal instanceof WeightedSum){
+                return false;
+            }
+        }
+        return true;
     }
 
 

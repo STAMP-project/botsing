@@ -74,7 +74,8 @@ public class CrashProperties {
 
     public enum SearchAlgorithm {
         Single_Objective_GGA,
-        Guided_MOSA;
+        Guided_MOSA,
+        DynaMOSA;
 
         SearchAlgorithm() {
         }
@@ -90,7 +91,7 @@ public class CrashProperties {
 
 
     @Properties.Parameter(key = "FitnessFunctions", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
-    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.WeightedSum};
+    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.IntegrationSingleObjective};
 
 
 
@@ -105,6 +106,10 @@ public class CrashProperties {
     public static boolean integrationTesting = false;
     @Parameter(key = "line_estimation", group = "Crash reproduction", description = "Detect Missing lines in the stack trace")
     public static boolean lineEstimation = true;
+
+
+    @Parameter(key = "io_diversity", group = "Crash reproduction", description = "Enables I/O diversity as extra goals to MOSA")
+    public static boolean IODiversity = false;
 
 
     static java.util.Properties configFile = new java.util.Properties();
