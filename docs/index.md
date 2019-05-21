@@ -6,9 +6,16 @@ layout: default
 
 Botsing is a Java framework for search-based crash reproduction. It implements and extends the EvoCrash approach and relies on [EvoSuite](http://www.evosuite.org) for Java code instrumentation during test generation and execution.
 
-## Feedback
+## Beta testing
 
-Your suggestions and feedback are welcome. Please, tell us what you think and what you expect in the next release by filling our **[beta testing survey](https://www.stamp-project.eu/view/main/betatestingsurvey/)**. As a recognition for your useful feedback, you will be added as a STAMP contributor and might receive a limited edition “STAMP Software Test Pilot” gift. This offer is limited to the beta testers interacting with the STAMP project team, by September, 31st 2019. You will be contacted individually for a customized gift and for contribution opportunities.
+[![Beta testing campain banner](assets/beta_banner.jpg)](https://www.stamp-project.eu/view/main/betatestingsurvey/)
+
+
+**Give us your feedback!** Please take 5' of your time to fill in this quick [questionnaire](https://www.stamp-project.eu/view/main/betatestingsurvey/).
+
+This is **important** for us. As a recognition for your feedback, you will receive a limited edition **STAMP Software Test Pilot gift** and be recognized as a STAMP contributor. 
+
+This campaign will close on 31 September, 2019. You will be contacted individually for a customized gift and for contribution opportunities.
 
 # How does it work?
 
