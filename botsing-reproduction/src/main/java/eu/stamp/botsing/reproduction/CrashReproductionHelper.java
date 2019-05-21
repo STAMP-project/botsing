@@ -31,6 +31,8 @@ public class CrashReproductionHelper {
                 switch (CrashProperties.searchAlgorithm){
                     case Guided_MOSA:
                         return new MOSuiteStrategy();
+                    case DynaMOSA:
+                        return new MOSuiteStrategy();
                     default:
                         return new BotsingIndividualStrategy();
                 }
