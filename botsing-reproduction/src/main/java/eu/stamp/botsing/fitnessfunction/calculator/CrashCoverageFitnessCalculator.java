@@ -54,7 +54,7 @@ public class CrashCoverageFitnessCalculator {
     public double getLineCoverageForFrame( ExecutionResult result, int frameLevel){
         StackTrace trace = targetCrash;
         StackTraceElement targetFrame = trace.getFrame(frameLevel);
-        String methodName = derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getMethodName(), targetFrame.getLineNumber());
+        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getLineNumber());
         int lineNumber = targetFrame.getLineNumber();
         List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
         double lineCoverageFitness;
@@ -132,7 +132,7 @@ public class CrashCoverageFitnessCalculator {
         int targetFrameLevel = trace.getNumberOfFrames();
         StackTraceElement targetFrame = trace.getFrame(targetFrameLevel);
 
-        String methodName = derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getMethodName(), targetFrame.getLineNumber());
+        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getLineNumber());
         List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
         double lineCoverageFitness = 1.0;
         if (result.getTrace().getCoveredLines().contains(lineNumber)) {
@@ -273,26 +273,6 @@ public class CrashCoverageFitnessCalculator {
         return value / (1.0 + value);
     }
 
-
-    private  String derivingMethodFromBytecode(String className, String methodName, int lineNumber){
-        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader()).getInstructionsIn(className);
-        if (instructions != null) {
-            for (BytecodeInstruction ins : instructions) {
-                if(ins != null) {
-                    if (ins.getLineNumber() == lineNumber){
-                        String bytecodeMethodName = ins.getMethodName();
-                        //						if (bytecodeMethodName.contains(methodName))
-                        return bytecodeMethodName;
-                    }
-                } else {
-                    LOG.error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this line number " + lineNumber+" was null!");
-                }
-            }
-        } else {
-            LOG.error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this class " + className +" was null!");
-        }
-        return null;
-    }
 
 
 
