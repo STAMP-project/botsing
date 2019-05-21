@@ -18,8 +18,8 @@ If you have a Maven project you can run Botsing using Maven from the project fol
 mvn eu.stamp-project:botsing-maven:botsing -Dcrash_log=ACC-474/ACC-474.log -Dtarget_frame=2
 ```
 
-* crash_log is the parameter to tell Botsing where is the log file to analyze.
-* target_frame is the parameter to tell Botsing how many lines of the stacktrace to replicate
+* `crash_log` is the parameter to tell Botsing where is the log file to analyze.
+* `target_frame` is the parameter to tell Botsing how many lines of the stacktrace to replicate
 
 To have more information on the parameters that you can use, please refer to the [Botsing project](https://github.com/STAMP-project/botsing).
 
@@ -27,7 +27,7 @@ To have more information on the parameters that you can use, please refer to the
 
 Dependencies are fundamental to run Botsing so it can reproduce the stacktrace. Botsing Maven plugin has three ways to specify where to find dependencies:
 
-1. from pom.xml
+1. from `pom.xml`
 1. specifiyng a Maven artifact
 1. from a folder
 
@@ -57,8 +57,8 @@ mvn eu.stamp-project:botsing-maven:botsing -Dcrash_log=ACC-474/ACC-474.log -Dtar
 
 The target_frame lets you specify how many rows of the stacktrace Botsing has to reproduce. Botsing Maven plugin has three ways to specify it:
 
-1. directly using target_frame (e.g. -Dtarget_frame=2)
-1. specifying the maximum value (e.g. -Dmax_target_frame=2), in this case it will start from the maximum value provided and decrease it until a reproduction test have been found
+1. directly using `target_frame` (e.g. `-Dtarget_frame=2`)
+1. specifying the maximum value (e.g. `-Dmax_target_frame=2`), in this case it will start from the maximum value provided and decrease it until a reproduction test have been found
 1. reading it from the maximum rows of the stacktrace, no parameter for the target frame should be provided
 
 ## Help
