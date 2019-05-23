@@ -120,9 +120,9 @@ public class CommonBehaviorMojo extends AbstractMojo {
 		if (!modelGenerationConf.isRequiredOptions() && !evoSuiteConf.isRequiredOptions()) {
 
 			File botsingModelGenerationJar = getArtifactFile(new DefaultArtifact("eu.stamp-project",
-					"botsing-model-generation", "", "jar", modelGenerationVersion));
+					"botsing-model-generation", "jar-with-dependencies", "jar", modelGenerationVersion));
 
-			getLog().info("botsingModelGenerationJar " + botsingModelGenerationJar.getAbsolutePath());
+			getLog().info("botsingModelGenerationJar file: " + botsingModelGenerationJar.getAbsolutePath());
 
 			try {
 				boolean success = ProcessRunner.executeBotsingModelGeneration(project.getBasedir(),
