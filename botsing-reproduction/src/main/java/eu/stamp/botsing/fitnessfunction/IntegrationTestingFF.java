@@ -29,7 +29,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
         for(int frameLevel = targetFrame; frameLevel > 0 ; frameLevel--){
             if(covering){
                 double lineCoverageFitness = fitnessCalculator.getLineCoverageForFrame(executionResult,frameLevel);
-                if(lineCoverageFitness != 0 && !targetCrash.isIrrelevantFrame(frameLevel)){
+                if(lineCoverageFitness != 0){
                     fitnessValue = lineCoverageFitness;
                     covering=false;
                 }
