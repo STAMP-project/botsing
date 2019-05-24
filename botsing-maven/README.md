@@ -89,6 +89,8 @@ Note you need also to download the 'evosuite-master-1.0.7-SNAPSHOT.jar' from thi
 git clone https://github.com/STAMP-project/evosuite-model-seeding-tutorial.git
 ```
 
+### Run plugin
+
 To run the maven plugin, go in the botsing-maven folder and type this command:
 
 ```
