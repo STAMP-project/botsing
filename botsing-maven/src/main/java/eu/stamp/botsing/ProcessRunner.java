@@ -237,8 +237,6 @@ public class ProcessRunner {
 
 		jarCommand.add("-generateMOSuite");
 
-		log.info(" --- " + jarCommand);
-
 		return ProcessRunner.executeProcess(basedir, log, jarCommand.toArray(new String[0]));
 	}
 }
