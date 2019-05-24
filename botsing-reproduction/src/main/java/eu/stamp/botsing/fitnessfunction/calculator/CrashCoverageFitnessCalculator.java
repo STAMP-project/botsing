@@ -31,6 +31,7 @@ import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
 import org.evosuite.testcase.execution.ExecutionResult;
+import org.evosuite.testcase.execution.MethodCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +42,8 @@ public class CrashCoverageFitnessCalculator {
     private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageFitnessCalculator.class);
 
     StackTrace targetCrash;
+    LinkedList<LinkedList<Integer>> tracking = new LinkedList();
+    int irrelevantFrameCounter=0;
 
     public CrashCoverageFitnessCalculator(StackTrace crash){
         targetCrash = crash;
@@ -52,13 +55,24 @@ public class CrashCoverageFitnessCalculator {
     }
 
     public double getLineCoverageForFrame( ExecutionResult result, int frameLevel){
+        if(targetCrash.isIrrelevantFrame(frameLevel)){
+            irrelevantFrameCounter++;
+            return 0.0;
+        }
         StackTrace trace = targetCrash;
+        int callDepth = targetCrash.getTargetFrameLevel() - frameLevel + 1 - irrelevantFrameCounter;
+
         StackTraceElement targetFrame = trace.getFrame(frameLevel);
         String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getLineNumber());
         int lineNumber = targetFrame.getLineNumber();
+        boolean found = findMethodCallsInDepth(result,methodName,lineNumber,callDepth);
+        if(!found){
+            tracking.clear();
+            irrelevantFrameCounter=0;
+        }
         List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
         double lineCoverageFitness;
-        if (result.getTrace().getCoverageData().containsKey(targetFrame.getClassName()) && result.getTrace().getCoverageData().get(targetFrame.getClassName()).containsKey(methodName)&& result.getTrace().getCoverageData().get(targetFrame.getClassName()).get(methodName).containsKey(lineNumber)) {
+        if (found) {
             lineCoverageFitness = 0.0;
         } else {
             lineCoverageFitness = Double.MAX_VALUE;
@@ -72,6 +86,42 @@ public class CrashCoverageFitnessCalculator {
         }
 
         return lineCoverageFitness;
+    }
+
+    private boolean findMethodCallsInDepth(ExecutionResult result, String methodName,int lineNumber, int callDepth) {
+        boolean found = false;
+        List<MethodCall> finishedCalls = result.getTrace().getMethodCalls();
+        for(MethodCall call: finishedCalls){
+            if(call.callDepth == callDepth && call.methodName.equals(methodName) && call.lineTrace.contains(lineNumber)){
+                // Check the caller method id
+
+                // If we are in the first level the level of the caller is always 0
+                if(callDepth == 1 && call.callerId == 0 ){
+                    found = true;
+                    LinkedList<Integer> newChain = new LinkedList();
+                    newChain.push(call.methodId);
+                    tracking.push(newChain);
+                // For next levels:
+                }else if (callDepth > 1){
+                    int index = getParentsTrackIndex(call);
+                    if(index != -1){
+                        found = true;
+                        tracking.get(index).push(call.methodId);
+                    }
+                }
+            }
+        }
+
+        return found;
+    }
+
+    private int getParentsTrackIndex(MethodCall call) {
+        for(int index=0;index<tracking.size();index++){
+            if(tracking.get(index).peek() == call.callerId){
+                return index;
+            }
+        }
+        return -1;
     }
 
 //
