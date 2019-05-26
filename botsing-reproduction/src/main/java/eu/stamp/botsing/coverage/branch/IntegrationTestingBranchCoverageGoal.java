@@ -9,9 +9,6 @@ import org.evosuite.testcase.execution.ExecutionResult;
 
 public class IntegrationTestingBranchCoverageGoal extends BranchCoverageGoal {
 
-    public IntegrationTestingBranchCoverageGoal(Branch branch, boolean value, String className, String methodName, int lineNumber) {
-        super(branch,value,className,methodName,lineNumber);
-    }
     public IntegrationTestingBranchCoverageGoal(String className, String methodName) {
         this.branch = null;
         this.value = true;
