@@ -40,11 +40,7 @@ public class InterProceduralControlFlowDistanceCalculator extends ControlFlowDis
                 }
 
                 ControlFlowDistance nonRootDistance = getNonRootDistance(result, branch, value);
-                if (nonRootDistance == null) {
-                    throw new IllegalStateException("expect getNonRootDistance to never return null");
-                } else {
-                    return nonRootDistance;
-                }
+                return nonRootDistance;
             }
         } else {
             throw new IllegalArgumentException("null given");
@@ -156,7 +152,7 @@ public class InterProceduralControlFlowDistanceCalculator extends ControlFlowDis
         }
 
         if (call == null){
-            throw new IllegalArgumentException("null given");
+            throw new NullPointerException("null given MethodCall");
         }
 
     }
@@ -164,11 +160,7 @@ public class InterProceduralControlFlowDistanceCalculator extends ControlFlowDis
 
     protected static ControlFlowDistance getControlDependenceDistancesFor(ExecutionResult result, MethodCall call, BytecodeInstruction instruction, String className, String methodName, Set<Branch> handled) {
         Set<ControlFlowDistance> cdDistances = getDistancesForControlDependentBranchesOf(result, call, instruction, className, methodName, handled);
-        if (cdDistances == null) {
-            throw new IllegalStateException("expect cdDistances to never be null");
-        } else {
             return Collections.min(cdDistances);
-        }
     }
 
 
