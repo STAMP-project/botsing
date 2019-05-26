@@ -67,8 +67,10 @@ public class CrashReproductionGoalFactoryTest {
     @Test
     public void testCrashReproductionGoalFactory() {
         // ToDo: We should update this test with the acceptance of list of crashes feature
-        assertEquals("class eu.stamp.botsing.fitnessfunction.IntegrationTestingFF", crashReproductionGoalFactory.getCoverageGoals().get(0).getClass().toString());
+//        assertEquals("class eu.stamp.botsing.fitnessfunction.IntegrationTestingFF", crashReproductionGoalFactory.getCoverageGoals().get(0).getClass().toString());
 
+
+        CrashProperties.fitnessFunctions = new CrashProperties.FitnessFunction[]{CrashProperties.FitnessFunction.IntegrationSingleObjective};
         crashReproductionGoalFactory = new CrashReproductionGoalFactory();
         assertEquals("class eu.stamp.botsing.fitnessfunction.IntegrationTestingFF", crashReproductionGoalFactory.getCoverageGoals().get(0).getClass().toString());
 
