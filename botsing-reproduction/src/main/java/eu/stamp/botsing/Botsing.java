@@ -69,6 +69,10 @@ public class Botsing {
                 setSearchAlgorithm(commands.getOptionValue(SEARCH_ALGORITHM));
             }
 
+            if(commands.hasOption(FITNESS_FUNCTION)){
+                setFF(commands.getOptionValue(FITNESS_FUNCTION));
+            }
+
             if(commands.hasOption(INTEGRATION_TESTING)){
                 crashProperties.integrationTesting = true;
             }
@@ -88,6 +92,10 @@ public class Botsing {
         }
         return null;
 
+    }
+
+    private void setFF(String fitnessFunction) {
+        CrashProperties.fitnessFunctions = new CrashProperties.FitnessFunction[]{CrashProperties.FitnessFunction.valueOf(fitnessFunction)};
     }
 
     private void setSearchAlgorithm(String algorithm) {

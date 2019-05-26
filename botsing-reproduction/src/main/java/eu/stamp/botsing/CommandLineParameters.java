@@ -35,6 +35,7 @@ public class CommandLineParameters {
     public static final String DISABLE_LINE_ESTIMATION = "disable_line_estimation";
     public static final String IO_DIVERSITY = "io_diversity";
     public static final String SEARCH_ALGORITHM = "search_algorithm";
+    public static final String FITNESS_FUNCTION = "fitness";
 
     public static Options getCommandLineOptions() {
         Options options = new Options();
@@ -69,6 +70,12 @@ public class CommandLineParameters {
         options.addOption(Option.builder(SEARCH_ALGORITHM)
                 .hasArg()
                 .desc("Select the search algorithm.")
+                .build());
+
+        // FitnessFunction
+        options.addOption(Option.builder(FITNESS_FUNCTION)
+                .hasArg()
+                .desc("Fitness function for guidance of the search algorithm")
                 .build());
 
         // Use integration testing or not
