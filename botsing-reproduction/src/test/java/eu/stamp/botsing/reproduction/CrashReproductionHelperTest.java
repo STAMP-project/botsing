@@ -2,6 +2,7 @@ package eu.stamp.botsing.reproduction;
 
 import static org.junit.Assert.assertEquals;
 
+import eu.stamp.botsing.CrashProperties;
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,7 +12,6 @@ import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.stamp.botsing.CrashProperties;
 
 public class CrashReproductionHelperTest {
 
@@ -29,12 +29,13 @@ public class CrashReproductionHelperTest {
     @Test
     public void testGetTestGenerationFactory() {
         CrashReproductionHelper helper = new CrashReproductionHelper();
-        CrashProperties.testGenerationStrategy = CrashProperties.TestGenerationStrategy.Single_GA;
+        CrashProperties.searchAlgorithm = CrashProperties.SearchAlgorithm.Single_Objective_GGA;
         TestGenerationStrategy strategy = CrashReproductionHelper.getTestGenerationFactory();
         String strategyClassName = strategy.getClass().toString().substring(strategy.getClass().toString().indexOf("class ") + 6);
         assertEquals("eu.stamp.botsing.testgeneration.strategy.BotsingIndividualStrategy", strategyClassName);
 
-        CrashProperties.testGenerationStrategy = CrashProperties.TestGenerationStrategy.Multi_GA;
+        // ToDo: We should update this test with the acceptance of list of crashes feature
+//        CrashProperties.testGenerationStrategy = CrashProperties.TestGenerationStrategy.Multi_GA;
         strategy = CrashReproductionHelper.getTestGenerationFactory();
         strategyClassName = strategy.getClass().toString().substring(strategy.getClass().toString().indexOf("class ") + 6);
         // TODO: After implementing multi objectivization we should change this assertion

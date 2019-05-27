@@ -1,7 +1,7 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
@@ -30,8 +30,8 @@ public class GuidedSearchUtility<T extends Chromosome> {
     public Set<String> publicCalls = new HashSet<String>();
 
     public boolean includesPublicCall (T individual) {
-        if(publicCalls.size()==0){
-            getPublicCalls();
+        if(publicCalls.size()==0) {
+            collectPublicCalls();
         }
         Iterator<String> publicCallsIterator = publicCalls.iterator();
         TestChromosome candidateChrom = (TestChromosome) individual;
@@ -54,6 +54,38 @@ public class GuidedSearchUtility<T extends Chromosome> {
         return false;
     }
 
+
+    public  Set<String> collectPublicCalls(){
+        if (CrashProperties.getInstance().getCrashesSize() == 1) {
+            getPublicCalls(CrashProperties.getInstance().getStackTrace(0).getTargetClass(), CrashProperties.getInstance().getStackTrace(0).getTargetLine());
+        } else if (CrashProperties.getInstance().getCrashesSize() > 1){
+            getPublicCallsFromMultipleCrashes();
+        } else{
+            throw new IllegalStateException("Public calls are empty");
+        }
+
+        return publicCalls;
+    }
+
+    public void getPublicCallsFromMultipleCrashes() {
+        if(CrashProperties.getInstance().getCrashesSize() < 2){
+            throw new IllegalStateException("We do not have multiple crashes!");
+        }
+        if (publicCalls.size() == 0) {
+            for (int crashIndex = 0; crashIndex < CrashProperties.getInstance().getCrashesSize(); crashIndex++) {
+                String targetClass = CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass();
+                int targetLine = CrashProperties.getInstance().getStackTrace(crashIndex).getTargetLine();
+                List<BytecodeInstruction> instructions;
+                if (CrashProperties.integrationTesting) {
+                    instructions = BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+                } else {
+                    instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+                }
+                getPublicCalls(targetClass, targetLine, instructions);
+            }
+        }
+    }
+
     protected boolean isCall2Method(String callName, Statement currentStatement){
         if (!callName.contains(".") && currentStatement instanceof MethodStatement) {
             MethodStatement candidateMethod = (MethodStatement) currentStatement;
@@ -69,51 +101,52 @@ public class GuidedSearchUtility<T extends Chromosome> {
         return false;
     }
 
-    protected Set<String> getPublicCalls(StackTrace trace, List<BytecodeInstruction> instructions){
-        LOG.info("Detecting the target method call(s) ...");
-        int targetLine = trace.getTargetLine();
-        String targetClass = trace.getTargetClass();
+    protected Set<String> getPublicCalls(String targetClass, int targetLine, List<BytecodeInstruction> instructions){
+        LOG.debug("Detecting the target method call(s) ...");
+//        int targetLine = trace.getTargetLine();
+//        String targetClass = trace.getTargetClass();
 
         BytecodeInstruction targetInstruction = getTargetInstruction(instructions, targetLine);
 
         if (!isPrivateMethod(targetInstruction.getActualCFG())){
-            LOG.info("The target method is public!");
+            LOG.debug("The target method is public!");
 
             if(fitnessFunctionHelper.isConstructor(targetInstruction)){
-                LOG.info("The target is a constructor!");
+                LOG.debug("The target is a constructor!");
                 publicCalls.add(targetClass);
             } else {
-                LOG.info("The target is a method!");
+                LOG.debug("The target is a method!");
                 publicCalls.add(cleanMethodName(targetInstruction.getMethodName()));
             }
 
         } else {
             // The target call is private
-            LOG.info("The target call '{}' is private!", targetInstruction.getMethodName());
-            LOG.info("Searching for public callers");
+            LOG.debug("The target call '{}' is private!", targetInstruction.getMethodName());
+            LOG.debug("Searching for public callers");
             searchForNonPrivateMethods(targetInstruction, targetClass);
         }
 
-        LOG.info("Botsing found "+publicCalls.size()+" Target call(s):");
         Iterator<String> iterateParents = publicCalls.iterator();
 
-        int counter = 1;
         while (iterateParents.hasNext()) {
             String nextCall = iterateParents.next();
-            LOG.info("Target method #{} is {}",counter,nextCall);
-            counter++;
         }
 
         return publicCalls;
     }
 
 
-    public Set<String> getPublicCalls() {
+    public Set<String> getPublicCalls(String targetClass, int targetLine) {
         if (publicCalls.size() ==0){
-            StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
-            String targetClass = givenStackTrace.getTargetClass();
-            List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
-            publicCalls =  getPublicCalls(givenStackTrace, instructions);
+//            StackTrace givenStackTrace = CrashProperties.getInstance().getStackTrace();
+//            String targetClass = givenStackTrace.getTargetClass();
+            List<BytecodeInstruction> instructions;
+            if(CrashProperties.integrationTesting){
+                instructions = BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+            }else{
+                instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+            }
+            publicCalls =  getPublicCalls(targetClass,targetLine, instructions);
         }
 
         return publicCalls;
@@ -185,7 +218,12 @@ public class GuidedSearchUtility<T extends Chromosome> {
      * @param targetClass the class under test
      */
     protected void searchForNonPrivateMethods(BytecodeInstruction targetInstruction, String targetClass){
-        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+        List<BytecodeInstruction> instructions = null;
+        if(CrashProperties.integrationTesting){
+            instructions=BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+        }else{
+            instructions=BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
+        }
         searchForNonPrivateMethods(instructions, targetInstruction);
     }
 

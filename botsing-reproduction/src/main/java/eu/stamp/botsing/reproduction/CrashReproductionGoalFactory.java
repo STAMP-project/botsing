@@ -40,19 +40,21 @@ public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFit
 
     public CrashReproductionGoalFactory(){
         fitnessFunctionHelper = new FitnessFunctionHelper();
-        if(CrashProperties.testGenerationStrategy == CrashProperties.TestGenerationStrategy.Single_GA){
-            TestFitnessFunction goal = fitnessFunctionHelper.getSingleObjective(0);
+        goals.clear();
+        if(CrashProperties.getInstance().getCrashesSize() > 1 || CrashProperties.fitnessFunctions.length > 1){
+            // multi-objectives
+            TestFitnessFunction[] fetchedGoals = fitnessFunctionHelper.getMultiObjectives();
+            for(TestFitnessFunction goal: fetchedGoals){
+                String key = getKey(goal);
+                goals.put(key, goal);
+            }
+
+        }else{
+            // single Objective
+            TestFitnessFunction goal = fitnessFunctionHelper.getSingleObjective();
             String key = getKey(goal);
             if (!goals.containsKey(key)) {
                 goals.put(key, goal);
-            }
-        }else{
-            TestFitnessFunction[] rawGoals = fitnessFunctionHelper.getMultiObjectives();
-            for (TestFitnessFunction goal: rawGoals){
-                String key = getKey(goal);
-                if (!goals.containsKey(key)) {
-                    goals.put(key, goal);
-                }
             }
         }
     }
@@ -63,8 +65,19 @@ public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFit
     }
 
 
+
+
+
+
     public String getKey(TestFitnessFunction goal){
-        return goal.getTargetClass()+"_"+goal.getTargetMethod();
+        String classMethodName = goal.getTargetClass()+"_"+goal.getTargetMethod();
+        int counter = 1;
+        for (String key: goals.keySet()){
+            if(key.startsWith(classMethodName)){
+                counter++;
+            }
+        }
+        return goal.getTargetClass()+"_"+goal.getTargetMethod()+counter;
 
     }
 }

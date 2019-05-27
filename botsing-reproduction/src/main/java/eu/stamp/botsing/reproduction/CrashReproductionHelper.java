@@ -22,16 +22,19 @@ package eu.stamp.botsing.reproduction;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.testgeneration.strategy.BotsingIndividualStrategy;
+import eu.stamp.botsing.testgeneration.strategy.MOSuiteStrategy;
 import org.evosuite.strategy.TestGenerationStrategy;
 
 public class CrashReproductionHelper {
 
     public static TestGenerationStrategy getTestGenerationFactory(){
-        switch (CrashProperties.testGenerationStrategy){
-            case Single_GA:
-                return new BotsingIndividualStrategy();
-            default:
-                return new BotsingIndividualStrategy();
+                switch (CrashProperties.searchAlgorithm){
+                    case Guided_MOSA:
+                        return new MOSuiteStrategy();
+                    case DynaMOSA:
+                        return new MOSuiteStrategy();
+                    default:
+                        return new BotsingIndividualStrategy();
+                }
         }
     }
-}

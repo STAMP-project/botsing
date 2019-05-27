@@ -115,7 +115,7 @@ public class GuidedSearchUtilityTest {
         ActualControlFlowGraph actualCFG = mockActualControlFlowGraph(stmt, true);
         Mockito.doReturn(actualCFG).when(stmt).getActualCFG();
 
-        Set calls = utility.getPublicCalls(trace, instructions);
+        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
         assertTrue(calls.contains("reverse"));
     }
 
@@ -136,7 +136,7 @@ public class GuidedSearchUtilityTest {
 
         GuidedSearchUtility utility = Mockito.spy(new GuidedSearchUtility());
         Mockito.doNothing().when(utility).searchForNonPrivateMethods(Mockito.any(BytecodeInstruction.class), Mockito.anyString());
-        Set calls = utility.getPublicCalls(trace, instructions);
+        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
         assertFalse(calls.contains("reverse"));
     }
 
@@ -155,7 +155,7 @@ public class GuidedSearchUtilityTest {
 
         GuidedSearchUtility utility = Mockito.spy(new GuidedSearchUtility());
         Mockito.doNothing().when(utility).searchForNonPrivateMethods(Mockito.any(BytecodeInstruction.class), Mockito.anyString());
-        Set calls = utility.getPublicCalls(trace, instructions);
+        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
         assertTrue(calls.size()==1);
 
         Iterator<String> iterator = calls.iterator();
@@ -176,7 +176,7 @@ public class GuidedSearchUtilityTest {
         Mockito.doReturn(actualCFG).when(stmt).getActualCFG();
 
         GuidedSearchUtility utility = new GuidedSearchUtility();
-        Set calls = utility.getPublicCalls(trace, instructions);
+        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
 
         TestCase tc = new DefaultTestCase();
         tc.addStatement(new BooleanPrimitiveStatement(tc, false));
@@ -201,7 +201,7 @@ public class GuidedSearchUtilityTest {
         Mockito.doReturn(actualCFG).when(stmt).getActualCFG();
 
         GuidedSearchUtility utility = new GuidedSearchUtility();
-        Set calls = utility.getPublicCalls(trace, instructions);
+        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
         boolean flag = utility.includesPublicCall(chromosome);
         assertTrue(flag);
     }
@@ -220,7 +220,7 @@ public class GuidedSearchUtilityTest {
         Mockito.doReturn(actualCFG).when(stmt).getActualCFG();
 
         GuidedSearchUtility utility = new GuidedSearchUtility();
-        Set calls = utility.getPublicCalls(trace, instructions);
+        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
         boolean flag = utility.includesPublicCall(new TestChromosome());
         assertFalse(flag);
     }
