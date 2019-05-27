@@ -53,7 +53,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
         return fitnessValue;
     }
 
-    private double exceptionCoverage(ExecutionResult executionResult) {
+    protected double exceptionCoverage(ExecutionResult executionResult) {
         double exceptionCoverage = 1.0;
         for (Integer exceptionLocator : executionResult.getPositionsWhereExceptionsWereThrown()) {
             Throwable resultException = executionResult.getExceptionThrownAtPosition(exceptionLocator);
