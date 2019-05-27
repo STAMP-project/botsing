@@ -16,7 +16,6 @@ public class CrashCoverageSuiteFitness extends TestSuiteFitnessFunction {
     public static double totalFitnessValue;
     private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageSuiteFitness.class);
 
-    private static TestGenerationUtility utility = new TestGenerationUtility();
 
     @Override
     public double getFitness(AbstractTestSuiteChromosome<? extends ExecutableChromosome> abstractTestSuiteChromosome) {
