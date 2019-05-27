@@ -1,7 +1,6 @@
 package eu.stamp.botsing.ga.strategy.mosa;
 
 import eu.stamp.botsing.fitnessfunction.IntegrationTestingFF;
-import eu.stamp.botsing.fitnessfunction.StackTraceSimilarity;
 import eu.stamp.botsing.fitnessfunction.WeightedSum;
 import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
@@ -107,7 +106,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
             Map<FitnessFunction<?>, Double> front0= this.rankingFunction.getSubfront(0).get(0).getFitnessValues();
             for(FitnessFunction<?> g: front0.keySet()){
-                if(g instanceof IntegrationTestingFF || g instanceof StackTraceSimilarity){
+                if(g instanceof IntegrationTestingFF ){
                     LOG.info(""+g+": "+front0.get(g));
                 }
             }
