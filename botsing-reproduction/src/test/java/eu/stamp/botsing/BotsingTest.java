@@ -149,6 +149,10 @@ public class BotsingTest {
                 "-" + CommandLineParameters.PROJECT_CP_OPT,
                 Paths.get(base_dir, "target", "classes").toString() + System.getProperty("path.separator"),
                 "-" + CommandLineParameters.D_OPT + "test_dir=" + outputDir.getAbsolutePath(),
+                "-"+CommandLineParameters.SEARCH_ALGORITHM,
+                CrashProperties.SearchAlgorithm.Guided_MOSA.name(),
+                "-"+CommandLineParameters.FITNESS_FUNCTION,
+                CrashProperties.FitnessFunction.IntegrationSingleObjective.name()
         };
 
         // Check results
