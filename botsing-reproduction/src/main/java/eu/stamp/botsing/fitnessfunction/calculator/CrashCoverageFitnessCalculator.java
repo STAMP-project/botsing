@@ -23,7 +23,7 @@ package eu.stamp.botsing.fitnessfunction.calculator;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageFactory;
-import eu.stamp.botsing.testgeneration.TestGenerationContextUtility;
+import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.branch.BranchCoverageFactory;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
@@ -63,7 +63,7 @@ public class CrashCoverageFitnessCalculator {
         int callDepth = targetCrash.getTargetFrameLevel() - frameLevel + 1 - irrelevantFrameCounter;
 
         StackTraceElement targetFrame = trace.getFrame(frameLevel);
-        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getLineNumber());
+        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting, targetFrame.getClassName(), targetFrame.getLineNumber());
         int lineNumber = targetFrame.getLineNumber();
         boolean found = findMethodCallsInDepth(result,methodName,lineNumber,callDepth);
         if(!found){
@@ -182,7 +182,7 @@ public class CrashCoverageFitnessCalculator {
         int targetFrameLevel = trace.getNumberOfFrames();
         StackTraceElement targetFrame = trace.getFrame(targetFrameLevel);
 
-        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getLineNumber());
+        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting,targetFrame.getClassName(), targetFrame.getLineNumber());
         List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
         double lineCoverageFitness = 1.0;
         if (result.getTrace().getCoveredLines().contains(lineNumber)) {
@@ -268,7 +268,7 @@ public class CrashCoverageFitnessCalculator {
 
 
     private List<BranchCoverageTestFitness> setupDependencies(String className , String methodName, int lineNumber ) {
-        BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
+        BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader(CrashProperties.integrationTesting)).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
         List<BranchCoverageTestFitness> branchCoverages = new ArrayList<>();
         if(goalInstruction == null){
             return branchCoverages;

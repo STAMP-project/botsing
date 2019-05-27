@@ -1,4 +1,4 @@
-package eu.stamp.botsing.graphs.cfg;
+package eu.stamp.botsing.commons.graphs.cfg;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
@@ -9,7 +9,6 @@ import org.mockito.Mockito;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertTrue;
 
 public class BotsingActualControlFlowGraphTest {

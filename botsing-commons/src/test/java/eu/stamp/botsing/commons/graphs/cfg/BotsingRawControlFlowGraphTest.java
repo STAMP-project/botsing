@@ -1,4 +1,4 @@
-package eu.stamp.botsing.graphs.cfg;
+package eu.stamp.botsing.commons.graphs.cfg;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.graphs.cfg.BytecodeInstruction;

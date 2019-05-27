@@ -47,6 +47,8 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
     private TestGenerationUtility utility = new TestGenerationUtility();
 
+    private FitnessFunctions fitnessFunctionCollector = new FitnessFunctions();
+
 
     @Override
     public TestSuiteChromosome generateTests() {
@@ -86,7 +88,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
 
         // Add fitnes function(s)
-        List<TestFitnessFunction> fitnessFunctions = FitnessFunctions.getFitnessFunctionList();
+        List<TestFitnessFunction> fitnessFunctions = fitnessFunctionCollector.getFitnessFunctionList();
 //        for(TestFitnessFunction ff : fitnessFunctions){
         ga.addFitnessFunctions(fitnessFunctions);
 //        }

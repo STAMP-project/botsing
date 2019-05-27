@@ -2,7 +2,7 @@ package eu.stamp.botsing.testgeneration.strategy;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
-import eu.stamp.botsing.ga.strategy.mosa.AbstractMOSA;
+import eu.stamp.botsing.commons.ga.strategy.mosa.AbstractMOSA;
 import org.evosuite.Properties;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.GlobalTimeStoppingCondition;
@@ -24,6 +24,7 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
     private static final Logger LOG = LoggerFactory.getLogger(MOSuiteStrategy.class);
 
     private TestGenerationUtility utility = new TestGenerationUtility();
+    private FitnessFunctions fitnessFunctionCollector = new FitnessFunctions();
     @Override
     public TestSuiteChromosome generateTests() {
         LOG.info("test generation strategy: MOSuite");
@@ -74,7 +75,7 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
 
 
         // Add fitnes functions
-        List<TestFitnessFunction> fitnessFunctions = FitnessFunctions.getFitnessFunctionList();
+        List<TestFitnessFunction> fitnessFunctions = fitnessFunctionCollector.getFitnessFunctionList();
         LOG.info("The number of goals are {}: ",fitnessFunctions.size());
         for(TestFitnessFunction ff: fitnessFunctions){
             LOG.info(ff.getClass().getName());

@@ -1,8 +1,8 @@
 package eu.stamp.botsing.ga.strategy.mosa.structural;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
-import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageGoal;
-import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageTestFitness;
+import eu.stamp.botsing.commons.coverage.branch.IntegrationTestingBranchCoverageGoal;
+import eu.stamp.botsing.commons.coverage.branch.IntegrationTestingBranchCoverageTestFitness;
 import org.evosuite.coverage.branch.Branch;
 
 import org.evosuite.ga.Chromosome;

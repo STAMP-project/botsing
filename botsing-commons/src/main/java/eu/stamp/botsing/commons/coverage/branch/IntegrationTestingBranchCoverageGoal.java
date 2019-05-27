@@ -1,4 +1,4 @@
-package eu.stamp.botsing.coverage.branch;
+package eu.stamp.botsing.commons.coverage.branch;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.coverage.ControlFlowDistance;

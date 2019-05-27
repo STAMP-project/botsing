@@ -1,12 +1,12 @@
-package eu.stamp.botsing.ga.strategy.mosa;
+package eu.stamp.botsing.commons.ga.strategy.mosa;
 
-import eu.stamp.botsing.fitnessfunction.CrashCoverageSuiteFitness;
-import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
-import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
-import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
+import eu.stamp.botsing.commons.fitnessfunction.CrashCoverageSuiteFitness;
+import eu.stamp.botsing.commons.fitnessfunction.FitnessFunctions;
+import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
+import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
@@ -17,25 +17,27 @@ import java.util.*;
 
 public class AbstractMOSA<T extends Chromosome> extends org.evosuite.ga.metaheuristics.mosa.AbstractMOSA<T> {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractMOSA.class);
-    protected GuidedMutation<T> mutation;
+    protected Mutation<T> mutation;
 
     /** Map used to store the covered test goals (keys of the map) and the corresponding covering test cases (values of the map) **/
     protected Map<FitnessFunction<T>, T> archive = new LinkedHashMap<FitnessFunction<T>, T>();
+    FitnessFunctions fitnessCollector;
 
-    public AbstractMOSA(ChromosomeFactory<T> factory) {
+    public AbstractMOSA(ChromosomeFactory<T> factory, FitnessFunctions fitnessCollector) {
         super(factory);
+        this.fitnessCollector = fitnessCollector;
+        getSuiteFitnessFunctions();
     }
 
     @Override
     protected void setupSuiteFitness(){
-        getSuiteFitnessFunctions();
-        }
+
+    }
 
 
     protected void getSuiteFitnessFunctions(){
-        for (FitnessFunction ff: FitnessFunctions.getFitnessFunctionList()){
-
-            this.suiteFitnessFunctions.put(new CrashCoverageSuiteFitness(),ff.getClass());
+        for (FitnessFunction ff: this.fitnessCollector.getFitnessFunctionList()){
+            this.suiteFitnessFunctions.put(new CrashCoverageSuiteFitness(fitnessCollector),ff.getClass());
         }
     }
 
@@ -59,7 +61,11 @@ public class AbstractMOSA<T extends Chromosome> extends org.evosuite.ga.metaheur
             T offspring2 = (T) parent2.clone();
             // apply crossover
             if (Randomness.nextDouble() <= Properties.CROSSOVER_RATE) {
-                ((GuidedSinglePointCrossover) crossoverFunction).crossOver(offspring1, offspring2);
+                try {
+                    crossoverFunction.crossOver(offspring1, offspring2);
+                } catch (ConstructionFailedException e) {
+                    e.printStackTrace();
+                }
             }
 
             // Remove unused variables from the offsprings (for minimization)

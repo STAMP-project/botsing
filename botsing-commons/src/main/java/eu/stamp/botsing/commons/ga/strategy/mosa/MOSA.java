@@ -1,9 +1,7 @@
-package eu.stamp.botsing.ga.strategy.mosa;
+package eu.stamp.botsing.commons.ga.strategy.mosa;
 
-import eu.stamp.botsing.fitnessfunction.IntegrationTestingFF;
-import eu.stamp.botsing.fitnessfunction.WeightedSum;
-import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
-import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
+import eu.stamp.botsing.commons.fitnessfunction.FitnessFunctions;
+import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.FitnessFunction;
@@ -11,6 +9,7 @@ import org.evosuite.ga.FitnessFunction;
 import java.util.*;
 
 import org.evosuite.ga.comparators.OnlyCrowdingComparator;
+import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
@@ -37,10 +36,10 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
     private long startTime;
 
 
-    public MOSA(ChromosomeFactory factory) {
-        super(factory);
-        mutation = new GuidedMutation<>();
-        this.crossoverFunction = new GuidedSinglePointCrossover();
+    public MOSA(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator, FitnessFunctions fitnessCollector) {
+        super(factory, fitnessCollector);
+        mutation = mutationOperator;
+        this.crossoverFunction = crossOverOperator;
     }
 
 
@@ -105,11 +104,8 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 
             Map<FitnessFunction<?>, Double> front0= this.rankingFunction.getSubfront(0).get(0).getFitnessValues();
-            for(FitnessFunction<?> g: front0.keySet()){
-                if(g instanceof IntegrationTestingFF ){
-                    LOG.info(""+g+": "+front0.get(g));
-                }
-            }
+            this.fitnessCollector.printCriticalTargets(front0);
+
         }catch (Exception e){
             LOG.info("SubFront is empty!");
 
@@ -144,7 +140,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         }
 
 
-        while (!this.isFinished() && this.getNumberOfCoveredGoals()<this.fitnessFunctions.size() && ! crashReproduced()) {
+        while (!this.isFinished() && this.getNumberOfCoveredGoals()<this.fitnessFunctions.size() && ! fitnessCollector.isCriticalGoalsAreCovered(this.uncoveredGoals)) {
             this.evolve();
             LOG.info("generation #{} is created.",this.currentIteration);
             LOG.info("Number of covered goals are {}/{}",this.getNumberOfCoveredGoals(),this.fitnessFunctions.size());
@@ -154,14 +150,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
     }
 
 
-    public boolean crashReproduced() {
-        for (FitnessFunction<T> goal: this.uncoveredGoals){
-            if(goal instanceof IntegrationTestingFF || goal instanceof WeightedSum){
-                return false;
-            }
-        }
-        return true;
-    }
+
 
 
     @Override

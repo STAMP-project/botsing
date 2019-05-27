@@ -2,7 +2,9 @@ package eu.stamp.botsing.coverage.branch;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
-import eu.stamp.botsing.testgeneration.TestGenerationContextUtility;
+import eu.stamp.botsing.commons.coverage.branch.IntegrationTestingBranchCoverageGoal;
+import eu.stamp.botsing.commons.coverage.branch.IntegrationTestingBranchCoverageTestFitness;
+import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import org.evosuite.coverage.branch.Branch;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.graphs.GraphPool;
@@ -52,8 +54,8 @@ public class IntegrationTestingBranchCoverageFactory {
         // Get deepest frame instruction
         String className = CrashProperties.getInstance().getStackTrace(traceNumber).getFrame(1).getClassName();
         int lineNumber = CrashProperties.getInstance().getStackTrace(traceNumber).getFrame(1).getLineNumber();
-        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(className, lineNumber);
-        BytecodeInstruction deepestFrameInstruction = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
+        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting, className, lineNumber);
+        BytecodeInstruction deepestFrameInstruction = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader(CrashProperties.integrationTesting)).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
 
         // Collect branches in the path to the target node
         ControlDependenceGraph IntegrationCDG = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getCDG("IntegrationTestingGraph","methodsIntegration");

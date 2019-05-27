@@ -1,6 +1,5 @@
-package eu.stamp.botsing.testgeneration;
+package eu.stamp.botsing.commons.testgeneration;
 
-import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
@@ -12,8 +11,8 @@ import java.util.List;
 
 public class TestGenerationContextUtility {
     private static final Logger LOG = LoggerFactory.getLogger(TestGenerationContextUtility.class);
-    public static ClassLoader getTestGenerationContextClassLoader(){
-        if(CrashProperties.integrationTesting){
+    public static ClassLoader getTestGenerationContextClassLoader(boolean isIntegration){
+        if(isIntegration){
             return BotsingTestGenerationContext.getInstance().getClassLoaderForSUT();
         }else{
             return TestGenerationContext.getInstance().getClassLoaderForSUT();
@@ -21,14 +20,13 @@ public class TestGenerationContextUtility {
     }
 
 
-    public static  String derivingMethodFromBytecode(String className, int lineNumber){
-        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(getTestGenerationContextClassLoader()).getInstructionsIn(className);
+    public static  String derivingMethodFromBytecode(boolean isIntegration, String className, int lineNumber){
+        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(getTestGenerationContextClassLoader(isIntegration)).getInstructionsIn(className);
         if (instructions != null) {
             for (BytecodeInstruction ins : instructions) {
                 if(ins != null) {
                     if (ins.getLineNumber() == lineNumber){
                         String bytecodeMethodName = ins.getMethodName();
-                        //						if (bytecodeMethodName.contains(methodName))
                         return bytecodeMethodName;
                     }
                 } else {
