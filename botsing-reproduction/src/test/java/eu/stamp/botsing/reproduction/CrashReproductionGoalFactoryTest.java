@@ -3,6 +3,7 @@ package eu.stamp.botsing.reproduction;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 
+import java.io.FileNotFoundException;
 import java.io.StringReader;
 
 
@@ -77,5 +79,25 @@ public class CrashReproductionGoalFactoryTest {
         CrashProperties.fitnessFunctions = new CrashProperties.FitnessFunction[]{CrashProperties.FitnessFunction.WeightedSum, CrashProperties.FitnessFunction.SimpleSum};
         crashReproductionGoalFactory = new CrashReproductionGoalFactory();
         assertEquals("class eu.stamp.botsing.fitnessfunction.WeightedSum", crashReproductionGoalFactory.getCoverageGoals().get(0).getClass().toString());
+    }
+
+
+    @Test
+    public void testCrashReproductionGoalFactory_multipleCrashes() throws FileNotFoundException {
+        BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
+                "\tat eu.stamp.ClassA.method2(ClassA.java:11)\n" +
+                "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
+        StackTrace target = Mockito.spy(new StackTrace());
+        Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
+        target.setup("", 2);
+        CrashProperties.getInstance().setupStackTrace(target);
+
+        Assert.assertEquals(CrashProperties.getInstance().getCrashesSize(),2);
+
+        CrashProperties.fitnessFunctions = new CrashProperties.FitnessFunction[]{CrashProperties.FitnessFunction.IntegrationSingleObjective};
+
+        crashReproductionGoalFactory = new CrashReproductionGoalFactory();
+
+        assertEquals(crashReproductionGoalFactory.getCoverageGoals().size(),2);
     }
 }

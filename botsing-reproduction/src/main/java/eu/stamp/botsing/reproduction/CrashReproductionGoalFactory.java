@@ -41,7 +41,7 @@ public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFit
     public CrashReproductionGoalFactory(){
         fitnessFunctionHelper = new FitnessFunctionHelper();
         goals.clear();
-        if(CrashProperties.getInstance().getCrashesSize() > 1){
+        if(CrashProperties.getInstance().getCrashesSize() > 1 || CrashProperties.fitnessFunctions.length > 1){
             // multi-objectives
             TestFitnessFunction[] fetchedGoals = fitnessFunctionHelper.getMultiObjectives();
             for(TestFitnessFunction goal: fetchedGoals){
