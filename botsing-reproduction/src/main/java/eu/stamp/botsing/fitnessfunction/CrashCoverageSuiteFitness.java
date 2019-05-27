@@ -1,6 +1,5 @@
 package eu.stamp.botsing.fitnessfunction;
 
-import eu.stamp.botsing.testgeneration.strategy.TestGenerationUtility;
 import org.evosuite.testcase.ExecutableChromosome;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
