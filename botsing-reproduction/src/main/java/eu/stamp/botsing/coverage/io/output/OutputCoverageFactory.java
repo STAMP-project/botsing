@@ -9,6 +9,7 @@ import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +21,7 @@ import static org.evosuite.coverage.io.IOCoverageConstants.REF_NONNULL;
 
 public class OutputCoverageFactory extends org.evosuite.coverage.io.output.OutputCoverageFactory {
     private static final Logger LOG = LoggerFactory.getLogger(OutputCoverageFactory.class);
-
+    @Resource
     IOCoverageUtility utility = new IOCoverageUtility();
 
     @Override
@@ -36,7 +37,7 @@ public class OutputCoverageFactory extends org.evosuite.coverage.io.output.Outpu
         return goals;
     }
 
-    private void detectGoals(Method method,  List<OutputCoverageTestFitness> goals) {
+    protected void detectGoals(Method method,  List<OutputCoverageTestFitness> goals) {
         String className = method.getDeclaringClass().getName();
         String methodName = method.getName()+Type.getMethodDescriptor(method);
         Type returnType = Type.getReturnType(method);

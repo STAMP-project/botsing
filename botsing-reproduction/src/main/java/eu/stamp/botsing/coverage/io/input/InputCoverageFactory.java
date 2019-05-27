@@ -9,6 +9,7 @@ import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Resource;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -19,8 +20,8 @@ import static org.evosuite.coverage.io.IOCoverageConstants.REF_NONNULL;
 
 public class InputCoverageFactory extends org.evosuite.coverage.io.input.InputCoverageFactory {
     private static final Logger LOG = LoggerFactory.getLogger(InputCoverageFactory.class);
-
-    IOCoverageUtility utility = new IOCoverageUtility();
+    @Resource
+    protected IOCoverageUtility utility= new IOCoverageUtility();
     @Override
     public List<InputCoverageTestFitness> getCoverageGoals() {
         List<InputCoverageTestFitness> goals = new ArrayList<>();
