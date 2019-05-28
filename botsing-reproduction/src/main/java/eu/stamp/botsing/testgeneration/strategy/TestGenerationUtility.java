@@ -25,8 +25,15 @@ public class TestGenerationUtility {
                 }
                 return new GuidedGeneticAlgorithm(getChromosomeFactory());
             case Guided_MOSA:
-                //ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator, FitnessFunctions fitnessCollector
-                return new MOSA(getChromosomeFactory(),new GuidedSinglePointCrossover(),new GuidedMutation(),new FitnessFunctions());
+                // Create chromosome factory
+                ChromosomeFactory<TestChromosome> chromosomeFactory = getChromosomeFactory();
+                // Create guided crossover operator
+                GuidedSinglePointCrossover guidedSinglePointCrossover = new GuidedSinglePointCrossover();
+                guidedSinglePointCrossover.updatePublicCalls(((StackTraceChromosomeFactory) chromosomeFactory).getPublicCalls());
+                // Create guided mutation operator
+                GuidedMutation guidedMutation = new GuidedMutation();
+                guidedMutation.updatePublicCalls(((StackTraceChromosomeFactory) chromosomeFactory).getPublicCalls());
+                return new MOSA(chromosomeFactory,guidedSinglePointCrossover,guidedMutation,new FitnessFunctions());
             case DynaMOSA:
                 return new DynaMOSA(getChromosomeFactory(),new GuidedSinglePointCrossover(),new GuidedMutation());
             default:

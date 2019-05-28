@@ -22,6 +22,7 @@ package eu.stamp.botsing.ga.strategy;
 
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
 import org.evosuite.Properties;
@@ -53,7 +54,9 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
     public GuidedGeneticAlgorithm(ChromosomeFactory<T> factory) {
         super(factory);
         this.crossoverFunction = new GuidedSinglePointCrossover();
+        ((GuidedSinglePointCrossover)this.crossoverFunction).updatePublicCalls(((StackTraceChromosomeFactory) chromosomeFactory).getPublicCalls());
         this.mutation = new GuidedMutation<>();
+        this.mutation.updatePublicCalls(((StackTraceChromosomeFactory) chromosomeFactory).getPublicCalls());
         try {
             this.populationSize =  CrashProperties.getInstance().getIntValue("population");
             this.eliteSize = CrashProperties.getInstance().getIntValue("elite");
