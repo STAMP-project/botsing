@@ -22,12 +22,14 @@ package eu.stamp.botsing.fitnessfunction.testcase.factories;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.Properties;
 import org.evosuite.ga.ConstructionFailedException;
+import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.rmi.ClientServices;
 import org.evosuite.rmi.service.ClientNodeLocal;
-import org.evosuite.setup.TestCluster;
+import org.evosuite.setup.TestClusterUtils;
 import org.evosuite.statistics.RuntimeVariable;
 import org.evosuite.testcarver.extraction.CarvingManager;
 import org.evosuite.testcase.TestCase;
@@ -39,9 +41,12 @@ import org.evosuite.utils.Randomness;
 import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
+import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory {
@@ -53,12 +58,19 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
 
     private static List<GenericAccessibleObject<?>> allMethods = new LinkedList<GenericAccessibleObject<?>>();
 
-    public StackTraceChromosomeFactory(StackTrace trace, GuidedSearchUtility utility){
-        this.utility = utility;
+    StackTrace targetTrace ;
+
+    public StackTraceChromosomeFactory(StackTrace trace, GuidedSearchUtility utility) {
         allMethods.clear();
-        allMethods.addAll(TestCluster.getInstance().getTestCalls());
+        publicParentCalls.clear();
+        attemptedPublicParents.clear();
+        this.utility = utility;
+        targetTrace = trace;
+
+        fillPublicCalls();
         Randomness.shuffle(allMethods);
-        reset(trace);
+
+
     }
 
     @Override
@@ -68,9 +80,6 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
             CarvingManager manager = CarvingManager.getInstance();
             final Class<?> targetClass = Properties.getTargetClassAndDontInitialise();
             List<TestCase> junitTests = manager.getTestsForClass(targetClass);
-//            if (junitTests.size() > 0) {
-//                LOG.info("* Using {} carved tests from existing JUnit tests for seeding", junitTests.size());
-//            }
             ClientNodeLocal client = ClientServices.getInstance().getClientNode();
             client.trackOutputVariable(RuntimeVariable.CarvedTests, junitTests.size());
             client.trackOutputVariable(RuntimeVariable.CarvedCoverage,0.0);
@@ -130,7 +139,7 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
                 // If all public parents have been attempted,
                 // reset the set of parents to start over injecting them.
                 if (publicParentCalls.size() == 0) {
-                    reset();
+                    this.reset();
                 }
 
                 GenericAccessibleObject<?> call = null;
@@ -156,13 +165,9 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
 
                     //at this point, if injecting, then we successfully injected a target call.
                     if (injecting){
-                        isIncluded = true;
                         target_counter++;
                         prob = 1/length;
                     }
-//					else {
-//						assert (false) : "Found test call that is neither method nor constructor";
-//					}
                 } catch (ConstructionFailedException | Error e) {
                     if (injecting) {
                         prob = 1 / (length - test.size() + 1);
@@ -188,28 +193,50 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
         return test;
     }
 
-    public void reset(StackTrace trace){
-        fillPublicCalls();
+    public void reset(){
+        if(publicParentCalls.isEmpty() && attemptedPublicParents.isEmpty()){
+            return;
+        }
+        publicParentCalls.addAll(attemptedPublicParents);
         attemptedPublicParents.clear();
     }
 
     private void fillPublicCalls(){
-        if (utility != null){
-            Set<String> publicCalls =  utility.collectPublicCalls();
-            LOG.info("Botsing found {} Target call(s):",publicCalls.size());
-            Iterator<String> iterateParents =publicCalls.iterator();
-            int counter = 1;
-            // Fill up the set of parent calls by assessing the method names
-            while (iterateParents.hasNext()) {
-                String nextCall = iterateParents.next();
-                LOG.info("Target method #{} is {}",counter,nextCall);
-                counter++;
-                for (int i=0; i<allMethods.size(); i++) {
-                    if (allMethods.get(i).getName().equals(nextCall)) {
-                        publicParentCalls.add(allMethods.get(i));
-                    }
-                }
+
+        BytecodeInstruction publicCallInStackTrace =  utility.collectPublicCalls(targetTrace);
+        Class targetClass = null;
+        try {
+            targetClass = Class.forName(publicCallInStackTrace.getClassName(),false,TestGenerationContextUtility.getTestGenerationContextClassLoader(CrashProperties.integrationTesting));
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        Set<Method> methods = TestClusterUtils.getMethods(targetClass);
+        for(Method method: methods){
+            GenericAccessibleObject methodObj = new GenericMethod(method,targetClass);
+            allMethods.add(methodObj);
+            String methodName = method.getName()+Type.getMethodDescriptor(method);
+            if(methodName.equals(publicCallInStackTrace.getMethodName())){
+                publicParentCalls.add(methodObj);
             }
         }
+
+        Set<Constructor<?>> constructors = TestClusterUtils.getConstructors(targetClass);
+        for (Constructor constructor : constructors){
+            GenericAccessibleObject constructorObj = new GenericConstructor(constructor,targetClass);
+            allMethods.add(constructorObj);
+            String constructorName = "<init>"+Type.getConstructorDescriptor(constructor);
+            if(constructorName.equals(publicCallInStackTrace.getMethodName())){
+                publicParentCalls.add(constructorObj);
+            }
+        }
+    }
+
+    public Set<GenericAccessibleObject<?>> getPublicCalls(){
+        Set<GenericAccessibleObject<?>> result = new HashSet<GenericAccessibleObject<?>>();
+        result.addAll(this.publicParentCalls);
+        result.addAll(this.attemptedPublicParents);
+
+        return result;
     }
 }

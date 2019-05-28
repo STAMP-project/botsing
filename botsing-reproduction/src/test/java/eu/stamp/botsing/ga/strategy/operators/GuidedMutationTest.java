@@ -8,6 +8,8 @@ import java.io.FileNotFoundException;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
@@ -25,6 +27,7 @@ import org.evosuite.testcase.TestFactory;
 import org.evosuite.testcase.statements.MethodStatement;
 import org.evosuite.testcase.statements.numeric.IntPrimitiveStatement;
 import org.evosuite.testcase.variable.VariableReference;
+import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
@@ -88,7 +91,12 @@ public class GuidedMutationTest {
 
         TestChromosome clone = (TestChromosome) chromosome.clone();
 
+        GenericAccessibleObject geObj = Mockito.mock(GenericAccessibleObject.class);
+        Set<GenericAccessibleObject> publicCalls = new HashSet<>();
+        publicCalls.add(geObj);
+
         GuidedMutation mutation = Mockito.spy(new GuidedMutation());
+        mutation.updatePublicCalls(publicCalls);
         Mockito.doNothing().when(mutation).insertRandomStatement(Mockito.any(Chromosome.class));
         Mockito.doNothing().when(mutation).doRandomMutation(Mockito.any(Chromosome.class));
         mutation.mutateOffspring(chromosome);

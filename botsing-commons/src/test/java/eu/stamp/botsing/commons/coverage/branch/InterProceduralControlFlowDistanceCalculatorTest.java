@@ -1,7 +1,10 @@
-package eu.stamp.botsing.coverage.branch;
+package eu.stamp.botsing.commons.coverage.branch;
 
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.branch.Branch;
+import org.evosuite.graphs.GraphPool;
+import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.ControlDependency;
 import org.evosuite.testcase.TestCase;
@@ -142,6 +145,13 @@ public class InterProceduralControlFlowDistanceCalculatorTest {
         Mockito.doReturn("ClassA").when(branch).getClassName();
         Mockito.doReturn("method1").when(branch).getMethodName();
         Mockito.when(branch.getInstruction().getActualCFG().getDiameter()).thenReturn(10);
+
+        // Set cfg
+        ActualControlFlowGraph cfg = Mockito.mock(ActualControlFlowGraph.class);
+        Mockito.doReturn("IntegrationTestingGraph").when(cfg).getClassName();
+        Mockito.doReturn("methodsIntegration").when(cfg).getMethodName();
+        Mockito.doReturn(10).when(cfg).getDiameter();
+        GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerActualCFG(cfg);
         try {
             ControlFlowDistance cfd = InterProceduralControlFlowDistanceCalculator.getDistance(result,branch, true, "ClassA","method1");
         }catch (NullPointerException e){
@@ -168,6 +178,14 @@ public class InterProceduralControlFlowDistanceCalculatorTest {
         Mockito.doReturn("method1").when(branch).getMethodName();
         Mockito.when(branch.getInstruction().getActualCFG().getDiameter()).thenReturn(10);
         Mockito.when(branch.getActualBranchId()).thenReturn(10);
+
+        // Set cfg
+        ActualControlFlowGraph cfg = Mockito.mock(ActualControlFlowGraph.class);
+        Mockito.doReturn("IntegrationTestingGraph").when(cfg).getClassName();
+        Mockito.doReturn("methodsIntegration").when(cfg).getMethodName();
+        Mockito.doReturn(10).when(cfg).getDiameter();
+        GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerActualCFG(cfg);
+
         ControlFlowDistance cfd = InterProceduralControlFlowDistanceCalculator.getDistance(result,branch, true, "ClassA","method1");
         assert(cfd.getBranchDistance() == 0.5);
         assert(cfd.getApproachLevel() == 0.0);
@@ -194,6 +212,14 @@ public class InterProceduralControlFlowDistanceCalculatorTest {
         Mockito.doReturn("method1").when(branch).getMethodName();
         Mockito.when(branch.getInstruction().getActualCFG().getDiameter()).thenReturn(10);
         Mockito.when(branch.getActualBranchId()).thenReturn(10);
+
+        // Set cfg
+        ActualControlFlowGraph cfg = Mockito.mock(ActualControlFlowGraph.class);
+        Mockito.doReturn("IntegrationTestingGraph").when(cfg).getClassName();
+        Mockito.doReturn("methodsIntegration").when(cfg).getMethodName();
+        Mockito.doReturn(10).when(cfg).getDiameter();
+        GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerActualCFG(cfg);
+
         ControlFlowDistance cfd = InterProceduralControlFlowDistanceCalculator.getDistance(result,branch, false, "ClassA","method1");
         assert(cfd.getBranchDistance() == 0.6);
         assert(cfd.getApproachLevel() == 0.0);
@@ -234,7 +260,12 @@ public class InterProceduralControlFlowDistanceCalculatorTest {
         Mockito.when(branch.getInstruction()).thenReturn(bc1);
         Mockito.when(branch.getActualBranchId()).thenReturn(13);
 
-
+// Set cfg
+        ActualControlFlowGraph cfg = Mockito.mock(ActualControlFlowGraph.class);
+        Mockito.doReturn("IntegrationTestingGraph").when(cfg).getClassName();
+        Mockito.doReturn("methodsIntegration").when(cfg).getMethodName();
+        Mockito.doReturn(10).when(cfg).getDiameter();
+        GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerActualCFG(cfg);
 
         ControlFlowDistance cfd = InterProceduralControlFlowDistanceCalculator.getDistance(result,branch, true, "ClassA","method1");
 

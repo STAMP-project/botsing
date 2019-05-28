@@ -1,13 +1,15 @@
 package eu.stamp.botsing.ga.strategy.mosa;
 
+import eu.stamp.botsing.commons.ga.strategy.mosa.AbstractMOSA;
+import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.ga.strategy.mosa.structural.BotsingMultiCriteriatManager;
-import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
-import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.comparators.OnlyCrowdingComparator;
 import org.evosuite.ga.metaheuristics.mosa.structural.StructuralGoalManager;
+import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.slf4j.Logger;
@@ -23,10 +25,10 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
     protected StructuralGoalManager<T> goalsManager = null;
     protected CrowdingDistance<T> distance = new CrowdingDistance<T>();
 
-    public DynaMOSA(ChromosomeFactory<T> factory) {
-        super(factory);
-        mutation = new GuidedMutation<>();
-        this.crossoverFunction = new GuidedSinglePointCrossover();
+    public DynaMOSA(ChromosomeFactory<T> factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
+        super(factory, new FitnessFunctions());
+        mutation = mutationOperator;
+        this.crossoverFunction = crossOverOperator;
     }
 
 

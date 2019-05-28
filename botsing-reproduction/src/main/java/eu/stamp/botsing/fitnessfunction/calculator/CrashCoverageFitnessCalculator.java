@@ -23,7 +23,7 @@ package eu.stamp.botsing.fitnessfunction.calculator;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageFactory;
-import eu.stamp.botsing.testgeneration.TestGenerationContextUtility;
+import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.branch.BranchCoverageFactory;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
@@ -60,10 +60,10 @@ public class CrashCoverageFitnessCalculator {
             return 0.0;
         }
         StackTrace trace = targetCrash;
-        int callDepth = targetCrash.getTargetFrameLevel() - frameLevel + 1 - irrelevantFrameCounter;
+        int callDepth = targetCrash.getPublicTargetFrameLevel() - frameLevel + 1 - irrelevantFrameCounter;
 
         StackTraceElement targetFrame = trace.getFrame(frameLevel);
-        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getLineNumber());
+        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting, targetFrame.getClassName(), targetFrame.getLineNumber());
         int lineNumber = targetFrame.getLineNumber();
         boolean found = findMethodCallsInDepth(result,methodName,lineNumber,callDepth);
         if(!found){
@@ -124,65 +124,11 @@ public class CrashCoverageFitnessCalculator {
         return -1;
     }
 
-//
-//    protected Map<String, Map<String, Map<Integer, Integer>>> getStackCoverage(ExecutionResult result){
-//        Map<String, Map<String, Map<Integer, Integer>>> finalCoverage =  new HashMap<>();
-//        Map<String, Map<String, Map<Integer, Integer>>> untouchedCoverage = new HashMap<>(result.getTrace().getCoverageData());
-//        List<MethodCall> finishedMethods = new ArrayList<>(result.getTrace().getMethodCalls());
-//        // Finished methods cannot be in the stack coverage
-//        for(String className: untouchedCoverage.keySet()) {
-//            for (String methodName : untouchedCoverage.get(className).keySet()) {
-//                Map<Integer,Integer> finishedCount = countFinishedMethodLines(finishedMethods,className,methodName);
-//                for (Integer line : untouchedCoverage.get(className).get(methodName).keySet()) {
-//                    int lineCount = untouchedCoverage.get(className).get(methodName).get(line).intValue();
-//                    if(finishedCount.containsKey(line)){
-//                        if(finishedCount.get(line).intValue() < lineCount){
-//                            updateFinalCoverage(finalCoverage,className,methodName,line,lineCount-finishedCount.get(line).intValue());
-//                        }
-//                    }else{
-//                        updateFinalCoverage(finalCoverage,className,methodName,line,lineCount);
-//                    }
-//                }
-//            }
-//        }
-//
-//        return result.getTrace().getCoverageData();
-//    }
-//
-//    private Map<Integer,Integer> countFinishedMethodLines(List<MethodCall> finishedMethods, String className, String methodName) {
-//        Map<Integer,Integer> count = new HashMap<>();
-//        for(MethodCall method: finishedMethods){
-//            if(method.className.equals(className) && method.methodName.equals(methodName)){
-//                for(Integer line: method.lineTrace){
-//                    if(count.containsKey(line)){
-//                        int oldCount = count.get(line).intValue();
-//                        count.put(line,new Integer(oldCount+1));
-//                    }else{
-//                        count.put(line,new Integer(1));
-//                    }
-//                }
-//            }
-//        }
-//
-//        return count;
-//    }
-//
-//    private void updateFinalCoverage(Map<String,Map<String,Map<Integer,Integer>>> finalCoverage, String className, String methodName, Integer line, int count) {
-//        if(!finalCoverage.containsKey(className)){
-//            finalCoverage.put(className,new HashMap<>());
-//        }
-//
-//        if(!finalCoverage.get(className).containsKey(methodName)){
-//            finalCoverage.get(className).put(methodName,new HashMap<>());
-//        }
-//        finalCoverage.get(className).get(methodName).put(line, new Integer(count));
-//    }
-
     protected double getLineCoverageFitness(ExecutionResult result, StackTrace trace, int lineNumber) {
         int targetFrameLevel = trace.getNumberOfFrames();
         StackTraceElement targetFrame = trace.getFrame(targetFrameLevel);
 
-        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(targetFrame.getClassName(), targetFrame.getLineNumber());
+        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting,targetFrame.getClassName(), targetFrame.getLineNumber());
         List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
         double lineCoverageFitness = 1.0;
         if (result.getTrace().getCoveredLines().contains(lineNumber)) {
@@ -268,7 +214,7 @@ public class CrashCoverageFitnessCalculator {
 
 
     private List<BranchCoverageTestFitness> setupDependencies(String className , String methodName, int lineNumber ) {
-        BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader()).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
+        BytecodeInstruction goalInstruction = BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader(CrashProperties.integrationTesting)).getFirstInstructionAtLineNumber(className, methodName, lineNumber);
         List<BranchCoverageTestFitness> branchCoverages = new ArrayList<>();
         if(goalInstruction == null){
             return branchCoverages;

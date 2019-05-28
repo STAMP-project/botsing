@@ -1,4 +1,4 @@
-package eu.stamp.botsing.fitnessfunction;
+package eu.stamp.botsing.commons.fitnessfunction;
 
 import org.evosuite.testcase.ExecutableChromosome;
 import org.evosuite.testcase.TestChromosome;
@@ -14,8 +14,10 @@ import java.util.List;
 public class CrashCoverageSuiteFitness extends TestSuiteFitnessFunction {
     public static double totalFitnessValue;
     private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageSuiteFitness.class);
-
-
+    FitnessFunctions fitnessCollector;
+    public CrashCoverageSuiteFitness(FitnessFunctions fitnessCollector){
+        this.fitnessCollector = fitnessCollector;
+    }
     @Override
     public double getFitness(AbstractTestSuiteChromosome<? extends ExecutableChromosome> abstractTestSuiteChromosome) {
         List<ExecutionResult> results = runTestSuite(abstractTestSuiteChromosome);
@@ -37,10 +39,10 @@ public class CrashCoverageSuiteFitness extends TestSuiteFitnessFunction {
     }
 
 
-    private static int calculateFitness (AbstractTestSuiteChromosome<? extends ExecutableChromosome>  suite){
+    private int calculateFitness (AbstractTestSuiteChromosome<? extends ExecutableChromosome>  suite){
         int coveredGoals = 0;
         double fitnessValue = 0.0;
-        List<TestFitnessFunction> fitnessFunctions = FitnessFunctions.getFitnessFunctionList();
+        List<TestFitnessFunction> fitnessFunctions = this.fitnessCollector.getFitnessFunctionList();
         int totalGoals = fitnessFunctions.size();
         for (TestFitnessFunction crashGoal: fitnessFunctions){
             double minFitnessValue = Double.MAX_VALUE;

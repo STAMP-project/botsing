@@ -3,6 +3,7 @@ package eu.stamp.botsing.graphs.cfg;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
+import eu.stamp.botsing.commons.graphs.cfg.BotsingRawControlFlowGraph;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;

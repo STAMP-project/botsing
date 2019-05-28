@@ -1,4 +1,4 @@
-package eu.stamp.botsing.coverage.branch;
+package eu.stamp.botsing.commons.coverage.branch;
 
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 

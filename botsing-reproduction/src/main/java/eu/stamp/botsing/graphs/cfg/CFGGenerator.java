@@ -3,6 +3,8 @@ package eu.stamp.botsing.graphs.cfg;
 import com.google.common.collect.Lists;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
+import eu.stamp.botsing.commons.graphs.cfg.BotsingActualControlFlowGraph;
+import eu.stamp.botsing.commons.graphs.cfg.BotsingRawControlFlowGraph;
 import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cdg.ControlDependenceGraph;

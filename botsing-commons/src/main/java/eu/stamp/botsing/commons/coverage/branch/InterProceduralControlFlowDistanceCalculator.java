@@ -1,6 +1,5 @@
-package eu.stamp.botsing.coverage.branch;
+package eu.stamp.botsing.commons.coverage.branch;
 
-import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.TestCoverageGoal;
@@ -20,7 +19,7 @@ import java.util.Set;
 public class InterProceduralControlFlowDistanceCalculator extends ControlFlowDistanceCalculator {
 
 
-    public static ControlFlowDistance getDistance(ExecutionResult result, Branch branch, boolean value, String className, String methodName) {
+    public static ControlFlowDistance getDistance( ExecutionResult result, Branch branch, boolean value, String className, String methodName) {
         if (result != null && className != null && methodName != null) {
             if (branch == null && !value) {
                 throw new IllegalArgumentException("expect distance for a root branch to always have value set to true");
@@ -49,7 +48,7 @@ public class InterProceduralControlFlowDistanceCalculator extends ControlFlowDis
 
 
 
-    protected static ControlFlowDistance getNonRootDistance(ExecutionResult result,
+    protected static ControlFlowDistance getNonRootDistance( ExecutionResult result,
                                                             Branch branch, boolean value) {
 
         if (branch == null){
@@ -63,11 +62,11 @@ public class InterProceduralControlFlowDistanceCalculator extends ControlFlowDis
 
 
         ControlFlowDistance r = new ControlFlowDistance();
-        if(CrashProperties.integrationTesting){
+//        if(isIntegration){
             r.setApproachLevel(GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getActualCFG("IntegrationTestingGraph","methodsIntegration").getDiameter() + 1);
-        }else{
-            r.setApproachLevel(branch.getInstruction().getActualCFG().getDiameter() + 1);
-        }
+//        }else{
+//            r.setApproachLevel(branch.getInstruction().getActualCFG().getDiameter() + 1);
+//        }
 
 //
         // Currently r is in the worst state (r set to MAX)

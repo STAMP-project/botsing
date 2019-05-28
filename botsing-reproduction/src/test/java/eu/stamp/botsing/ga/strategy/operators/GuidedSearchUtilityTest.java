@@ -1,31 +1,27 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.StringReader;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
+import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFactory;
-import org.evosuite.testcase.statements.ConstructorStatement;
 import org.evosuite.testcase.statements.MethodStatement;
-import org.evosuite.testcase.statements.Statement;
 import org.evosuite.testcase.statements.numeric.BooleanPrimitiveStatement;
 import org.evosuite.testcase.statements.numeric.IntPrimitiveStatement;
 import org.evosuite.testcase.variable.VariableReference;
+import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
@@ -40,6 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.stamp.botsing.StackTrace;
+
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyString;
 
 public class GuidedSearchUtilityTest {
 
@@ -97,6 +96,7 @@ public class GuidedSearchUtilityTest {
         Mockito.doReturn("java.lang.Integer").when(stackTrace).getTargetClass();
         Mockito.doReturn("reverse").when(stackTrace).getTargetMethod();
         Mockito.doReturn(1).when(stackTrace).getTargetLine();
+        Mockito.doReturn(1).when(stackTrace).getTargetFrameLevel();
         return stackTrace;
     }
 
@@ -115,8 +115,11 @@ public class GuidedSearchUtilityTest {
         ActualControlFlowGraph actualCFG = mockActualControlFlowGraph(stmt, true);
         Mockito.doReturn(actualCFG).when(stmt).getActualCFG();
 
-        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
-        assertTrue(calls.contains("reverse"));
+        utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
+        assertEquals(1,utility.publicCallsBC.size());
+        assertEquals (((BytecodeInstruction)utility.publicCallsBC.toArray()[0]).getClassName(),"java.lang.Integer");
+        assertEquals (((BytecodeInstruction)utility.publicCallsBC.toArray()[0]).getMethodName(),"reverse()");
+        assertEquals (((BytecodeInstruction)utility.publicCallsBC.toArray()[0]).getLineNumber(),1);
     }
 
     @Test
@@ -136,8 +139,8 @@ public class GuidedSearchUtilityTest {
 
         GuidedSearchUtility utility = Mockito.spy(new GuidedSearchUtility());
         Mockito.doNothing().when(utility).searchForNonPrivateMethods(Mockito.any(BytecodeInstruction.class), Mockito.anyString());
-        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
-        assertFalse(calls.contains("reverse"));
+        utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
+        assertEquals(0,utility.publicCallsBC.size());
     }
 
     @Test
@@ -155,11 +158,11 @@ public class GuidedSearchUtilityTest {
 
         GuidedSearchUtility utility = Mockito.spy(new GuidedSearchUtility());
         Mockito.doNothing().when(utility).searchForNonPrivateMethods(Mockito.any(BytecodeInstruction.class), Mockito.anyString());
-        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
-        assertTrue(calls.size()==1);
+        utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
+        assertEquals(1,utility.publicCallsBC.size());
 
-        Iterator<String> iterator = calls.iterator();
-        assertTrue(iterator.next().equalsIgnoreCase("java.lang.Integer"));
+        Iterator<BytecodeInstruction> iterator = utility.publicCallsBC.iterator();
+        assertEquals("java.lang.Integer",iterator.next().getClassName());
     }
 
     @Test
@@ -176,14 +179,16 @@ public class GuidedSearchUtilityTest {
         Mockito.doReturn(actualCFG).when(stmt).getActualCFG();
 
         GuidedSearchUtility utility = new GuidedSearchUtility();
-        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
-
         TestCase tc = new DefaultTestCase();
         tc.addStatement(new BooleanPrimitiveStatement(tc, false));
         TestChromosome ch = new TestChromosome();
         ch.setTestCase(tc);
 
-        boolean flag = utility.includesPublicCall(ch);
+        GenericAccessibleObject geObj = Mockito.mock(GenericAccessibleObject.class);
+        Set<GenericAccessibleObject> publicCalls = new HashSet<>();
+        publicCalls.add(geObj);
+
+        boolean flag = utility.includesPublicCall(ch,publicCalls);
         assertFalse(flag);
     }
 
@@ -193,6 +198,7 @@ public class GuidedSearchUtilityTest {
         Mockito.doReturn("java.lang.Integer").when(stmt).getClassName();
         Mockito.doReturn("reverse()").when(stmt).getMethodName();
         Mockito.doReturn(1).when(stmt).getLineNumber();
+        Mockito.doReturn(1).when(stmt).getLineNumber();
 
         List<BytecodeInstruction> instructions = new ArrayList<>();
         instructions.add(stmt);
@@ -201,8 +207,12 @@ public class GuidedSearchUtilityTest {
         Mockito.doReturn(actualCFG).when(stmt).getActualCFG();
 
         GuidedSearchUtility utility = new GuidedSearchUtility();
-        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
-        boolean flag = utility.includesPublicCall(chromosome);
+
+        Set<GenericAccessibleObject> publicCalls = new HashSet<>();
+        publicCalls.add(chromosome.getTestCase().getStatement(1).getAccessibleObject());
+
+
+        boolean flag = utility.includesPublicCall(chromosome,publicCalls);
         assertTrue(flag);
     }
 
@@ -220,8 +230,13 @@ public class GuidedSearchUtilityTest {
         Mockito.doReturn(actualCFG).when(stmt).getActualCFG();
 
         GuidedSearchUtility utility = new GuidedSearchUtility();
-        Set calls = utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
-        boolean flag = utility.includesPublicCall(new TestChromosome());
+        utility.getPublicCalls(trace.getTargetClass(),trace.getTargetLine(), instructions);
+
+        GenericAccessibleObject geObj = Mockito.mock(GenericAccessibleObject.class);
+        Set<GenericAccessibleObject> publicCalls = new HashSet<>();
+        publicCalls.add(geObj);
+
+        boolean flag = utility.includesPublicCall(new TestChromosome(),publicCalls);
         assertFalse(flag);
     }
 
@@ -289,19 +304,26 @@ public class GuidedSearchUtilityTest {
     }
 
     @Test
-    public void testIsCall2Constructor(){
-        String className = "java.lang.Integer";
-        ConstructorStatement statement = null;
-        TestCase tc = chromosome.getTestCase();
-        for (int i=0; i<tc.size(); i++){
-            Statement stmt = tc.getStatement(i);
-            if (stmt instanceof ConstructorStatement) {
-                statement = (ConstructorStatement) stmt;
-            }
-        }
+    public void testGeneralCollector() throws FileNotFoundException {
+        BytecodeInstruction stmt = Mockito.mock(BytecodeInstruction.class);
+        Mockito.doReturn("java.lang.Integer").when(stmt).getClassName();
+        Mockito.doReturn("reverse()").when(stmt).getMethodName();
+        Mockito.doReturn(20).when(stmt).getLineNumber();
+
+        ActualControlFlowGraph actualCFG = mockActualControlFlowGraph(stmt, true);
+        Mockito.doReturn(actualCFG).when(stmt).getActualCFG();
+
+        BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).registerInstruction(stmt);
+
+
+        BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
+                "\tat java.lang.Integer.bitCount(Integer.java:10)\n" +
+                "\tat java.lang.Integer.reverse(Integer.java:20)"));
+        StackTrace trace= Mockito.spy(new StackTrace());
+        Mockito.doReturn(givenStackTrace).when(trace).readFromFile(anyString());
+        trace.setup("", 2);
         GuidedSearchUtility utility = new GuidedSearchUtility();
-        boolean flag = utility.isCall2Constructor("java.lang.Integer", statement);
-        assertTrue(flag);
+        utility.collectPublicCalls(trace);
     }
 
 }

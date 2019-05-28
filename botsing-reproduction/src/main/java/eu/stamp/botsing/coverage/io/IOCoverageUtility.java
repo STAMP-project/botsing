@@ -3,7 +3,7 @@ package eu.stamp.botsing.coverage.io;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
-import eu.stamp.botsing.testgeneration.TestGenerationContextUtility;
+import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.setup.TestClusterUtils;
@@ -28,7 +28,7 @@ public class IOCoverageUtility {
             for(StackTraceElement element: crash.getFrames()){
                 String className = element.getClassName();
                 int lineNumber = element.getLineNumber();
-                String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(className, lineNumber);
+                String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting,className, lineNumber);
                 BytecodeInstruction bcInst = BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getFirstInstructionAtLineNumber(className,methodName,lineNumber);
                 try {
                     Class<?> clazz = Class.forName(className, true, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
