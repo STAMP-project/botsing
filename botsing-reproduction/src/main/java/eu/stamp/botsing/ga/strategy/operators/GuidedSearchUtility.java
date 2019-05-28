@@ -27,7 +27,7 @@ public class GuidedSearchUtility<T extends Chromosome> {
 
     public BytecodeInstruction collectPublicCalls(StackTrace trace){
         Set<BytecodeInstruction> result = new HashSet<>();
-        collectPublicCalls();
+        getPublicCalls(trace.getTargetClass(), trace.getTargetLine());
         boolean nonPrivateFrameFound = false;
         int currentTargetFramelevel = trace.getTargetFrameLevel();
 
@@ -51,35 +51,6 @@ public class GuidedSearchUtility<T extends Chromosome> {
         return (BytecodeInstruction) result.toArray()[0];
     }
 
-    protected  void collectPublicCalls(){
-        if (CrashProperties.getInstance().getCrashesSize() == 1) {
-            getPublicCalls(CrashProperties.getInstance().getStackTrace(0).getTargetClass(), CrashProperties.getInstance().getStackTrace(0).getTargetLine());
-        } else if (CrashProperties.getInstance().getCrashesSize() > 1){
-            getPublicCallsFromMultipleCrashes();
-        } else{
-            throw new IllegalStateException("Public calls are empty");
-        }
-
-    }
-
-    public void getPublicCallsFromMultipleCrashes() {
-        if(CrashProperties.getInstance().getCrashesSize() < 2){
-            throw new IllegalStateException("We do not have multiple crashes!");
-        }
-        if (publicCallsBC.size() == 0) {
-            for (int crashIndex = 0; crashIndex < CrashProperties.getInstance().getCrashesSize(); crashIndex++) {
-                String targetClass = CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass();
-                int targetLine = CrashProperties.getInstance().getStackTrace(crashIndex).getTargetLine();
-                List<BytecodeInstruction> instructions;
-                if (CrashProperties.integrationTesting) {
-                    instructions = BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
-                } else {
-                    instructions = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(targetClass);
-                }
-                getPublicCalls(targetClass, targetLine, instructions);
-            }
-        }
-    }
 
     public boolean includesPublicCall(T individual, Set<GenericAccessibleObject<?>> publicCalls) {
         Iterator<GenericAccessibleObject<?>> publicCallsIterator = publicCalls.iterator();
