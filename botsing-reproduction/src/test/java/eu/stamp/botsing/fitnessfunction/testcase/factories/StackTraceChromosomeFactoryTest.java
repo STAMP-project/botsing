@@ -3,8 +3,10 @@ package eu.stamp.botsing.fitnessfunction.testcase.factories;
 import ch.qos.logback.classic.Level;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.Properties;
+import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.setup.TestCluster;
 import org.evosuite.testcase.TestChromosome;
+import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
@@ -24,6 +26,7 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -72,44 +75,27 @@ public class StackTraceChromosomeFactoryTest {
         TestCluster.getInstance().addTestCall(call);
 
         GuidedSearchUtility utility = Mockito.mock(GuidedSearchUtility.class);
-        Set<String> publicCalls = new HashSet<>();
-        publicCalls.add("byteValue");
-        publicCalls.add("doubleValue");
-        publicCalls.add("equal");
-        Mockito.when(utility.getPublicCalls(Mockito.anyString(),Mockito.anyInt())).thenReturn(publicCalls);
+        BytecodeInstruction bc = Mockito.mock(BytecodeInstruction.class);
+        Mockito.when(bc.getClassName()).thenReturn(Integer.class.getName());
+        Mockito.when(bc.getMethodName()).thenReturn("doubleValue()D");
+        Mockito.when(utility.collectPublicCalls(Mockito.any())).thenReturn(bc);
         StackTraceChromosomeFactory rm = new StackTraceChromosomeFactory(trace, utility);
         TestChromosome generatedChromosome = rm.getChromosome();
         assertFalse(generatedChromosome.getTestCase().isEmpty());
         assertTrue(generatedChromosome.getTestCase().isValid());
+//        assertEquals();
+        assertEquals(rm.getPublicCalls().size(),1);
+        assert (rm.getPublicCalls().toArray()[0] instanceof GenericMethod);
+        assertEquals (((GenericAccessibleObject)rm.getPublicCalls().toArray()[0]).getName(),"doubleValue");
 
 
-        ///
-        Object obj2 = new Boolean(true);
-        Class<?>[] classes2 = new Class<?>[1];
-        classes2[0] = String.class;
-        GenericClass gc2 = Mockito.mock(GenericClass.class);
-        Mockito.when(gc2.hasWildcardOrTypeVariables()).thenReturn(false);
-        Constructor c = obj2.getClass().getConstructors()[0];
-        ///
 
-        GenericConstructor call2 = Mockito.mock(GenericConstructor.class);
-        Mockito.when(call2.getName()).thenReturn(c.getName());
-        Mockito.when(call2.getOwnerClass()).thenReturn(gc2);
-        Mockito.when(call2.isMethod()).thenReturn(false);
-        Mockito.when(call2.isConstructor()).thenReturn(true);
-        Mockito.when(call2.getOwnerType()).thenReturn(String.class);
-        Mockito.when(call2.getConstructor()).thenReturn(c);
-        Mockito.when(call2.getRawGeneratedType()).thenReturn(c.getParameterTypes()[0]);
-        Mockito.when(call2.getReturnType()).thenReturn(Boolean.TYPE);
-        TestCluster.getInstance().addTestCall(call2);
-
-        publicCalls.add(c.getName());
-
+        Mockito.when(bc.getMethodName()).thenReturn("<init>(I)V");
+        Mockito.when(utility.collectPublicCalls(Mockito.any())).thenReturn(bc);
         rm = new StackTraceChromosomeFactory(trace, utility);
+        assertEquals(rm.getPublicCalls().size(),1);
+        assert (rm.getPublicCalls().toArray()[0] instanceof GenericConstructor);
 
-        generatedChromosome = rm.getChromosome();
-
-//        fail("Should have sent Exception by now!");
 
     }
 

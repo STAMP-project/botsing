@@ -62,6 +62,8 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
 
     public StackTraceChromosomeFactory(StackTrace trace, GuidedSearchUtility utility) {
         allMethods.clear();
+        publicParentCalls.clear();
+        attemptedPublicParents.clear();
         this.utility = utility;
         targetTrace = trace;
 
@@ -78,9 +80,6 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
             CarvingManager manager = CarvingManager.getInstance();
             final Class<?> targetClass = Properties.getTargetClassAndDontInitialise();
             List<TestCase> junitTests = manager.getTestsForClass(targetClass);
-//            if (junitTests.size() > 0) {
-//                LOG.info("* Using {} carved tests from existing JUnit tests for seeding", junitTests.size());
-//            }
             ClientNodeLocal client = ClientServices.getInstance().getClientNode();
             client.trackOutputVariable(RuntimeVariable.CarvedTests, junitTests.size());
             client.trackOutputVariable(RuntimeVariable.CarvedCoverage,0.0);
@@ -166,13 +165,9 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
 
                     //at this point, if injecting, then we successfully injected a target call.
                     if (injecting){
-                        isIncluded = true;
                         target_counter++;
                         prob = 1/length;
                     }
-//					else {
-//						assert (false) : "Found test call that is neither method nor constructor";
-//					}
                 } catch (ConstructionFailedException | Error e) {
                     if (injecting) {
                         prob = 1 / (length - test.size() + 1);
