@@ -23,7 +23,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     }
     @Override
     public double getFitness(TestChromosome testChromosome, ExecutionResult executionResult) {
-        int targetFrame = targetCrash.getTargetFrameLevel();
+        int targetFrame = targetCrash.getPublicTargetFrameLevel();
         double fitnessValue=0;
         boolean covering = true;
         for(int frameLevel = targetFrame; frameLevel > 0 ; frameLevel--){
