@@ -20,23 +20,19 @@ package eu.stamp.botsing;
  * #L%
  */
 
-import eu.stamp.botsing.commons.ClassPaths;
 import eu.stamp.botsing.reproduction.CrashReproduction;
 
 import static eu.stamp.botsing.CommandLineParameters.*;
+import static eu.stamp.botsing.commons.SetupUtility.*;
 
 import org.apache.commons.cli.*;
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
-import org.evosuite.classpath.ClassPathHacker;
-import org.evosuite.classpath.ClassPathHandler;
-import org.evosuite.junit.writer.TestSuiteWriterUtils;
 import org.evosuite.result.TestGenerationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -61,33 +57,40 @@ public class Botsing {
             LOG.error("A mandatory option -{} -{} -{} is missing!", PROJECT_CP_OPT, CRASH_LOG_OPT, TARGET_FRAME_OPT);
             printHelpMessage(options);
         } else {// Otherwise, proceed to crash reproduction
+
+            // Update EvoSuite's properties
             java.util.Properties properties = commands.getOptionProperties(D_OPT);
             updateEvoSuiteProperties(properties);
+            // Setup project class paths
+            crashProperties.setClasspath(getCompatibleCP(commands.getOptionValue(PROJECT_CP_OPT)));
+            setupProjectClasspath(crashProperties.getProjectClassPaths());
+            // Setup stack trace(s)
             setupStackTrace(crashProperties, commands);
-            setupProjectClasspath(crashProperties, commands);
+            // Set the search algorithm
             if(commands.hasOption(SEARCH_ALGORITHM)){
                 setSearchAlgorithm(commands.getOptionValue(SEARCH_ALGORITHM));
             }
-
+            // Set fitness function(s)
             if(commands.hasOption(FITNESS_FUNCTION)){
                 setFF(commands.getOptionValue(FITNESS_FUNCTION));
             }
-
+            // Enable integration testing in the crash reproduction process if it is necessary.
             if(commands.hasOption(INTEGRATION_TESTING)){
                 crashProperties.integrationTesting = true;
             }
-
+            // Estimating the missing lines in the stack trace
             if(commands.hasOption(DISABLE_LINE_ESTIMATION)){
                 crashProperties.lineEstimation = false;
             }
-
+            // Add I/O Diversity as goals to MOSA
             if(commands.hasOption(IO_DIVERSITY)){
                 crashProperties.IODiversity = true;
             }
-
+            // Use model seeding
             if(commands.hasOption(MODEL_PATH_OPT)){
                 setupModelSeedingRelatedProperties(commands);
             }
+            // execute
             return CrashReproduction.execute();
         }
         return null;
@@ -121,32 +124,6 @@ public class Botsing {
         Properties.MODEL_PATH = modelPath;
     }
 
-    protected CommandLine parseCommands(String[] args, Options options){
-        CommandLineParser parser = new DefaultParser();
-        CommandLine commands = null;
-        try {
-            commands = parser.parse(options, args);
-        } catch (ParseException e) {
-            LOG.error("Could not parse command line!", e);
-            printHelpMessage(options);
-            return null;
-        }
-        return commands;
-    }
-
-    protected void updateEvoSuiteProperties(java.util.Properties properties){
-        for (String property : properties.stringPropertyNames()) {
-            if (Properties.hasParameter(property)) {
-                try {
-                    Properties.getInstance().setValue(property, properties.getProperty(property));
-                } catch (Properties.NoSuchParameterException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
     public void setupStackTrace(CrashProperties crashProperties, CommandLine commands){
         // Setup given stack trace
@@ -176,35 +153,6 @@ public class Botsing {
         }
 
 
-    }
-
-    protected void setupProjectClasspath(CrashProperties crashProperties, CommandLine commands){
-        // Setup Project's class path
-        String cp = commands.getOptionValue(PROJECT_CP_OPT);
-        // Get EvoSuite compatible class path
-        List<String> classPathEntries = ClassPaths.getClassPathEntries(cp);
-        crashProperties.setClasspath(classPathEntries.toArray(new String[classPathEntries.size()]));
-
-        ClassPathHandler.getInstance().changeTargetClassPath(crashProperties.getProjectClassPaths());
-
-        // locate Tool jar
-        if (TestSuiteWriterUtils.needToUseAgent() && Properties.JUNIT_CHECK) {
-            ClassPathHacker.initializeToolJar();
-        }
-
-        // Adding the target project classpath entries.
-        for (String entry : ClassPathHandler.getInstance().getTargetProjectClasspath().split(File.pathSeparator)) {
-            try {
-                ClassPathHacker.addFile(entry);
-            } catch (IOException e) {
-                LOG.info("* Error while adding classpath entry: " + entry);
-            }
-        }
-    }
-
-    private void printHelpMessage(Options options) {
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar botsing.jar -crash_log stacktrace.log -target_frame 2 -project_cp dep1.jar;dep2.jar  )", options);
     }
 
     @SuppressWarnings("checkstyle:systemexit")
