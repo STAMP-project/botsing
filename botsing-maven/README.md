@@ -101,7 +101,7 @@ To run the maven plugin, go in the botsing-maven folder and type this command:
 ```
 cd botsing/botsing-maven/
 
-mvn eu.stamp-project:botsing-maven:1.0.6-SNAPSHOT:common-behavior -Dproject_cp=/home/ubuntu/authzforce-core/pdp-engine/target/classes -Dproject_prefix=org.ow2.authzforce  -Dout_dir=results/authzforce -Dclass=org.ow2.authzforce.core.pdp.impl.PdpBean -Devosuite=/home/ubuntu/evosuite-model-seeding-tutorial/bin/evosuite-master-1.0.7-SNAPSHOT.jar -Dsearch_budget=50
+mvn eu.stamp-project:botsing-maven:1.0.6-SNAPSHOT:common-behavior -Dproject_cp=/home/ubuntu/authzforce-core/pdp-engine/target/classes -Dproject_prefix=org.ow2.authzforce  -Dout_dir=results/authzforce -Dclass=org.ow2.authzforce.core.pdp.impl.PdpBean -Dsearch_budget=50
 ```
 
 

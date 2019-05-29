@@ -10,8 +10,6 @@ public class EvoSuiteConfiguration extends AbstractConfiguration {
 	 * Properties taken from CommandLine
 	 */
 
-	public static final String EVO_SUITE_JAR = "evosuite";
-
 	public static final String CLASS_OPT = "class";
 	public static final String PROJECT_CP_OPT = "projectCP";
 	public static final String MODEL_PATH_OPT = "model_path";
