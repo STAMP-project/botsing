@@ -48,9 +48,6 @@ public class CommonBehaviorMojo extends AbstractMojo {
 	@Parameter(property = EvoSuiteConfiguration.CLASS_OPT)
 	private String clazz;
 
-	@Parameter(property = EvoSuiteConfiguration.EVO_SUITE_JAR)
-	private String evoSuitePathJar;
-
 	// optional parameters
 	@Parameter(property = EvoSuiteConfiguration.TEST_DIR_OPT)
 	private String testDir;
@@ -78,6 +75,9 @@ public class CommonBehaviorMojo extends AbstractMojo {
 	 */
 	@Parameter(property = "model_geneation_version", defaultValue = "1.0.6-SNAPSHOT")
 	private String modelGenerationVersion;
+
+	@Parameter(property = "evosuite_master_version", defaultValue = "1.0.7")
+	private String evosuiteMasterVersion;
 
 	/**
 	 * Maven variables
@@ -125,16 +125,22 @@ public class CommonBehaviorMojo extends AbstractMojo {
 			getLog().info("botsingModelGenerationJar file: " + botsingModelGenerationJar.getAbsolutePath());
 
 			try {
+
 				boolean success = ProcessRunner.executeBotsingModelGeneration(project.getBasedir(),
 						botsingModelGenerationJar, modelGenerationConf, getLog());
 
 				if (success) {
 					// get file EvoSuite jar
-					File evoSuiteJar = new File(evoSuitePathJar);
+					File evoSuiteJar = getArtifactFile(
+							new DefaultArtifact("org.evosuite", "evosuite-master", "", "jar", evosuiteMasterVersion));
+
 					if (evoSuiteJar.exists()) {
+						getLog().info("evoSuiteJar file: " + evoSuiteJar.getAbsolutePath());
+
 						ProcessRunner.executeEvoSuite(project.getBasedir(), evoSuiteJar, evoSuiteConf, getLog());
+
 					} else {
-						throw new MojoFailureException("EvoSuite path file (" + evoSuitePathJar + ") does not exist");
+						throw new MojoFailureException("EvoSuite JAR file does not exist in the repository yet");
 					}
 				}
 			} catch (Exception e) {

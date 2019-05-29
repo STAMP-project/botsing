@@ -83,10 +83,15 @@ git clone https://github.com/STAMP-project/botsing.git
 mvn clean install
 ```
 
-Note you need also to download the 'evosuite-master-1.0.7-SNAPSHOT.jar' from this [link](https://github.com/STAMP-project/evosuite-model-seeding-tutorial.git):
+Note you need also to download and install in maven repo the 'evosuite-master-1.0.7-SNAPSHOT.jar' from this [link](https://github.com/STAMP-project/evosuite-model-seeding-tutorial.git):
 
 ```
 git clone https://github.com/STAMP-project/evosuite-model-seeding-tutorial.git
+
+cd evosuite-model-seeding-tutorial
+
+mvn install:install-file -Dfile=bin/evosuite-master-1.0.7-SNAPSHOT.jar -DgroupId=org.evosuite -DartifactId=evosuite-master -Dversion=1.0.7 -Dpackaging=jar
+
 ```
 
 ### Run plugin
