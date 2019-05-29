@@ -93,7 +93,7 @@
         <maven-plugin-api.version>3.5.4</maven-plugin-api.version>
         <maven-plugin-testing-harness.version>3.3.0</maven-plugin-testing-harness.version>
         <maven-verifier.version>1.6</maven-verifier.version>
-	
+
 	<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-source-plugin.version>2.4</maven-source-plugin.version>
         <mockito.version>2.23.0</mockito.version>
@@ -419,6 +419,7 @@
         <module>botsing-preprocessing</module>
         <module>botsing-model-generation</module>
         <module>botsing-parsers</module>
+        <module>botsing-integration</module>
     </modules>
 
 </project>
