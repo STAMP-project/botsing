@@ -5,11 +5,16 @@ import org.evosuite.Properties;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.junit.writer.TestSuiteWriterUtils;
+import org.evosuite.setup.DependencyAnalysis;
+import org.evosuite.testcase.execution.ExecutionTrace;
+import org.evosuite.testcase.execution.ExecutionTracer;
+import org.evosuite.testcase.execution.reset.ClassReInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 public class SetupUtility {
@@ -74,6 +79,28 @@ public class SetupUtility {
             } catch (IOException e) {
                 LOG.info("* Error while adding classpath entry: " + entry);
             }
+        }
+    }
+
+
+
+    public static void configureClassReInitializer() {
+        ExecutionTrace execTrace = ExecutionTracer.getExecutionTracer().getTrace();
+        final List<String> initializedClasses = execTrace.getInitializedClasses();
+        ClassReInitializer.getInstance().addInitializedClasses(initializedClasses);
+        ClassReInitializer.getInstance().setReInitializeAllClasses(Properties.RESET_ALL_CLASSES_DURING_TEST_GENERATION);
+    }
+
+    public static void analyzeClassDependencies(String  className) {
+        String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
+        List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
+        Properties.TARGET_CLASS=className;
+        try {
+            LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
+            DependencyAnalysis.analyzeClass(className,Arrays.asList(cp.split(File.pathSeparator)));
+            LOG.info("Analysing dependencies done!");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 }
