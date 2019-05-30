@@ -26,8 +26,8 @@ public class BotsingIntegration {
         // If help option is provided
         if (commands.hasOption(HELP_OPT)) {
             printHelpMessage(options);
-        } else if(!(commands.hasOption(PROJECT_CP_OPT))) { // Check the required options are there
-            LOG.error("A mandatory option -{} is missing!", PROJECT_CP_OPT);
+        } else if(!commands.hasOption(PROJECT_CP_OPT) || !commands.hasOption(TARGET_CLASSES) ) { // Check the required options are there
+            LOG.error("A mandatory option -{} -{} is missing!", PROJECT_CP_OPT, TARGET_CLASSES);
             printHelpMessage(options);
         } else {// Otherwise, proceed to crash reproduction
 
@@ -37,6 +37,8 @@ public class BotsingIntegration {
             // Setup project class paths
             integrationTestingProperties.setClasspath(getCompatibleCP(commands.getOptionValue(PROJECT_CP_OPT)));
             setupProjectClasspath(integrationTestingProperties.getProjectClassPaths());
+            // Setup target classes
+            setupTargetClasses(commands.getOptionValue(TARGET_CLASSES));
             // Set the search algorithm
             if(commands.hasOption(SEARCH_ALGORITHM)){
                 String algorithm = commands.getOptionValue(SEARCH_ALGORITHM);
@@ -55,13 +57,16 @@ public class BotsingIntegration {
 
     }
 
-
-
-
-
-
-
-
+    private void setupTargetClasses(String targetClasses) {
+        String separator = System.getProperty("path.separator");
+        IntegrationTestingProperties.TARGET_CLASSES = targetClasses.split(separator);
+        if(IntegrationTestingProperties.TARGET_CLASSES.length <2){
+            throw new IllegalArgumentException("Number of target classes should be equal or more than one");
+        }else if (IntegrationTestingProperties.TARGET_CLASSES.length > 2){
+            LOG.warn("Searching for integration testing between more than 2 classes may lead to path explosion.");
+            throw new IllegalArgumentException("Botsing does not support more than two classes for now!");
+        }
+    }
 
 
 }

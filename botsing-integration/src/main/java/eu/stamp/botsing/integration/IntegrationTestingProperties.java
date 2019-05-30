@@ -53,6 +53,10 @@ public class IntegrationTestingProperties {
     @Properties.Parameter(key = "FitnessFunctions", group = "search algorithm", description = "Which fitness function(s) should be used for the search process")
     public static IntegrationTestingProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.Integration};
 
+    /** Classes under test */
+    @Parameter(key = "targetClasses", group = "Runtime", description = "Classes under test")
+    public static String[] TARGET_CLASSES = {};
+
 
     static java.util.Properties configFile = new java.util.Properties();
 
@@ -94,47 +98,6 @@ public class IntegrationTestingProperties {
         }
         return instance;
     }
-
-//    public String getStringValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
-//        if (Properties.hasParameter(property)) {
-//            return Properties.getStringValue(property);
-//        } else if (configFile.containsKey(property)) {
-//            return configFile.getProperty(property);
-//        }
-//        return null;
-//    }
-//
-//
-//    public int getIntValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
-//        return Properties.getIntegerValue(property);
-//    }
-//
-//
-//    public long getLongValue(String property) throws IllegalAccessException, Properties.NoSuchParameterException {
-//        return Properties.getLongValue(property);
-//    }
-//
-//    /**
-//     * Returns the value of the given property or null if the property could not be found.
-//     * @param property the property to get the value of.
-//     * @return The value of the given property or null if the property could not be found.
-//     * @throws IllegalStateException If the property could not be accessed.
-//     */
-//    public Boolean getBooleanValue(String property) {
-//        try {
-//            if (Properties.hasParameter(property)) {
-//                return Properties.getBooleanValue(property);
-//            } else if (configFile.containsKey(property)) {
-//                return Boolean.valueOf(configFile.getProperty(property));
-//            }
-//        } catch (Properties.NoSuchParameterException e) {
-//            LOG.debug("Property {} not found!", property, e);
-//        } catch (IllegalAccessException e) {
-//            LOG.debug("Illegal access for property {}!", property, e);
-//            throw new IllegalStateException("Illegal access for property " + property + "!", e);
-//        }
-//        return null;
-//    }
 
     public void setClasspath(String projectClassPath) {
         projectClassPaths = projectClassPath.split(File.pathSeparator);

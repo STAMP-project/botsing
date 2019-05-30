@@ -7,6 +7,7 @@ public class CommandLineParameters {
 
     public static final String D_OPT = "D";
     public static final String PROJECT_CP_OPT = "project_cp";
+    public static final String TARGET_CLASSES = "target_classes";
     public static final String HELP_OPT = "help";
     public static final String SEARCH_ALGORITHM = "search_algorithm";
     public static final String FITNESS_FUNCTION = "fitness";
@@ -25,6 +26,11 @@ public class CommandLineParameters {
         options.addOption(Option.builder(PROJECT_CP_OPT)
                 .hasArg()
                 .desc("classpath of the project under test and all its dependencies")
+                .build());
+        // target classes
+        options.addOption(Option.builder(TARGET_CLASSES)
+                .hasArg()
+                .desc("Target classes for integration testing")
                 .build());
         // Search Algorithm
         options.addOption(Option.builder(SEARCH_ALGORITHM)
