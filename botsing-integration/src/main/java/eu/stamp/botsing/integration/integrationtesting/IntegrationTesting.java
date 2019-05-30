@@ -1,5 +1,8 @@
 package eu.stamp.botsing.integration.integrationtesting;
 
+import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
+import eu.stamp.botsing.integration.IntegrationTestingProperties;
+import eu.stamp.botsing.integration.graphs.cfg.CFGGenerator;
 import org.evosuite.Properties;
 import org.evosuite.coverage.TestFitnessFactory;
 import org.evosuite.result.TestGenerationResult;
@@ -15,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static eu.stamp.botsing.commons.PostProcessUtility.*;
@@ -55,10 +59,20 @@ public class IntegrationTesting {
         //Initialize EvoSuite test executor
         TestCaseExecutor.initExecutor();
 
-        // In the first step initialize the target class
+
         try{
-            // ToDo: call to CFG Generator
-            analyzeClassDependencies("classNameOfCaller");
+            // In the first step initialize the target classes
+            ClassInstrumentation classInstrumenter = new ClassInstrumentation();
+            List <String> interestingClasses = Arrays.asList(IntegrationTestingProperties.TARGET_CLASSES);
+            List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses,interestingClasses.get(0));
+            // We assume that first passed class is tha caller, and second one is the callee
+            Class caller = instrumentedClasses.get(0);
+            Class calee = instrumentedClasses.get(1);
+            // Generate the inter-procedural graphs (IRCFG, IACFG, and ICDG)
+            CFGGenerator cfgGenerator = new CFGGenerator(caller,calee);
+            cfgGenerator.generateInterProceduralGraphs();
+            // Analyze the dependencies of the caller class
+            analyzeClassDependencies(caller.getName());
         }catch (Exception e){
             LOG.error("Error in target initialization:");
             e.printStackTrace();

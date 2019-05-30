@@ -28,10 +28,10 @@ public class CFGGenerator {
 
     public void generateInterProceduralCFG() {
         int numberOfStackTraces = CrashProperties.getInstance().getCrashesSize();
-        List<String> interestingClasses = new ArrayList<>();
+        List<String> interestingClasses;
         for (int crashIndex=0; crashIndex<numberOfStackTraces;crashIndex++){
             interestingClasses = CrashProperties.getInstance().getTargetClasses(crashIndex);
-            List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses);
+            List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses,interestingClasses.get(interestingClasses.size()-1));
             if(!instrumentedClasses.isEmpty()){
                 collectCFGS(instrumentedClasses);
             }else{
