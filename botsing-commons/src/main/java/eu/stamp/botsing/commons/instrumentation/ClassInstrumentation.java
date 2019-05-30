@@ -22,10 +22,9 @@ import java.util.List;
 
 public class ClassInstrumentation {
     private static final Logger LOG = LoggerFactory.getLogger(ClassInstrumentation.class);
-    public List<Class> instrumentClasses(List<String> interestingClasses){
+    public List<Class> instrumentClasses(List<String> interestingClasses, String testingClassName){
         List<Class> instrumentedClasses = new ArrayList<>();
         List<String> instrumentedClassesName = new ArrayList<>();
-        String targetClassName = interestingClasses.get(interestingClasses.size()-1);
 
         for(String clazz: interestingClasses){
             if(instrumentedClassesName.contains(clazz)){
@@ -36,7 +35,7 @@ public class ClassInstrumentation {
             try {
                 Properties.TARGET_CLASS=clazz;
                 cls = Class.forName(clazz,false, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                if(!clazz.contains(targetClassName)){
+                if(!clazz.contains(testingClassName)){
                     instrumentClassByTestExecution(Properties.TARGET_CLASS);
                 }
                 instrumentedClasses.add(cls);
