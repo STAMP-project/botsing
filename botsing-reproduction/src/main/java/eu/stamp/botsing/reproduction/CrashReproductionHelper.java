@@ -21,8 +21,10 @@ package eu.stamp.botsing.reproduction;
  */
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.testgeneration.strategy.BotsingIndividualStrategy;
-import eu.stamp.botsing.testgeneration.strategy.MOSuiteStrategy;
+import eu.stamp.botsing.commons.testgeneration.strategy.MOSuiteStrategy;
+import eu.stamp.botsing.testgeneration.strategy.TestGenerationUtility;
 import org.evosuite.strategy.TestGenerationStrategy;
 
 public class CrashReproductionHelper {
@@ -30,9 +32,9 @@ public class CrashReproductionHelper {
     public static TestGenerationStrategy getTestGenerationFactory(){
                 switch (CrashProperties.searchAlgorithm){
                     case Guided_MOSA:
-                        return new MOSuiteStrategy();
+                        return new MOSuiteStrategy(new TestGenerationUtility(),new FitnessFunctions());
                     case DynaMOSA:
-                        return new MOSuiteStrategy();
+                        return new MOSuiteStrategy(new TestGenerationUtility(),new FitnessFunctions());
                     default:
                         return new BotsingIndividualStrategy();
                 }
