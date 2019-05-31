@@ -61,9 +61,12 @@ public class CFGGenerator {
 
     public void generateInterProceduralGraphs(){
         generateRawGraphs();
+        LOG.info("Raw control flow graph is generated.");
         actualInterProceduralGraph = new BotsingActualControlFlowGraph(rawInterProceduralGraph);
+        LOG.info("Actual control flow graph is generated.");
         GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerActualCFG(actualInterProceduralGraph);
         controlDependenceInterProceduralGraph = new ControlDependenceGraph(actualInterProceduralGraph);
+        LOG.info("Control dependence graph is generated.");
         GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).registerControlDependence(controlDependenceInterProceduralGraph);
 
         logGeneratedCDG();

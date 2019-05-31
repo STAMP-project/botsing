@@ -28,6 +28,7 @@ import static eu.stamp.botsing.commons.SetupUtility.configureClassReInitializer;
 public class IntegrationTesting {
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTesting.class);
     public static List<TestGenerationResult> execute(){
+        LOG.info("Starting ...");
         List<TestGenerationResult> generatedTests = new ArrayList<TestGenerationResult>();
 
 
@@ -61,17 +62,22 @@ public class IntegrationTesting {
 
 
         try{
+            LOG.info("Instrumenting target classes {} and {}",IntegrationTestingProperties.TARGET_CLASSES[0],IntegrationTestingProperties.TARGET_CLASSES[1]);
             // In the first step initialize the target classes
             ClassInstrumentation classInstrumenter = new ClassInstrumentation();
             List <String> interestingClasses = Arrays.asList(IntegrationTestingProperties.TARGET_CLASSES);
             List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses,interestingClasses.get(0));
             // We assume that first passed class is tha caller, and second one is the callee
             Class caller = instrumentedClasses.get(0);
-            Class calee = instrumentedClasses.get(1);
+            LOG.info("Instrumented caller class: {}",caller.getName());
+            Class callee = instrumentedClasses.get(1);
+            LOG.info("Instrumented callee class: {}",callee.getName());
             // Generate the inter-procedural graphs (IRCFG, IACFG, and ICDG)
-            CFGGenerator cfgGenerator = new CFGGenerator(caller,calee);
+            LOG.info("Generating inter-procedural graphs...");
+            CFGGenerator cfgGenerator = new CFGGenerator(caller,callee);
             cfgGenerator.generateInterProceduralGraphs();
             // Analyze the dependencies of the caller class
+            LOG.info("Analyzing dependencies...");
             analyzeClassDependencies(caller.getName());
         }catch (Exception e){
             LOG.error("Error in target initialization:");
