@@ -1,7 +1,7 @@
-package eu.stamp.botsing.testgeneration.strategy;
+package eu.stamp.botsing.commons.testgeneration.strategy;
 
-import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
+
+import eu.stamp.botsing.commons.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.commons.ga.strategy.mosa.AbstractMOSA;
 import org.evosuite.Properties;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -23,8 +23,13 @@ import java.util.List;
 public class MOSuiteStrategy extends TestGenerationStrategy {
     private static final Logger LOG = LoggerFactory.getLogger(MOSuiteStrategy.class);
 
-    private TestGenerationUtility utility = new TestGenerationUtility();
-    private FitnessFunctions fitnessFunctionCollector = new FitnessFunctions();
+    private AbstractTestGenerationUtility utility;
+    private FitnessFunctions fitnessFunctionCollector;
+
+    public MOSuiteStrategy(AbstractTestGenerationUtility utility,FitnessFunctions fitnessFunctionCollector){
+        this.utility = utility;
+        this.fitnessFunctionCollector = fitnessFunctionCollector;
+    }
     @Override
     public TestSuiteChromosome generateTests() {
         LOG.info("test generation strategy: MOSuite");
@@ -42,13 +47,7 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
         // Add stopping conditions
         StoppingCondition stoppingCondition = getStoppingCondition();
 
-        try {
-            stoppingCondition.setLimit(CrashProperties.getInstance().getLongValue("search_budget"));
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (Properties.NoSuchParameterException e) {
-            e.printStackTrace();
-        }
+            stoppingCondition.setLimit(Properties.SEARCH_BUDGET);
 
         if (Properties.STOP_ZERO) {
             ga.addStoppingCondition(new ZeroFitnessStoppingCondition());
