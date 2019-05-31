@@ -3,26 +3,17 @@ package eu.stamp.botsing.integration.coverage.branch;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.coverage.branch.IntegrationTestingBranchCoverageGoal;
 import eu.stamp.botsing.commons.coverage.branch.IntegrationTestingBranchCoverageTestFitness;
-import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
-import org.evosuite.Properties;
-import org.evosuite.TestGenerationContext;
 import org.evosuite.coverage.MethodNameMatcher;
 import org.evosuite.coverage.branch.Branch;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.coverage.branch.BranchPool;
-import org.evosuite.graphs.GraphPool;
-import org.evosuite.graphs.cdg.ControlDependenceGraph;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
-import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
-import org.evosuite.setup.DependencyAnalysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 public class IntegrationTestingBranchCoverageFactory {
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTestingBranchCoverageFactory.class);
