@@ -6,21 +6,28 @@ import org.evosuite.graphs.ccg.ClassCallGraph;
 import org.evosuite.graphs.ccg.ClassCallNode;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import org.objectweb.asm.Type;
 import java.util.*;
 
 import static eu.stamp.botsing.integration.graphs.cfg.CFGGeneratorUtility.isPrivateMethod;
 
 public class CallerClass {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CallerClass.class);
     private CFGGeneratorUtility utility = new CFGGeneratorUtility();
 
     protected ClassCallGraph ClassCallGraph;
     protected Set<String> privateMethods = new HashSet<>();
 
     // call sites of the caller <methodName,List<BytecodeInstruction>>
-    protected Map<String,List<BytecodeInstruction>> callSites = new HashMap<>();
+    protected Map<String,Map<BytecodeInstruction,List<Type>>> callSites = new HashMap<>();
 
-    protected List<RawControlFlowGraph> involvedCFGs =  new ArrayList<>();
+    public List<RawControlFlowGraph> involvedCFGs =  new ArrayList<>();
+
+    protected Set<String> involvedMethods = new HashSet<>();
 
 
     private BotsingRawControlFlowGraph rawInterProceduralGraph;
@@ -37,13 +44,25 @@ public class CallerClass {
         return rawInterProceduralGraph;
     }
 
+    public Set<String> getInvolvedMethods(){
+        if(involvedMethods.size() == 0){
+            throw new IllegalStateException("involved methods in caller is empty!");
+        }
+        return involvedMethods;
+    }
+
+    public Map<BytecodeInstruction,List<Type>> getCallSitesOfMethod(String method){
+        if(callSites.containsKey(method)){
+            return callSites.get(method);
+        }
+        return null;
+    }
 
     protected void setListOfInvolvedCFGs(Map<String,List<RawControlFlowGraph>> cfgs){
         if(callSites == null){
             throw new IllegalArgumentException("There is no call_site from caller!");
         }
 
-        Set<String> involvedMethods = new HashSet<>();
         for(String callerMethod: callSites.keySet()){
             ClassCallNode callerMethodNode = ClassCallGraph.getNodeByMethodName(callerMethod);
             LinkedList<ClassCallNode> methodsToCheck = new LinkedList();
@@ -69,5 +88,15 @@ public class CallerClass {
                 }
             }
         }
+    }
+
+    public RawControlFlowGraph getMethodCFG(String methodName){
+        for (RawControlFlowGraph cfg: involvedCFGs){
+            if(cfg.getMethodName().equals(methodName)){
+                return cfg;
+            }
+        }
+
+        return null;
     }
 }
