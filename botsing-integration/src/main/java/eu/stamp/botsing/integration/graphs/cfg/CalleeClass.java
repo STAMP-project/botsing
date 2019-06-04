@@ -4,6 +4,7 @@ import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.graphs.cfg.BotsingRawControlFlowGraph;
 import org.evosuite.graphs.ccg.ClassCallGraph;
 import org.evosuite.graphs.ccg.ClassCallNode;
+import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +12,12 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 public class CalleeClass {
-    private static final Logger LOG = LoggerFactory.getLogger(CallerClass.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CalleeClass.class);
     private CFGGeneratorUtility utility = new CFGGeneratorUtility();
 
     protected ClassCallGraph ClassCallGraph;
+
+    protected Map<String,List<BytecodeInstruction>> returnPoints = new HashMap<>();
 
     protected List<String> calledMethods =  new ArrayList<>();
     protected List<RawControlFlowGraph> involvedCFGs =  new ArrayList<>();
