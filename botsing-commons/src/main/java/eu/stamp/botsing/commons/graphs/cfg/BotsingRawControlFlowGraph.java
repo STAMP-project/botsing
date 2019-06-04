@@ -1,9 +1,9 @@
 package eu.stamp.botsing.commons.graphs.cfg;
 
-import org.evosuite.graphs.cfg.BasicBlock;
-import org.evosuite.graphs.cfg.BytecodeInstruction;
-import org.evosuite.graphs.cfg.ControlFlowEdge;
-import org.evosuite.graphs.cfg.RawControlFlowGraph;
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
+import eu.stamp.botsing.commons.instrumentation.InstrumentingClassLoader;
+import org.apache.commons.collections.map.HashedMap;
+import org.evosuite.graphs.cfg.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +64,14 @@ public class BotsingRawControlFlowGraph extends RawControlFlowGraph {
         this.addEdge(src, target, false);
     }
 
+    public void addGeneralEntryPoint(BytecodeInstruction src){
+        for(BytecodeInstruction target: this.determineEntryPoints()){
+            if(!target.equals(src)){
+                this.addEdge(src, target, false);
+            }
+        }
+    }
+
     @Override
     public BasicBlock determineBasicBlockFor(BytecodeInstruction instruction) {
         if (instruction == null) {
@@ -110,5 +118,43 @@ public class BotsingRawControlFlowGraph extends RawControlFlowGraph {
         InterproceduralBasicBlock basicBlock = new InterproceduralBasicBlock(this.getClassLoader(),this.className,this.methodName,blockNodes);
         LOG.debug("Created basic block: {}",basicBlock.toString());
         return basicBlock;
+    }
+
+    public void cloneAsNewNode(BytecodeInstruction source, RawControlFlowGraph cfg) {
+        BotsingRawControlFlowGraph tempCFG = new BotsingRawControlFlowGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),"IntegrationTestingGraph","methodsIntegration",1);
+        Map<Integer,Integer> newNodes = new HashedMap();
+        int id = BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getInstructionsIn(cfg.getClassName(),cfg.getMethodName()).size();
+        // clone nodes
+        Set<BytecodeInstruction> vertexes = cfg.vertexSet();
+        for (BytecodeInstruction ins : vertexes) {
+            InstrumentingClassLoader classLoader = BotsingTestGenerationContext.getInstance().getClassLoaderForSUT();
+
+            BytecodeInstruction bc = new BytecodeInstruction(classLoader,cfg.getClassName(),cfg.getMethodName(),id,0,ins.getASMNode(),ins.getLineNumber(),ins.getBasicBlock());
+            tempCFG.addVertex(bc);
+            newNodes.put(ins.getInstructionId(),id);
+            this.addVertex(bc);
+            id++;
+        }
+
+
+        // clone edges
+        Set<ControlFlowEdge> edges = cfg.edgeSet();
+        for (ControlFlowEdge edge : edges) {
+            BytecodeInstruction src = cfg.getEdgeSource(edge);
+            BytecodeInstruction target = cfg.getEdgeTarget(edge);
+
+            BytecodeInstruction newSrc = tempCFG.getInstruction(newNodes.get(src.getInstructionId()));
+            BytecodeInstruction newTarget = tempCFG.getInstruction(newNodes.get(target.getInstructionId()));
+            tempCFG.addEdges(newSrc, newTarget, edge.isExceptionEdge());
+            this.addEdge(newSrc, newTarget, edge.isExceptionEdge());
+        }
+        // Add interProceduralCFG
+        BytecodeInstruction newTarget = tempCFG.determineEntryPoint();
+        Set<BytecodeInstruction> newExitPoint = tempCFG.determineExitPoints();
+        this.addInterProceduralEdge(source,newTarget,newExitPoint);
+    }
+
+    public void addEdges(BytecodeInstruction src,BytecodeInstruction target, boolean isException){
+        this.addEdge(src, target, isException);
     }
 }
