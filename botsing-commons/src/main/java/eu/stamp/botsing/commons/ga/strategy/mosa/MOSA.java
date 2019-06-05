@@ -141,10 +141,9 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 
         while (!this.isFinished() && this.getNumberOfCoveredGoals()<this.fitnessFunctions.size() && ! fitnessCollector.isCriticalGoalsAreCovered(this.uncoveredGoals)) {
+            LOG.info("Number of covered goals are {}/{}",this.getNumberOfCoveredGoals(),this.fitnessFunctions.size());
             this.evolve();
             LOG.info("generation #{} is created.",this.currentIteration);
-            LOG.info("Number of covered goals are {}/{}",this.getNumberOfCoveredGoals(),this.fitnessFunctions.size());
-
             this.notifyIteration();
         }
     }
