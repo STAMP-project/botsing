@@ -6,6 +6,7 @@ import org.evosuite.graphs.ccg.ClassCallGraph;
 import org.evosuite.graphs.ccg.ClassCallNode;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
+import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,9 @@ public class CalleeClass {
     private CFGGeneratorUtility utility = new CFGGeneratorUtility();
 
     protected ClassCallGraph ClassCallGraph;
+
+    // call sites of the caller <methodName,List<BytecodeInstruction>>
+    protected Map<String,Map<BytecodeInstruction,List<Type>>> callSites = new HashMap<>();
 
     protected Map<String,List<BytecodeInstruction>> returnPoints = new HashMap<>();
 
@@ -66,5 +70,14 @@ public class CalleeClass {
         }
         LOG.warn("could not fine method {}",methodName);
         return null;
+    }
+
+    public void addCallSite(BytecodeInstruction bcInstruction){
+        String methodName = bcInstruction.getMethodName();
+        if(!this.callSites.containsKey(methodName)){
+            this.callSites.put(methodName,new HashMap<>());
+        }
+        Type[] argTypes = Type.getArgumentTypes(bcInstruction.getMethodCallDescriptor());
+        this.callSites.get(methodName).put(bcInstruction,Arrays.asList(argTypes));
     }
 }

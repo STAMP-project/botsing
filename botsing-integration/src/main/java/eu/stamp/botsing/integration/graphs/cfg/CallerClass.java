@@ -32,9 +32,12 @@ public class CallerClass {
 
     private BotsingRawControlFlowGraph rawInterProceduralGraph;
 
+    private Class originalClass;
+
 
     public CallerClass(Class caller){
         ClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),caller.getName());
+        originalClass = caller;
     }
 
     public BotsingRawControlFlowGraph getCallersRawInterProceduralGraph(){
@@ -97,6 +100,20 @@ public class CallerClass {
             }
         }
 
+        return null;
+    }
+
+    public String getClassName(){
+        return originalClass.getName();
+    }
+
+    public RawControlFlowGraph getSingleInvolvedCFG(String methodName){
+        for(RawControlFlowGraph cfg : involvedCFGs){
+            if(cfg.getMethodName().equals(methodName)){
+                return cfg;
+            }
+        }
+        LOG.warn("could not fine method {}",methodName);
         return null;
     }
 }

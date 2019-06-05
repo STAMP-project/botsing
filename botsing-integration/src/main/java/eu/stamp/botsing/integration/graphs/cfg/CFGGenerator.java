@@ -35,23 +35,64 @@ public class CFGGenerator {
         this.callee =  new CalleeClass(callee);
         utility.collectCFGS(callee,cfgs);
 
-        detectIntegrationPoints(caller,callee);
+        detectIntegrationPointsInCaller(caller,callee);
 
         this.caller.setListOfInvolvedCFGs(cfgs);
         this.callee.setListOfInvolvedCFGs(cfgs);
+
+        registerIndependetPaths();
+
+        LOG.info("Registration of paths has been done!");
+    }
+
+    private void registerIndependetPaths() {
+        // Collect independent paths of each involved method
+        registerIndependetPathsOfMethod(this.caller.involvedCFGs);
+        registerIndependetPathsOfMethod(this.callee.involvedCFGs);
+
+        // Collect independent paths of each call_site
+        registerIndependetPathsToCaLLSites(this.caller.involvedCFGs,this.caller.callSites);
+        registerIndependetPathsToCaLLSites(this.callee.involvedCFGs,this.callee.callSites);
+
+
+
     }
 
 
-    private void detectIntegrationPoints(Class caller, Class callee) {
+    private void registerIndependetPathsToCaLLSites(List<RawControlFlowGraph> rawCFGs, Map<String,Map<BytecodeInstruction,List<Type>>> callSites){
         GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-        // detect call_sites
+        for (RawControlFlowGraph rcfg:rawCFGs){
+            String methodName = rcfg.getMethodName();
+            if(callSites.containsKey(methodName)){
+                ActualControlFlowGraph actualControlFlowGraph = graphPool.getActualCFG(rcfg.getClassName(),rcfg.getMethodName());
+                for(BytecodeInstruction CallSiteBCInst: callSites.get(methodName).keySet()){
+                    BasicBlock targetBasicBlock = actualControlFlowGraph.getBlockOf(CallSiteBCInst);
+                    PathsPool.getInstance().registerNewPathsForCallSite(rcfg.getClassName(),rcfg.getMethodName(),targetBasicBlock,utility.detectIndependetPathsForMethod(actualControlFlowGraph,targetBasicBlock));
+                }
+            }
+        }
+    }
+
+
+    private void registerIndependetPathsOfMethod(List<RawControlFlowGraph> rawCFGs){
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        for (RawControlFlowGraph rcfg:rawCFGs){
+            ActualControlFlowGraph actualControlFlowGraph = graphPool.getActualCFG(rcfg.getClassName(),rcfg.getMethodName());
+            PathsPool.getInstance().registerNewPathsForMethod(rcfg.getClassName(),rcfg.getMethodName(),utility.detectIndependetPathsForMethod(actualControlFlowGraph,null));
+        }
+    }
+
+
+    private void detectIntegrationPointsInCaller(Class caller, Class callee) {
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        // Detect call_sites
         Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(caller.getName());
         if (methodsGraphs == null) {
             throw new IllegalStateException("Botsing could not detect any CFG in the caller class");
         }
         for (String methodName : methodsGraphs.keySet()) {
             for (BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCalls()){
-                if(bcInstruction.getCalledMethodsClass().equals(callee.getName())){
+                if(bcInstruction.isMethodCallForClass(callee.getName()) || bcInstruction.isMethodCallForClass(caller.getName())){
                     if(!this.caller.callSites.containsKey(methodName)){
                         this.caller.callSites.put(methodName,new HashMap<>());
                     }
@@ -59,7 +100,9 @@ public class CFGGenerator {
                     Type[] argTypes = Type.getArgumentTypes(bcInstruction.getMethodCallDescriptor());
 //                    callSite.put(bcInstruction,Arrays.asList(argTypes));
                     this.caller.callSites.get(methodName).put(bcInstruction,Arrays.asList(argTypes));
-                    this.callee.calledMethods.add(bcInstruction.getCalledMethod());
+                    if(bcInstruction.isMethodCallForClass(callee.getName())){
+                        this.callee.calledMethods.add(bcInstruction.getCalledMethod());
+                    }
                 }
             }
         }
@@ -76,6 +119,12 @@ public class CFGGenerator {
                         this.callee.returnPoints.put(methodName,new ArrayList<>());
                     }
                     this.callee.returnPoints.get(methodName).add(bcInstruction);
+                }
+            }
+
+            for(BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCalls()){
+                if(bcInstruction.isMethodCallForClass(callee.getName())){
+                    this.callee.addCallSite(bcInstruction);
                 }
             }
         }
@@ -106,7 +155,13 @@ public class CFGGenerator {
             Set<BytecodeInstruction> callSitesInSameMethod = entry.getValue().keySet();
             for(BytecodeInstruction src : callSitesInSameMethod){
                 String calledMethod = src.getCalledMethod();
-                RawControlFlowGraph targetRCFG = this.callee.getSingleInvolvedCFG(calledMethod);
+                RawControlFlowGraph targetRCFG;
+                if(src.getClassName().equals(caller.getClassName())){
+                    targetRCFG = this.caller.getSingleInvolvedCFG(calledMethod);
+                }else{
+                    targetRCFG = this.callee.getSingleInvolvedCFG(calledMethod);
+                }
+
                 if(targetRCFG == null){
                     throw new IllegalStateException("could not fine the target rcfg");
                 }
