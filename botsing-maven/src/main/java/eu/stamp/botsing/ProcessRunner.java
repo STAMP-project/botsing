@@ -203,12 +203,6 @@ public class ProcessRunner {
 
 		return true;
 	}
-	/*
-	 * private static boolean executeProcess(File workDir, Log log, String...
-	 * command) throws InterruptedException, IOException {
-	 *
-	 * return executeProcess(workDir, log, globalTimeout, command); }
-	 */
 
 	private static void handleProcessOutput(final Process process, Log logger) {
 
