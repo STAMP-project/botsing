@@ -1,10 +1,18 @@
 package eu.stamp.botsing.setup;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.maven.plugin.logging.Log;
 
 public class BotsingConfiguration extends AbstractConfiguration {
+
+	/**
+	 * Botsing configuration is stored in a List of String
+	 */
+	private List<String> properties;
+
+	private Log log;
 
 	/**
 	 * To see all the properties available take a look at
@@ -60,22 +68,18 @@ public class BotsingConfiguration extends AbstractConfiguration {
 	}
 
 	public Integer getGlobalTimeout() {
-
 		return getOrDecreaseParameterValue(BotsingConfiguration.GLOBAL_TIMEOUT_OPT, false);
 	}
 
 	public Integer getTargetFrame() {
-
 		return getOrDecreaseParameterValue(TARGET_FRAME_OPT, false);
 	}
 
 	public Integer decreaseTargetFrame() {
-
 		return getOrDecreaseParameterValue(TARGET_FRAME_OPT, true);
 	}
 
 	private Integer getOrDecreaseParameterValue(String parameterName, boolean decrease) {
-
 		Integer value = null;
 
 		for (int i = 0; i < properties.size(); i++) {

@@ -66,8 +66,7 @@ public abstract class AbstractConfiguration {
 				properties.add(value.toString());
 			}
 		} else {
-			log.error("Trying to insert mandatory property '" + name + "' with empty value.");
-			setRequiredOptions(true);
+			log.warn("Tryng to insert mandatory property '" + name + "' with empty value.");
 		}
 	}
 
