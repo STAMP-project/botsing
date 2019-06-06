@@ -12,6 +12,7 @@ public class ModelGenerationConfiguration extends AbstractConfiguration {
 	public static final String PROJECT_CP_OPT = "project_cp";
 	public static final String PROJECT_PREFIX_OPT = "project_prefix";
 	public static final String OUT_DIR_OPT = "out_dir";
+	public static final String GLOBAL_TIMEOUT_OPT = "global_timeout";
 
 	public ModelGenerationConfiguration(String projectClasspath, String projectPrefix, String outDir, Log log) {
 

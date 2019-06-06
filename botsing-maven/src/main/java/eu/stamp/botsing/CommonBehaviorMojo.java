@@ -45,6 +45,9 @@ public class CommonBehaviorMojo extends AbstractMojo {
 	@Parameter(property = ModelGenerationConfiguration.OUT_DIR_OPT)
 	private String outDir;
 
+	@Parameter(property = ModelGenerationConfiguration.GLOBAL_TIMEOUT_OPT, defaultValue = "1800")
+	private Integer globalTimeout;
+
 	@Parameter(property = EvoSuiteConfiguration.CLASS_OPT)
 	private String clazz;
 
@@ -127,7 +130,7 @@ public class CommonBehaviorMojo extends AbstractMojo {
 			try {
 
 				boolean success = ProcessRunner.executeBotsingModelGeneration(project.getBasedir(),
-						botsingModelGenerationJar, modelGenerationConf, getLog());
+						botsingModelGenerationJar, modelGenerationConf, globalTimeout, getLog());
 
 				if (success) {
 					// get file EvoSuite jar
@@ -137,7 +140,8 @@ public class CommonBehaviorMojo extends AbstractMojo {
 					if (evoSuiteJar.exists()) {
 						getLog().info("evoSuiteJar file: " + evoSuiteJar.getAbsolutePath());
 
-						ProcessRunner.executeEvoSuite(project.getBasedir(), evoSuiteJar, evoSuiteConf, getLog());
+						ProcessRunner.executeEvoSuite(project.getBasedir(), evoSuiteJar, evoSuiteConf, globalTimeout,
+								getLog());
 
 					} else {
 						throw new MojoFailureException("EvoSuite JAR file does not exist in the repository yet");

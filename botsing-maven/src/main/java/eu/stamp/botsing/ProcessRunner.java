@@ -203,12 +203,12 @@ public class ProcessRunner {
 
 		return true;
 	}
-
-	private static boolean executeProcess(File workDir, Log log, String... command)
-			throws InterruptedException, IOException {
-
-		return executeProcess(workDir, log, 0, command);
-	}
+	/*
+	 * private static boolean executeProcess(File workDir, Log log, String...
+	 * command) throws InterruptedException, IOException {
+	 *
+	 * return executeProcess(workDir, log, globalTimeout, command); }
+	 */
 
 	private static void handleProcessOutput(final Process process, Log logger) {
 
@@ -235,7 +235,8 @@ public class ProcessRunner {
 	}
 
 	public static boolean executeBotsingModelGeneration(File basedir, File botsingModelGenerationJar,
-			ModelGenerationConfiguration configuration, Log log) throws InterruptedException, IOException {
+			ModelGenerationConfiguration configuration, Integer timeout, Log log)
+			throws InterruptedException, IOException {
 
 		ArrayList<String> jarCommand = new ArrayList<String>();
 		jarCommand.add(JAVA_CMD);
@@ -248,11 +249,11 @@ public class ProcessRunner {
 		// clean outDir folder
 		FileUtility.deleteFolder(configuration.getOptionValue(ModelGenerationConfiguration.OUT_DIR_OPT));
 
-		return ProcessRunner.executeProcess(basedir, log, jarCommand.toArray(new String[0]));
+		return ProcessRunner.executeProcess(basedir, log, timeout, jarCommand.toArray(new String[0]));
 	}
 
-	public static boolean executeEvoSuite(File basedir, File evoSuiteJar, EvoSuiteConfiguration configuration, Log log)
-			throws InterruptedException, IOException {
+	public static boolean executeEvoSuite(File basedir, File evoSuiteJar, EvoSuiteConfiguration configuration,
+			Integer timeout, Log log) throws InterruptedException, IOException {
 
 		ArrayList<String> jarCommand = new ArrayList<String>();
 		jarCommand.add(JAVA_CMD);
@@ -264,6 +265,6 @@ public class ProcessRunner {
 
 		jarCommand.add("-generateMOSuite");
 
-		return ProcessRunner.executeProcess(basedir, log, jarCommand.toArray(new String[0]));
+		return ProcessRunner.executeProcess(basedir, log, timeout, jarCommand.toArray(new String[0]));
 	}
 }
