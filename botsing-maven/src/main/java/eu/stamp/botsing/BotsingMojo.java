@@ -35,6 +35,9 @@ import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.VersionRangeRequest;
+import org.eclipse.aether.resolution.VersionRangeResolutionException;
+import org.eclipse.aether.resolution.VersionRangeResult;
 
 import eu.stamp.botsing.setup.BotsingConfiguration;
 import eu.stamp.botsing.setup.FileUtility;
@@ -50,6 +53,20 @@ public class BotsingMojo extends AbstractMojo {
 	private enum DependencyInputType {
 		FOLDER, POM, ARTIFACT
 	}
+
+	/*
+	 * botsing-preprocessing parameters
+	 */
+
+	/**
+	 * Package regex to specify which log lines consider for stacktrace reproduction
+	 */
+	@Parameter(property = "package_filter")
+	private String packageFilter;
+
+	/*
+	 * botsing-reproduction parameters
+	 */
 
 	/**
 	 * Folder with dependencies to run the project
@@ -98,7 +115,7 @@ public class BotsingMojo extends AbstractMojo {
 	 * is stuck with a default value of 1800 (the timeout is only reached if the
 	 * search does not improve after 1800 seconds)
 	 */
-	@Parameter(property = "global_timeout")
+	@Parameter(property = "global_timeout", defaultValue = "1800")
 	private Integer globalTimeout;
 
 	/**
@@ -109,10 +126,9 @@ public class BotsingMojo extends AbstractMojo {
 	private String testDir;
 
 	/**
-	 * Botsing version to use
-	 * TODO remove default value
+	 * Botsing version to use, if not specified the highest version available will be used
 	 */
-	@Parameter(property = "botsing_version", defaultValue = "1.0.5-SNAPSHOT")
+	@Parameter(property = "botsing_version")
 	private String botsingVersion;
 
 	/**
@@ -125,25 +141,41 @@ public class BotsingMojo extends AbstractMojo {
 	@Parameter(property = "no_runtime_dependency", defaultValue = "false")
 	private String noRuntimeDependency;
 
-	/**
+	/*
 	 * Parameters to get dependencies from artifactId
+	 */
+
+	/**
+	 * Group id to search artifact in Maven
 	 */
 	@Parameter(property = "group_id")
 	private String groupId;
 
+	/**
+	 * Artifact id to search artifact in Maven
+	 */
 	@Parameter(property = "artifact_id")
 	private String artifactId;
 
+	/**
+	 * Classifier to search artifact in Maven
+	 */
 	@Parameter(property = "classifier")
 	private String classifier;
 
+	/**
+	 * Extension to search artifact in Maven (default value is "jar")
+	 */
 	@Parameter(property = "extension", defaultValue = "jar")
 	private String extension;
 
+	/**
+	 * Version to search artifact in Maven, if not specified the highest version available will be used
+	 */
 	@Parameter(property = "version")
 	private String version;
 
-	/**
+	/*
 	 * Maven variables
 	 */
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
@@ -182,23 +214,42 @@ public class BotsingMojo extends AbstractMojo {
 
 		// TODO check properties
 
-		// set Botsing configuration
-		BotsingConfiguration configuration = new BotsingConfiguration(crashLog, targetFrame, getDependencies(),
-				population, searchBudget, globalTimeout, testDir, randomSeed, noRuntimeDependency, getLog());
-
-		// Start Botsing
+		// Run botsing-preprocessing to clean crash log
+		String cleanedCrashLog = null;
 		try {
 
-			// TODO find a way to get the latest version of botsing-reproduction
-			// tried "[1.0.4, )" for version but
-			// Could not find artifact eu.stamp-project:botsing-reproduction:jar:[1.0.4, )
-			// in central (https://repo.maven.apache.org/maven2) -> [Help 1]
+			// create clean stacktrace temporary file
+			File cleanedCrashLogTmpFile =  File.createTempFile(crashLog, extension);
+			cleanedCrashLogTmpFile.deleteOnExit();
+			cleanedCrashLog = cleanedCrashLogTmpFile.getAbsolutePath();
+
+			File botsingPreprocessingJar = getArtifactFile(
+					new DefaultArtifact("eu.stamp-project", "botsing-preprocessing", "jar-with-dependencies", "jar", botsingVersion));
+
+			// Run botsing-preprocessing
+			boolean success = ProcessRunner.executeBotsingPreprocessing(project.getBasedir(), botsingPreprocessingJar,
+					crashLog, cleanedCrashLog, packageFilter, globalTimeout, getLog());
+
+			if (!success) {
+				throw new MojoFailureException("Error cleaning the stacktrace.");
+			}
+
+		} catch (Exception e) {
+			throw new MojoExecutionException("Error executing botsing-preprocessing", e);
+		}
+
+		// set Botsing configuration
+		BotsingConfiguration configuration = new BotsingConfiguration(cleanedCrashLog, targetFrame, getDependencies(),
+				population, searchBudget, globalTimeout, testDir, randomSeed, noRuntimeDependency, getLog());
+
+		// Start botsing-reproduction
+		try {
 
 			File botsingReproductionJar = getArtifactFile(
 					new DefaultArtifact("eu.stamp-project", "botsing-reproduction", "", "jar", botsingVersion));
 
-			Integer actualTargetFrame = ProcessRunner.executeBotsing(project.getBasedir(), botsingReproductionJar,
-					configuration, getMaxTargetFrame(), getLog());
+			Integer actualTargetFrame = ProcessRunner.executeBotsingReproduction(project.getBasedir(), botsingReproductionJar,
+					configuration, getMaxTargetFrame(cleanedCrashLog), getLog());
 
 			if (actualTargetFrame <= 0) {
 				throw new MojoFailureException("Failed to reproduce the stacktrace.");
@@ -219,7 +270,7 @@ public class BotsingMojo extends AbstractMojo {
 	 * @return
 	 * @throws MojoExecutionException
 	 */
-	private Integer getMaxTargetFrame() throws MojoExecutionException {
+	private Integer getMaxTargetFrame(String crashLog) throws MojoExecutionException {
 		if (targetFrame != null) {
 			return maxTargetFrame;
 
@@ -228,12 +279,15 @@ public class BotsingMojo extends AbstractMojo {
 
 		} else {
 			try {
+
 				// get row number from log file
 				long rowNumber = FileUtility.getRowNumber(crashLog);
+
 				if (rowNumber > MAX_FRAME_LIMIT) {
 					getLog().warn("target_frame set to " + MAX_FRAME_LIMIT + " because it exceed the maximum.");
 					return MAX_FRAME_LIMIT;
 				}
+
 				// remove the first line from the count
 				return (new Long(rowNumber-1)).intValue();
 
@@ -304,9 +358,11 @@ public class BotsingMojo extends AbstractMojo {
 			// artifact to get
 			DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, classifier, extension, version);
 
-			// add input artifact
-			File artifactFile = getArtifactFile(artifact);
-			result += artifactFile.getAbsolutePath() + File.pathSeparator;
+			// add input artifact if not a war file
+			if (!artifact.getExtension().equals("war")) {
+				File artifactFile = getArtifactFile(artifact);
+				result += artifactFile.getAbsolutePath() + File.pathSeparator;
+			}
 
 			// download pom artifact
 			downloadArtifactDescriptorFile(artifact);
@@ -414,7 +470,23 @@ public class BotsingMojo extends AbstractMojo {
 		ArtifactRequest req = new ArtifactRequest().setRepositories(this.repositories).setArtifact(aetherArtifact);
 		ArtifactResult resolutionResult;
 		try {
+			// search for Highest version of the artifact if none is declared
+			if (aetherArtifact.getVersion() == null || aetherArtifact.getVersion().isEmpty()) {
+
+				VersionRangeRequest request = new VersionRangeRequest().setRepositories(this.repositories)
+						.setArtifact(aetherArtifact.setVersion("(0,]"));
+				VersionRangeResult versionResult = repoSystem.resolveVersionRange(repoSession, request);
+				getLog().debug("Highest version found for " + aetherArtifact + " is: " + versionResult.getHighestVersion());
+
+				// Add the artifact with the highest version to the request
+				req = new ArtifactRequest().setRepositories(this.repositories)
+						.setArtifact(aetherArtifact.setVersion(versionResult.getHighestVersion().toString()));
+			}
+
 			resolutionResult = this.repoSystem.resolveArtifact(this.repoSession, req);
+
+		} catch (VersionRangeResolutionException e) {
+			throw new MojoExecutionException("Latest version of artifact " + aetherArtifact.getArtifactId() + " could not be resolved.", e);
 
 		} catch (ArtifactResolutionException e) {
 			throw new MojoExecutionException("Artifact " + aetherArtifact.getArtifactId() + " could not be resolved.", e);

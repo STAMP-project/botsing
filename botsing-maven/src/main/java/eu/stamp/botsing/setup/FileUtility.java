@@ -70,6 +70,5 @@ public class FileUtility {
 
 	public static void deleteFolder(String testDir) throws IOException {
 		FileUtils.deleteDirectory(new File(testDir));
-
 	}
 }

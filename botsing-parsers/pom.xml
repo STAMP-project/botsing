@@ -3,7 +3,7 @@
     <parent>
         <artifactId>botsing</artifactId>
         <groupId>eu.stamp-project</groupId>
-        <version>1.0.6-SNAPSHOT</version>
+        <version>1.0.7-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>botsing-parsers</artifactId>
@@ -72,6 +72,27 @@
                 </executions>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco-maven-plugin.version}</version>
+                    <configuration>
+                        <excludes>
+                            <exclude>**/eu/stamp/botsing/parsers/StackTracesLexer.*</exclude>
+                            <exclude>**/eu/stamp/botsing/parsers/StackTracesLexer$*.*</exclude>
+                            <exclude>**/eu/stamp/botsing/parsers/StackTracesParser.*</exclude>
+                            <exclude>**/eu/stamp/botsing/parsers/StackTracesParser$*.*</exclude>
+                            <exclude>**/eu/stamp/botsing/parsers/StackTracesParserBaseListener.*</exclude>
+                            <exclude>**/eu/stamp/botsing/parsers/StackTracesParserBaseVisitor.*</exclude>
+                            <exclude>**/eu/stamp/botsing/parsers/StackTracesParserListener.*</exclude>
+                            <exclude>**/eu/stamp/botsing/parsers/StackTracesParserVisitor.*</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 </project>

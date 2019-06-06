@@ -21,6 +21,7 @@ package eu.stamp.botsing.reproduction;
  */
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
 import eu.stamp.botsing.graphs.cfg.CFGGenerator;
 import org.evosuite.Properties;
 import org.evosuite.TimeController;
@@ -39,27 +40,18 @@ import org.evosuite.setup.DependencyAnalysis;
 import org.evosuite.statistics.RuntimeVariable;
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.evosuite.testcase.ConstantInliner;
-import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestFitnessFunction;
-import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.ExecutionTrace;
 import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testcase.execution.TestCaseExecutor;
 import org.evosuite.testcase.execution.reset.ClassReInitializer;
-import org.evosuite.testcase.statements.MethodStatement;
-import org.evosuite.testcase.statements.Statement;
-import org.evosuite.testcase.statements.StringPrimitiveStatement;
-import org.evosuite.testcase.statements.numeric.BooleanPrimitiveStatement;
-import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteMinimizer;
-import org.evosuite.utils.generic.GenericMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class CrashReproduction {
@@ -102,11 +94,11 @@ public class CrashReproduction {
 
         // In the first step initialize the target class
         try{
-//            analyzeClassPaths();
+            // TODO: make a factroy for class(es) initialization
             if(CrashProperties.integrationTesting){
-                initializeMultipleTargetClasses();
+                initializeMultipleTargetClasses(0);
             }else{
-                initializeTargetClass();
+                initializeTargetClass(0);
             }
         }catch (Exception e){
             LOG.error("Error in target initialization:");
@@ -121,7 +113,7 @@ public class CrashReproduction {
         // For seeding we should initializing the pool here
 
 
-        if (!Properties.hasTargetClassBeenLoaded()) {
+        if (!Properties.hasTargetClassBeenLoaded() && !CrashProperties.integrationTesting) {
             // initialization failed, then build error message
             return TestGenerationResultBuilder.buildErrorResult("Could not load target class");
         }
@@ -142,17 +134,25 @@ public class CrashReproduction {
 
     }
 
-    private static void analyzeClassPaths() throws ClassNotFoundException{
-        String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
-        List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
-        LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
-        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
-        LOG.info("Analysing dependencies done!");
-    }
+//    private static void analyzeClassPaths() throws ClassNotFoundException{
+//        String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
+//        List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
+//        LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
+//        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+//        LOG.info("Analysing dependencies done!");
+//    }
 
-    private static void initializeMultipleTargetClasses() {
+    private static void initializeMultipleTargetClasses(int crashIndex) {
         CFGGenerator cfgGenerator = new CFGGenerator();
         cfgGenerator.generateInterProceduralCFG();
+
+        String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
+        Properties.TARGET_CLASS=CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass();
+        try {
+            DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void postProcessTests(TestSuiteChromosome testSuite) {
@@ -195,89 +195,21 @@ public class CrashReproduction {
     }
 
 
-    private static void initializeTargetClass() throws ClassNotFoundException {
+    private static void initializeTargetClass(int crashIndex) throws ClassNotFoundException {
+        // Instrument the single target class
+        ClassInstrumentation.instrumentClassByTestExecution(CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass());
+
+        // Analyze dependencies
         String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
-        DefaultTestCase test = generateTestForLoadingClass(CrashProperties.getInstance().getStackTrace().getTargetClass());
-
-        // execute the test contains the target class
-        ExecutionResult execResult = TestCaseExecutor.getInstance().execute(test, Integer.MAX_VALUE);
-
-        if (hasThrownInitializerError(execResult)) {
-            // create single test suite with Class.forName()
-            ExceptionInInitializerError ex = getInitializerError(execResult);
-            throw ex;
-        } else if (!execResult.getAllThrownExceptions().isEmpty()) {
-            // some other exception has been thrown during initialization
-            Throwable t = execResult.getAllThrownExceptions().iterator().next();
-            try {
-                throw t;
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        }
         List<String> cpList = Arrays.asList(cp.split(File.pathSeparator));
         LOG.info("Starting the dependency analysis. The number of detected jar files is {}.",cpList.size());
-        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace().getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
+        DependencyAnalysis.analyzeClass(CrashProperties.getInstance().getStackTrace(crashIndex).getTargetClass(),Arrays.asList(cp.split(File.pathSeparator)));
         LOG.info("Analysing dependencies done!");
     }
-    private static ExceptionInInitializerError getInitializerError(ExecutionResult execResult) {
-        for (Throwable t : execResult.getAllThrownExceptions()) {
-            if (t instanceof ExceptionInInitializerError) {
-                ExceptionInInitializerError exceptionInInitializerError = (ExceptionInInitializerError)t;
-                return exceptionInInitializerError;
-            }
-        }
-        return null;
-    }
-    private static boolean hasThrownInitializerError(ExecutionResult execResult) {
-        for (Throwable t : execResult.getAllThrownExceptions()) {
-            if (t instanceof ExceptionInInitializerError) {
-                return true;
-            }
-        }
-        return false;
-    }
 
-    private static DefaultTestCase generateTestForLoadingClass(String targetClass) {
 
-        DefaultTestCase test = new DefaultTestCase();
-        StringPrimitiveStatement firstStatement = new StringPrimitiveStatement(test, targetClass);
-        VariableReference string0 = test.addStatement(firstStatement);
 
-        try{
 
-            Method currentThreadMethod = Thread.class.getMethod("currentThread");
-            Statement currentThreadStmt = new MethodStatement(test,
-                    new GenericMethod(currentThreadMethod, currentThreadMethod.getDeclaringClass()), null,
-                    Collections.emptyList());
-            VariableReference currentThreadVar = test.addStatement(currentThreadStmt);
-
-            Method getContextClassLoaderMethod = Thread.class.getMethod("getContextClassLoader");
-            Statement getContextClassLoaderStmt = new MethodStatement(test,
-                    new GenericMethod(getContextClassLoaderMethod, getContextClassLoaderMethod.getDeclaringClass()),
-                    currentThreadVar, Collections.emptyList());
-            VariableReference contextClassLoaderVar = test.addStatement(getContextClassLoaderStmt);
-
-			Method loadClassMethod = ClassLoader.class.getMethod("loadClass", String.class);
-			Statement loadClassStmt = new MethodStatement(test,
-					new GenericMethod(loadClassMethod, loadClassMethod.getDeclaringClass()), contextClassLoaderVar,
-					Collections.singletonList(string0));
-			test.addStatement(loadClassStmt);
-
-            BooleanPrimitiveStatement stmt1 = new BooleanPrimitiveStatement(test, true);
-            VariableReference boolean0 = test.addStatement(stmt1);
-
-            Method forNameMethod = Class.class.getMethod("forName",String.class, boolean.class, ClassLoader.class);
-            Statement forNameStmt = new MethodStatement(test,
-                    new GenericMethod(forNameMethod, forNameMethod.getDeclaringClass()), null,
-                    Arrays.asList(string0, boolean0, contextClassLoaderVar));
-            test.addStatement(forNameStmt);
-        }catch(Exception e){
-            LOG.error("! Error in loading the target class:");
-            e.printStackTrace();
-        }
-        return test;
-    }
 
 
     private static void compileAndCheckTests(TestSuiteChromosome chromosome) {

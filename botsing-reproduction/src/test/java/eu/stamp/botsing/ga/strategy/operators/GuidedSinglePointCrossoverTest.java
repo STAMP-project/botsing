@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNotEquals;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
@@ -16,6 +18,7 @@ import org.evosuite.testcase.TestFactory;
 import org.evosuite.testcase.statements.MethodStatement;
 import org.evosuite.testcase.statements.numeric.IntPrimitiveStatement;
 import org.evosuite.testcase.variable.VariableReference;
+import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
@@ -63,6 +66,10 @@ public class GuidedSinglePointCrossoverTest {
         GuidedSinglePointCrossover crossover = Mockito.spy(new GuidedSinglePointCrossover());
         Mockito.doReturn(true).when(crossover).isValid(tch1);
         Mockito.doReturn(true).when(crossover).isValid(tch2);
+        GenericAccessibleObject geObj = Mockito.mock(GenericAccessibleObject.class);
+        Set<GenericAccessibleObject<?>> publicCalls = new HashSet<>();
+        publicCalls.add(geObj);
+        crossover.updatePublicCalls(publicCalls);
         crossover.crossOver(tch1, tch2);
 
         assertNotEquals(parent1.toString(), tch1.toString());
@@ -85,6 +92,10 @@ public class GuidedSinglePointCrossoverTest {
         GuidedSinglePointCrossover crossover = Mockito.spy(new GuidedSinglePointCrossover());
         Mockito.doReturn(false).when(crossover).isValid(tch1);
         Mockito.doReturn(false).when(crossover).isValid(tch2);
+        GenericAccessibleObject geObj = Mockito.mock(GenericAccessibleObject.class);
+        Set<GenericAccessibleObject<?>> publicCalls = new HashSet<>();
+        publicCalls.add(geObj);
+        crossover.updatePublicCalls(publicCalls);
         crossover.crossOver(tch1, tch2);
 
         assertEquals(parent1.toString(), tch1.toString());
@@ -107,6 +118,10 @@ public class GuidedSinglePointCrossoverTest {
         GuidedSinglePointCrossover crossover = Mockito.spy(new GuidedSinglePointCrossover());
         Mockito.doReturn(false).when(crossover).isValid(tch1);
         Mockito.doReturn(false).when(crossover).isValid(tch2);
+        GenericAccessibleObject geObj = Mockito.mock(GenericAccessibleObject.class);
+        Set<GenericAccessibleObject<?>> publicCalls = new HashSet<>();
+        publicCalls.add(geObj);
+        crossover.updatePublicCalls(publicCalls);
         crossover.crossOver(tch1, tch2);
 
         assertEquals(parent1.toString(), tch1.toString());

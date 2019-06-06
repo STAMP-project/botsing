@@ -8,6 +8,7 @@ import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.ExecutionTrace;
 import org.evosuite.testcase.execution.ExecutionTraceImpl;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -40,7 +42,22 @@ public class CrashCoverageFitnessCalculatorTest {
         }
     };
 
-    private CrashCoverageFitnessCalculator calculator = new CrashCoverageFitnessCalculator();
+    private CrashCoverageFitnessCalculator calculator;
+
+
+    @Before
+    public void setupCalculator() throws FileNotFoundException {
+
+        BufferedReader obj = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
+                "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
+                "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
+
+        StackTrace target = Mockito.spy(new StackTrace());
+        Mockito.doReturn(obj).when(target).readFromFile(anyString());
+        target.setup("", 2);
+
+        calculator = new CrashCoverageFitnessCalculator(target);
+    }
 
     @Test
     public void testCalculateFrameSimilarity_zeroDistance() throws IOException {
@@ -56,7 +73,7 @@ public class CrashCoverageFitnessCalculatorTest {
         trace[0] = new StackTraceElement("eu.stamp.ClassA", "method2", "ClassA", 10);
         trace[1] = new StackTraceElement("eu.stamp.ClassB", "method1", "ClassB", 20);
 
-
+        CrashCoverageFitnessCalculator calculator = new CrashCoverageFitnessCalculator(target);
         double distance = calculator.calculateFrameSimilarity(trace, target);
         assertEquals(0, distance, 0.000001);
     }
@@ -91,7 +108,7 @@ public class CrashCoverageFitnessCalculatorTest {
         StackTrace target = Mockito.spy(new StackTrace());
         Mockito.doReturn(obj).when(target).readFromFile(anyString());
         target.setup("", 2);
-
+        CrashCoverageFitnessCalculator calculator = new CrashCoverageFitnessCalculator(target);
         StackTraceElement[] trace = new StackTraceElement[2];
         trace[0] = new StackTraceElement("eu.stamp.ClassA", "method2", "ClassA", 10);
         trace[1] = new StackTraceElement("eu.stamp.ClassB", "method1", "ClassB", 20);

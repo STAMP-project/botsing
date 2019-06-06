@@ -21,13 +21,9 @@ package eu.stamp.botsing.testgeneration.strategy;
  */
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
-import eu.stamp.botsing.fitnessfunction.testcase.factories.RootMethodTestChromosomeFactory;
-import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
-import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
-import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.GlobalTimeStoppingCondition;
 import org.evosuite.ga.stoppingconditions.MaxTimeStoppingCondition;
@@ -40,23 +36,31 @@ import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testsuite.TestSuiteChromosome;
+import org.evosuite.utils.ResourceController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Resource;
+import java.util.List;
 
-// This strategy selects one coverage goal. In the current version, this single goal is crash coverage
 public class BotsingIndividualStrategy extends TestGenerationStrategy {
     private static final Logger LOG = LoggerFactory.getLogger(BotsingIndividualStrategy.class);
 
-    @Resource
-    FitnessFunctionHelper fitnessFunctionHelper =  new FitnessFunctionHelper();
+    private TestGenerationUtility utility = new TestGenerationUtility();
+
+    private FitnessFunctions fitnessFunctionCollector = new FitnessFunctions();
+
 
     @Override
     public TestSuiteChromosome generateTests() {
         LOG.info("test generation strategy: Botsing individual");
-        LOG.info("The single goal is crash coverage.");
         TestSuiteChromosome suite = new TestSuiteChromosome();
+
+        ExecutionTracer.enableTraceCalls();
+
+        // Get the search algorithm
+        GeneticAlgorithm ga = utility.getGA();
+
+        // Add stopping conditions
         StoppingCondition stoppingCondition = getStoppingCondition();
         try {
             stoppingCondition.setLimit(CrashProperties.getInstance().getLongValue("search_budget"));
@@ -65,22 +69,29 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         } catch (Properties.NoSuchParameterException e) {
             e.printStackTrace();
         }
-        ExecutionTracer.enableTraceCalls();
-        GeneticAlgorithm ga = getGA();
 
-        if (Properties.CHECK_BEST_LENGTH) {
-            org.evosuite.testcase.RelativeTestLengthBloatControl bloat_control = new org.evosuite.testcase.RelativeTestLengthBloatControl();
-            ga.addBloatControl(bloat_control);
-            ga.addListener(bloat_control);
-        }
         ga.addStoppingCondition(stoppingCondition);
         ga.addStoppingCondition(new ZeroFitnessStoppingCondition());
 
         if (!(stoppingCondition instanceof MaxTimeStoppingCondition)) {
             ga.addStoppingCondition(new GlobalTimeStoppingCondition());
         }
-        TestFitnessFunction ff = getFF();
-        ga.addFitnessFunction(ff);
+
+        // Add listeners
+
+        if (Properties.CHECK_BEST_LENGTH) {
+            org.evosuite.testcase.RelativeTestLengthBloatControl bloat_control = new org.evosuite.testcase.RelativeTestLengthBloatControl();
+            ga.addBloatControl(bloat_control);
+            ga.addListener(bloat_control);
+        }
+        ga.addListener(new ResourceController());
+
+
+        // Add fitnes function(s)
+        List<TestFitnessFunction> fitnessFunctions = fitnessFunctionCollector.getFitnessFunctionList();
+//        for(TestFitnessFunction ff : fitnessFunctions){
+        ga.addFitnessFunctions(fitnessFunctions);
+//        }
 
         // prepare model seeding before generating the solution
         if(Properties.MODEL_PATH != null){
@@ -89,6 +100,8 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
             ObjectPoolManager.getInstance().addPool(pool);
             Properties.ALLOW_OBJECT_POOL_USAGE=true;
         }
+
+        // Start the search process
         ga.generateSolution();
 
 
@@ -96,6 +109,14 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         if (ga.getBestIndividual().getFitness() == 0.0) {
             TestChromosome solution = (TestChromosome) ga.getBestIndividual();
             LOG.info("* The target crash is covered. The generated test is: "+solution.getTestCase().toCode());
+            LOG.info("{} thrown exception(s) are detected in the solution: ",solution.getLastExecutionResult().getAllThrownExceptions().size());
+            for(Throwable t: solution.getLastExecutionResult().getAllThrownExceptions()){
+                LOG.info(t.toString());
+                for(StackTraceElement frame:t.getStackTrace()){
+                    LOG.info(frame.toString());
+                }
+
+            }
             suite.addTest(solution);
 
 
@@ -111,20 +132,6 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         return suite;
     }
 
-    private GeneticAlgorithm getGA(){
-        switch (CrashProperties.searchAlgorithm){
-            case Single_Objective_GGA:
-                return new GuidedGeneticAlgorithm(getChromosomeFactory());
-            default:
-                return new GuidedGeneticAlgorithm(getChromosomeFactory());
-        }
-    }
 
-    private ChromosomeFactory<TestChromosome> getChromosomeFactory() {
-        return new RootMethodTestChromosomeFactory(new GuidedSearchUtility());
-    }
 
-    private TestFitnessFunction getFF(){
-        return fitnessFunctionHelper.getSingleObjective(0);
-    }
 }

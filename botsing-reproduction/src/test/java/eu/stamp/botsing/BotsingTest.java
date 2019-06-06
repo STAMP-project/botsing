@@ -70,6 +70,49 @@ public class BotsingTest {
                 "-" + CommandLineParameters.PROJECT_CP_OPT,
                 Paths.get(base_dir, "target", "classes").toString() + System.getProperty("path.separator"),
                 "-" + CommandLineParameters.D_OPT + "test_dir=" + outputDir.getAbsolutePath(),
+                "-"+CommandLineParameters.SEARCH_ALGORITHM,
+                CrashProperties.SearchAlgorithm.Single_Objective_GGA.name(),
+                "-"+CommandLineParameters.FITNESS_FUNCTION,
+                CrashProperties.FitnessFunction.WeightedSum.name()
+        };
+
+        // Check results
+        List<TestGenerationResult> results = botsing.parseCommandLine(prop);
+        assertThat(results, hasSize(greaterThan(0)));
+
+        assertThat(results.get(0).getTestGenerationStatus(), is(TestGenerationResult.Status.SUCCESS));
+
+        // Check output directory
+        assertThat(outputDir, anExistingDirectory());
+        assertThat(outputDir.list(), arrayWithSize(greaterThan(0)));
+    }
+
+
+    @Test
+    public void testFractionCrashMOSA() {
+        Botsing botsing = new Botsing();
+
+        // setup of the directory with file *class and file *.log
+        String user_dir = System.getProperty("user.dir"); // the current directory is the module
+        // <b>botsing-reproduction</b>
+        File file = new File(user_dir);
+        String base_dir = Paths.get(file.getParent(), "botsing-examples").toString(); // the crash to replicate is
+        // inside the module <b>botsing-examples</b>
+
+        // Set the output directory
+        File outputDir = Paths.get(user_dir, "target", "crash-reproduction-tests").toFile();
+
+        //run Botsing
+        String[] prop = {
+                "-" + CommandLineParameters.CRASH_LOG_OPT,
+                Paths.get(base_dir, "src", "main", "resources", "Fraction.log").toString(),
+                "-" + CommandLineParameters.TARGET_FRAME_OPT,
+                "" + 1,
+                "-" + CommandLineParameters.PROJECT_CP_OPT,
+                Paths.get(base_dir, "target", "classes").toString() + System.getProperty("path.separator"),
+                "-" + CommandLineParameters.D_OPT + "test_dir=" + outputDir.getAbsolutePath(),
+                "-"+CommandLineParameters.FITNESS_FUNCTION,
+                CrashProperties.FitnessFunction.WeightedSum.name()
         };
 
         // Check results
@@ -106,6 +149,10 @@ public class BotsingTest {
                 "-" + CommandLineParameters.PROJECT_CP_OPT,
                 Paths.get(base_dir, "target", "classes").toString() + System.getProperty("path.separator"),
                 "-" + CommandLineParameters.D_OPT + "test_dir=" + outputDir.getAbsolutePath(),
+                "-"+CommandLineParameters.SEARCH_ALGORITHM,
+                CrashProperties.SearchAlgorithm.Guided_MOSA.name(),
+                "-"+CommandLineParameters.FITNESS_FUNCTION,
+                CrashProperties.FitnessFunction.IntegrationSingleObjective.name()
         };
 
         // Check results

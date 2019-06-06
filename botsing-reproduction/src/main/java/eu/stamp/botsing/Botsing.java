@@ -37,6 +37,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 
@@ -60,9 +62,16 @@ public class Botsing {
             printHelpMessage(options);
         } else {// Otherwise, proceed to crash reproduction
             java.util.Properties properties = commands.getOptionProperties(D_OPT);
-            updateProperties(properties);
+            updateEvoSuiteProperties(properties);
             setupStackTrace(crashProperties, commands);
             setupProjectClasspath(crashProperties, commands);
+            if(commands.hasOption(SEARCH_ALGORITHM)){
+                setSearchAlgorithm(commands.getOptionValue(SEARCH_ALGORITHM));
+            }
+
+            if(commands.hasOption(FITNESS_FUNCTION)){
+                setFF(commands.getOptionValue(FITNESS_FUNCTION));
+            }
 
             if(commands.hasOption(INTEGRATION_TESTING)){
                 crashProperties.integrationTesting = true;
@@ -70,6 +79,10 @@ public class Botsing {
 
             if(commands.hasOption(DISABLE_LINE_ESTIMATION)){
                 crashProperties.lineEstimation = false;
+            }
+
+            if(commands.hasOption(IO_DIVERSITY)){
+                crashProperties.IODiversity = true;
             }
 
             if(commands.hasOption(MODEL_PATH_OPT)){
@@ -81,16 +94,29 @@ public class Botsing {
 
     }
 
+    private void setFF(String fitnessFunction) {
+        CrashProperties.fitnessFunctions = new CrashProperties.FitnessFunction[]{CrashProperties.FitnessFunction.valueOf(fitnessFunction)};
+    }
+
+    private void setSearchAlgorithm(String algorithm) {
+
+        CrashProperties.searchAlgorithm = CrashProperties.SearchAlgorithm.valueOf(algorithm);
+        LOG.info(CrashProperties.searchAlgorithm.name());
+//        Properties.SELECTION_FUNCTION = Properties.SelectionFunction.RANK_CROWD_DISTANCE_TOURNAMENT;
+    }
+
     private void setupModelSeedingRelatedProperties( CommandLine commands) {
-        for (StackTraceElement ste: CrashProperties.getInstance().getStackTrace().getAllFrames()){
-            try {
-                Class.forName(ste.getClassName(), true,
-                        TestGenerationContext.getInstance().getClassLoaderForSUT());
-            } catch (Exception| Error e) {
-                e.printStackTrace();
+        int numberOfCrashes = CrashProperties.getInstance().getCrashesSize();
+        for (int crashIndex=0; crashIndex<numberOfCrashes; crashIndex++){
+            for (StackTraceElement ste: CrashProperties.getInstance().getStackTrace(crashIndex).getAllFrames()){
+                try {
+                    Class.forName(ste.getClassName(), true,
+                            TestGenerationContext.getInstance().getClassLoaderForSUT());
+                } catch (Exception| Error e) {
+                    e.printStackTrace();
+                }
             }
         }
-
         String modelPath = commands.getOptionValue(MODEL_PATH_OPT);
         Properties.MODEL_PATH = modelPath;
     }
@@ -108,7 +134,7 @@ public class Botsing {
         return commands;
     }
 
-    protected void updateProperties(java.util.Properties properties){
+    protected void updateEvoSuiteProperties(java.util.Properties properties){
         for (String property : properties.stringPropertyNames()) {
             if (Properties.hasParameter(property)) {
                 try {
@@ -124,8 +150,32 @@ public class Botsing {
 
     public void setupStackTrace(CrashProperties crashProperties, CommandLine commands){
         // Setup given stack trace
-        crashProperties.setupStackTrace(commands.getOptionValue(CRASH_LOG_OPT),
-                Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
+        Path log_dir = new File(commands.getOptionValue(CRASH_LOG_OPT)).toPath();
+        if(Files.isDirectory(log_dir)){
+            // We need to setup multiple crashes
+            File directory = new File(commands.getOptionValue(CRASH_LOG_OPT));
+            File[] directoryListing = directory.listFiles();
+            if (directoryListing != null) {
+                for (File file : directoryListing) {
+                    if(!file.getName().contains(".log")){
+                        continue;
+                    }
+                    String logPath = file.getAbsolutePath();
+                    LOG.info("Detected log: {}",logPath);
+                    crashProperties.setupStackTrace(logPath,
+                            Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
+                }
+            }else{
+                throw new IllegalArgumentException("Log directory is empty!");
+            }
+        }else {
+            // We need to setup only one crash
+            crashProperties.clearStackTraceList();
+            crashProperties.setupStackTrace(commands.getOptionValue(CRASH_LOG_OPT),
+                    Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
+        }
+
+
     }
 
     protected void setupProjectClasspath(CrashProperties crashProperties, CommandLine commands){

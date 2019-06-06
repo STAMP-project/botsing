@@ -24,10 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class StackTrace {
 
@@ -38,6 +35,8 @@ public class StackTrace {
     private int targetFrameLevel;
     private String targetClass;
     private ArrayList<StackTraceElement> allFrames;
+    private ArrayList<Integer> irrelevantFrames = new ArrayList<>();
+    private int publicTargetFrameLevel;
 
     /**
      * Sets up this object with the stack trace read from the given file and having the given target frame.
@@ -48,6 +47,7 @@ public class StackTrace {
      */
     public void setup(String logPath, int frameLevel) throws IllegalArgumentException {
         targetFrameLevel = frameLevel;
+        publicTargetFrameLevel = frameLevel;
         try {
             BufferedReader reader = readFromFile(logPath);
             // Parse type of the exception
@@ -139,7 +139,12 @@ public class StackTrace {
     }
 
     public StackTraceElement getFrame(int index) {
-        return frames.get(index - 1);
+        if(targetFrameLevel == publicTargetFrameLevel){
+            return frames.get(index - 1);
+        }else{
+            return allFrames.get(index-1);
+        }
+
     }
 
     public int getNumberOfFrames() {
@@ -175,5 +180,31 @@ public class StackTrace {
             LOG.debug(frame.getClassName());
         }
         return classes;
+    }
+
+    public void addIrrelevantFrameLevel(int frameLevel){
+        if(frameLevel > this.targetFrameLevel){
+            throw new IllegalArgumentException("The passed irrelevant frame (frame level "+frameLevel+") is higher than the target frame level.");
+        }
+        if(!this.irrelevantFrames.contains(frameLevel)){
+            this.irrelevantFrames.add(frameLevel);
+        }
+    }
+
+
+    public boolean isIrrelevantFrame(int frameLevel){
+        if(this.irrelevantFrames.contains(frameLevel)){
+            return true;
+        }
+
+        return false;
+    }
+
+    public void updatePublicTargetFrameLevel(int newLevel){
+        publicTargetFrameLevel = newLevel;
+    }
+
+    public int getPublicTargetFrameLevel() {
+        return publicTargetFrameLevel;
     }
 }

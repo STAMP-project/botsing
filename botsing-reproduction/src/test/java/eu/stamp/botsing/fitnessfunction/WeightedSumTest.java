@@ -6,14 +6,13 @@ import eu.stamp.botsing.fitnessfunction.calculator.CrashCoverageFitnessCalculato
 import org.evosuite.coverage.mutation.WeakMutationSuiteFitness;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.execution.ExecutionResult;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
@@ -45,30 +44,41 @@ public class WeightedSumTest {
         }
     };
 
+    StackTrace target;
+
     // Mock CrashCoverageFitnessCalculator to control the value of the line coverage fitness and stack trace similarity fitness
-    @Mock
+//    @Mock
     CrashCoverageFitnessCalculator fitnessCalculator;
-    @InjectMocks
-    WeightedSum weightedSum = new WeightedSum();
+//    @InjectMocks
+    WeightedSum weightedSum;
 
-    @Test
-    public void testGetFitness_LineNotCovered() throws FileNotFoundException {
 
+
+
+
+    @Before
+    public void loadCrashes() throws FileNotFoundException {
+        CrashProperties.getInstance().clearStackTraceList();
         //Prepare the given stack trace
         BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
                 "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
-        StackTrace target = Mockito.spy(new StackTrace());
+        target= Mockito.spy(new StackTrace());
         Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
         target.setup("", 2);
-        CrashProperties.getInstance().setupStackTrace(target);
+        fitnessCalculator = Mockito.spy(new CrashCoverageFitnessCalculator(target));
 
+        weightedSum= new WeightedSum(target);
+    }
+
+    @Test
+    public void testGetFitness_LineNotCovered() throws FileNotFoundException {
         // Initialize the TestChromosome object as an input argument
         TestChromosome testChromosomeAsInput = new TestChromosome();
 
         // Mock the value of getLineCoverageFitness
         Mockito.doReturn(0.5).when(fitnessCalculator).getLineCoverageFitness(null,20);
-
+        weightedSum.setFitnessCalculator(fitnessCalculator);
         assertEquals(4.5, weightedSum.getFitness(testChromosomeAsInput,null),0.0);
     }
 
@@ -76,15 +86,7 @@ public class WeightedSumTest {
 
     @Test
     public void testGetFitness_ExceptionNotCovered() throws FileNotFoundException {
-        // Prepare the given stack trace
-        BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
-                "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
-                "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
-        StackTrace target = Mockito.spy(new StackTrace());
-        Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
         TestChromosome testChromosomeAsInput = new TestChromosome();
-        target.setup("", 2);
-        CrashProperties.getInstance().setupStackTrace(target);
 
         // Prepare the generated stack trace
         StackTraceElement[] tt = {new StackTraceElement("ClassC",  "method3",
@@ -102,7 +104,7 @@ public class WeightedSumTest {
 
         // Mock the value of getLineCoverageFitness to zero
         Mockito.doReturn(0.0).when(fitnessCalculator).getLineCoverageFitness(executionResult,20);
-
+        weightedSum.setFitnessCalculator(fitnessCalculator);
         assertEquals(3.0, weightedSum.getFitness(testChromosomeAsInput,executionResult),0.0);
     }
 
@@ -110,14 +112,7 @@ public class WeightedSumTest {
 
     @Test
     public void testGetFitness_StackTraceSimilarityNotCovered() throws FileNotFoundException {
-        // Prepare the given stack trace
-        BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
-                "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
-                "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
-        StackTrace target = Mockito.spy(new StackTrace());
-        Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
         TestChromosome testChromosomeAsInput = new TestChromosome();
-        target.setup("", 2);
         CrashProperties.getInstance().setupStackTrace(target);
 
         // Prepare the generated stack trace
@@ -137,23 +132,14 @@ public class WeightedSumTest {
         // Mock the value of getLineCoverageFitness and calculateFrameSimilarity in CrashCoverageFitnessCalculator
         Mockito.doReturn(0.0).when(fitnessCalculator).getLineCoverageFitness(executionResult,20);
         Mockito.doReturn(0.7).when(fitnessCalculator).calculateFrameSimilarity(tt);
-
+        weightedSum.setFitnessCalculator(fitnessCalculator);
         assertEquals(0.7, weightedSum.getFitness(testChromosomeAsInput,executionResult),0.0);
     }
 
 
     @Test
     public void testGetFitness_Zero() throws FileNotFoundException {
-        // Prepare the given stack trace
-        BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
-                "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
-                "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
-        StackTrace target = Mockito.spy(new StackTrace());
-        Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
         TestChromosome testChromosomeAsInput = new TestChromosome();
-        target.setup("", 2);
-        CrashProperties.getInstance().setupStackTrace(target);
-
         // Prepare the generated stack trace
         StackTraceElement[] tt = {new StackTraceElement("ClassC",  "method3",
                 "ClassC", 100), new StackTraceElement("ClassB",  "method1",
@@ -172,15 +158,21 @@ public class WeightedSumTest {
         // Mock the value of getLineCoverageFitness and calculateFrameSimilarity in CrashCoverageFitnessCalculator into the zero value
         Mockito.doReturn(0.0).when(fitnessCalculator).getLineCoverageFitness(executionResult,20);
         Mockito.doReturn(0.0).when(fitnessCalculator).calculateFrameSimilarity(tt);
-
+        weightedSum.setFitnessCalculator(fitnessCalculator);
         assertEquals(0.0, weightedSum.getFitness(testChromosomeAsInput,executionResult),0.0);
     }
 
     @Test
-    public void testEqual(){
+    public void testEqual() throws FileNotFoundException {
         assertFalse(weightedSum.equals(null));
-
-        WeightedSum ws = new WeightedSum();
+        //Prepare the given stack trace
+        BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
+                "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
+                "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
+        StackTrace target = Mockito.spy(new StackTrace());
+        Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
+        target.setup("", 2);
+        WeightedSum ws = new WeightedSum(target);
         assertTrue(weightedSum.equals(ws));
 
         WeakMutationSuiteFitness fitnessFunction = new WeakMutationSuiteFitness();

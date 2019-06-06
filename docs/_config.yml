@@ -1,0 +1,13 @@
+title: Botsing
+description: >-
+  Crash reproduction made easy!
+url: https://stamp-project.github.io/
+baseurl: /botsing
+
+theme: jekyll-theme-minimal
+logo: assets/stamp_logo.png
+
+exclude:
+ - README.md
+ - Gemfile.lock
+ - Gemfile

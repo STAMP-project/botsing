@@ -1,14 +1,17 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
 import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
-import org.evosuite.ga.operators.crossover.SinglePointCrossOver;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.utils.Randomness;
+import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class GuidedSinglePointCrossover extends CrossOverFunction {
 
@@ -18,10 +21,15 @@ public class GuidedSinglePointCrossover extends CrossOverFunction {
 
     private static GuidedSearchUtility utility =  new GuidedSearchUtility();
 
-    private SinglePointCrossOver crossover = new SinglePointCrossOver();
-
+    Set<GenericAccessibleObject<?>> publicCalls = new HashSet<>();
+//
+//    private SinglePointCrossOver crossover = new SinglePointCrossOver();
 
     public void crossOver(Chromosome parent1, Chromosome parent2) {
+        if(this.publicCalls.isEmpty()){
+            throw new IllegalStateException("set of public calls is empty");
+        }
+
         Chromosome clone1 = parent1.clone();
         Chromosome clone2 = parent2.clone();
 
@@ -43,7 +51,7 @@ public class GuidedSinglePointCrossover extends CrossOverFunction {
     }
 
     protected boolean isValid(Chromosome chromosome){
-        return utility.includesPublicCall(chromosome);
+        return utility.includesPublicCall(chromosome,publicCalls);
     }
 
     private void singlePointCrossover(Chromosome parent1, Chromosome parent2)
@@ -59,6 +67,11 @@ public class GuidedSinglePointCrossover extends CrossOverFunction {
         Chromosome clone1 = parent1.clone();
         parent1.crossOver(parent2, point1, point2);
         parent2.crossOver(clone1, point2, point1);
+    }
+
+    public void updatePublicCalls(Set<GenericAccessibleObject<?>> publicCalls){
+        this.publicCalls.clear();
+        this.publicCalls.addAll(publicCalls);
     }
 
 }

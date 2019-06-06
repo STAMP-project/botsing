@@ -3,9 +3,11 @@ package eu.stamp.botsing.graphs.cfg;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
+import eu.stamp.botsing.commons.graphs.cfg.BotsingRawControlFlowGraph;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import static org.junit.Assert.*;
@@ -21,6 +23,11 @@ public class CFGGeneratorTest {
     private String selectedmethod = "numberOfLeadingZeros";
     List<Class> instrumentedClasses = new ArrayList<>();
     private GraphTestingUtils testingUtils = new GraphTestingUtils();
+    @Before
+    public void resetCrashes(){
+        CrashProperties.getInstance().clearStackTraceList();
+    }
+
     @Test
     public void testNullInstumentedClassInGenerateInterProceduralCFG() throws FileNotFoundException {
         BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
@@ -82,9 +89,9 @@ public class CFGGeneratorTest {
         Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
         target.setup("", 1);
         CrashProperties.getInstance().setupStackTrace(target);
-        CUT.generateRawGraph();
+        CUT.generateRawGraph(0);
         Mockito.doReturn(stmntList).when(rcfg1).vertexSet();
-        CUT.generateRawGraph();
+        CUT.generateRawGraph(0);
         // Assertions
         assertEquals(1,CUT.frameCFGs.size());
         assertEquals(rcfg1,CUT.frameCFGs.get(0).getRcfg());
@@ -116,7 +123,7 @@ public class CFGGeneratorTest {
         CrashProperties.getInstance().setupStackTrace(target);
         CUT.collectCFGS(instrumentedClasses);
         Mockito.doReturn(stmntList).when(rcfg1).vertexSet();
-        CUT.generateRawGraph();
+        CUT.generateRawGraph(0);
         assertEquals(1,CUT.frameCFGs.size());
 
     }
@@ -149,7 +156,7 @@ public class CFGGeneratorTest {
         CrashProperties.getInstance().setupStackTrace(target);
         CUT.collectCFGS(instrumentedClasses);
         Mockito.doReturn(stmntList).when(rcfg1).vertexSet();
-        CUT.generateRawGraph();
+        CUT.generateRawGraph(0);
         assertEquals(2,CUT.frameCFGs.size());
         assertEquals("numberOfTrailingZeros",CUT.frameCFGs.get(1).getRcfg().getMethodName());
     }
@@ -186,7 +193,7 @@ public class CFGGeneratorTest {
         BotsingRawControlFlowGraph interproceduralGraph = Mockito.spy(actualBotsingRawControlFlowGraph);
         Mockito.doNothing().when(interproceduralGraph).addInterProceduralEdge(any(),any(),anySet());
         Mockito.doReturn(interproceduralGraph).when(CUT).makeBotsingRawControlFlowGraphObject(anyInt());
-        CUT.generateRawGraph();
+        CUT.generateRawGraph(0);
         assertEquals(2,CUT.frameCFGs.size());
     }
 

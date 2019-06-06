@@ -2,6 +2,7 @@ package eu.stamp.botsing;
 
 import org.apache.commons.cli.*;
 import org.evosuite.Properties;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -12,10 +13,14 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.io.File;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyString;
 
 public class CrashPropertiesTest {
 
@@ -30,12 +35,26 @@ public class CrashPropertiesTest {
         }
     };
 
+    @Before
+    public void resetCrashes(){
+        CrashProperties.getInstance().clearStackTraceList();
+    }
+
     @Test
-    public void testSetupStackTrace() {
+    public void testSetupStackTrace() throws FileNotFoundException {
         CrashProperties properties = CrashProperties.getInstance();
         //assertNull(properties.getProjectClassPaths());
-        properties.resetStackTrace();
-        StackTrace crash = properties.getStackTrace();
+
+        BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
+                "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
+                "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
+        StackTrace target = Mockito.spy(new StackTrace());
+        Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
+        target.setup("", 2);
+        CrashProperties.getInstance().setupStackTrace(target);
+
+        properties.resetStackTrace(0);
+        StackTrace crash = properties.getStackTrace(0);
         assertNull(crash.getExceptionType());
         assertNull(crash.getFrames());
         assertNull(crash.getTargetClass());
@@ -84,7 +103,7 @@ public class CrashPropertiesTest {
         Mockito.when(trace.getFrames()).thenReturn(stackTrace);
 
         CrashProperties.getInstance().setupStackTrace(trace);
-        Throwable target = CrashProperties.getInstance().getTargetException();
+        Throwable target = CrashProperties.getInstance().getTargetException(0);
         assertArrayEquals(target.getStackTrace(), stackTrace.toArray());
     }
 

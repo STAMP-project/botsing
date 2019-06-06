@@ -22,6 +22,7 @@ package eu.stamp.botsing.fitnessfunction;
  */
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.StackTrace;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.testcase.TestFitnessFunction;
 
@@ -40,22 +41,41 @@ public class FitnessFunctionHelper {
 
     }
 
-    public TestFitnessFunction getSingleObjective(int index){
-        if(CrashProperties.fitnessFunctions.length < index){
-            return null;
-        }
-        switch (CrashProperties.fitnessFunctions[index]){
-            case WeightedSum:
-                return new WeightedSum();
-            default:
-                return new WeightedSum();
-        }
+    public TestFitnessFunction getSingleObjective(){
+        return getFF(CrashProperties.fitnessFunctions[0],CrashProperties.getInstance().getStackTrace(0));
     }
     public TestFitnessFunction[] getMultiObjectives(){
-        TestFitnessFunction[] result =  new TestFitnessFunction[CrashProperties.fitnessFunctions.length];
-        for (int i = 0; i<CrashProperties.fitnessFunctions.length;i++){
-            result[i]= getSingleObjective(i);
+        if(CrashProperties.fitnessFunctions.length > 1){
+            // Here, we have 1 crash and multiple fitness functions
+            TestFitnessFunction[] result =  new TestFitnessFunction[CrashProperties.fitnessFunctions.length];
+            StackTrace singleCrash = CrashProperties.getInstance().getStackTrace(0);
+            for (int i = 0; i<CrashProperties.fitnessFunctions.length;i++){
+                result[i] = getFF(CrashProperties.fitnessFunctions[i],singleCrash);
+            }
+            return result;
+        }else if(CrashProperties.getInstance().getCrashesSize() > 1){
+            // Here, we have multiple crashes and 1 fitness function
+            int numberOfCrashes = CrashProperties.getInstance().getCrashesSize();
+            TestFitnessFunction[] result =  new TestFitnessFunction[numberOfCrashes];
+            for (int i = 0; i<numberOfCrashes;i++){
+                result[i]= getFF(CrashProperties.fitnessFunctions[0],CrashProperties.getInstance().getStackTrace(i));
+            }
+            return result;
+        }else{
+            throw new IllegalStateException("Number of crashes and fitness functions are 1. Botsing cannot use a multi-objective algorithm");
         }
-        return result;
     }
+
+    private TestFitnessFunction getFF(CrashProperties.FitnessFunction givenFFName, StackTrace crash){
+        switch (givenFFName){
+            case WeightedSum:
+                return new WeightedSum(crash);
+            case IntegrationSingleObjective:
+                return new IntegrationTestingFF(crash);
+            default:
+                return new WeightedSum(crash);
+        }
+    }
+
+
 }
