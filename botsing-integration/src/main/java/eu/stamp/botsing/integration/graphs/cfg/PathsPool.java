@@ -48,7 +48,7 @@ public class PathsPool {
     }
 
 
-    public void registerNewPathsForCallSite(String className, String methodName, BasicBlock callSite, List<List<BasicBlock>> paths){
+    public void registerNewPathsToCallSite(String className, String methodName, BasicBlock callSite, List<List<BasicBlock>> paths){
         if(!pathsToCallSites.containsKey(className)){
             pathsToCallSites.put(className,new HashMap<>());
         }
@@ -61,6 +61,35 @@ public class PathsPool {
             pathsToCallSites.get(className).get(methodName).put(callSite, new ArrayList<>());
         }
 
-        pathsToCallSites.get(className).get(methodName).get(callSite).addAll(paths);
+        for (List<BasicBlock> path: paths){
+            if(pathsToCallSites.get(className).get(methodName).get(callSite).contains(path)){
+                continue;
+            }
+            pathsToCallSites.get(className).get(methodName).get(callSite).add(path);
+        }
+
+
+    }
+
+
+    public void registerNewPathsFromCallSite(String className, String methodName, BasicBlock callSite, List<List<BasicBlock>> paths){
+        if(!pathFromCallSites.containsKey(className)){
+            pathFromCallSites.put(className,new HashMap<>());
+        }
+
+        if(!pathFromCallSites.get(className).containsKey(methodName)){
+            pathFromCallSites.get(className).put(methodName, new HashMap<>());
+        }
+
+        if(!pathFromCallSites.get(className).get(methodName).containsKey(callSite)){
+            pathFromCallSites.get(className).get(methodName).put(callSite, new ArrayList<>());
+        }
+
+        for (List<BasicBlock> path: paths){
+            if(pathFromCallSites.get(className).get(methodName).get(callSite).contains(path)){
+                continue;
+            }
+            pathFromCallSites.get(className).get(methodName).get(callSite).add(path);
+        }
     }
 }

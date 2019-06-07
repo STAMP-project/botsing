@@ -64,15 +64,21 @@ public class CFGGeneratorUtility {
 
     }
 
-    public List<List<BasicBlock>> detectIndependetPathsForMethod(ActualControlFlowGraph controlFlowGraph,BasicBlock targetNode){
+    public List<List<BasicBlock>> detectIndependetPathsForMethod(ActualControlFlowGraph controlFlowGraph,BasicBlock srcNode, BasicBlock targetNode){
 
         int maximumPaths = controlFlowGraph.getCyclomaticComplexity()-1; // There is always one edge from entry block to exit block which ++ the complexity!
         // BFS
-        BasicBlock entryPoint = controlFlowGraph.getEntryPoint().getBasicBlock();
+        BasicBlock src;
+        if(srcNode == null){
+            src = controlFlowGraph.getEntryPoint().getBasicBlock();
+        }else{
+            src = srcNode;
+        }
+
         // Detected paths using BFS
         Map<BasicBlock,Integer> coveredNodes = new HashMap<>();
-        coveredNodes.put(entryPoint,1);
-        List<List<BasicBlock>> detectedPaths = makePath(entryPoint,controlFlowGraph, coveredNodes,targetNode);
+        coveredNodes.put(src,1);
+        List<List<BasicBlock>> detectedPaths = makePath(src,controlFlowGraph, coveredNodes,targetNode);
         sortPathsAccordingToSize(detectedPaths);
         // Remove paths which does not reach to an exitPoints:
 
@@ -95,7 +101,7 @@ public class CFGGeneratorUtility {
         }
 
         // remove non-independent paths
-        if(targetNode!=null || detectedPaths.size() > maximumPaths){
+        if(targetNode!=null || srcNode!=null || detectedPaths.size() > maximumPaths){
             removeNonIndependentPaths(detectedPaths);
         }
 

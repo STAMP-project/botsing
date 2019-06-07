@@ -53,9 +53,6 @@ public class CFGGenerator {
         // Collect independent paths of each call_site
         registerIndependetPathsToCaLLSites(this.caller.involvedCFGs,this.caller.callSites);
         registerIndependetPathsToCaLLSites(this.callee.involvedCFGs,this.callee.callSites);
-
-
-
     }
 
 
@@ -67,8 +64,9 @@ public class CFGGenerator {
                 ActualControlFlowGraph actualControlFlowGraph = graphPool.getActualCFG(rcfg.getClassName(),rcfg.getMethodName());
                 for(BytecodeInstruction CallSiteBCInst: callSites.get(methodName).keySet()){
                     if(CallSiteBCInst.getCalledMethodsClass().equals(this.callee.getClassName())){
-                        BasicBlock targetBasicBlock = actualControlFlowGraph.getBlockOf(CallSiteBCInst);
-                        PathsPool.getInstance().registerNewPathsForCallSite(rcfg.getClassName(),rcfg.getMethodName(),targetBasicBlock,utility.detectIndependetPathsForMethod(actualControlFlowGraph,targetBasicBlock));
+                        BasicBlock callSiteBasicBlock = actualControlFlowGraph.getBlockOf(CallSiteBCInst);
+                        PathsPool.getInstance().registerNewPathsToCallSite(rcfg.getClassName(),rcfg.getMethodName(),callSiteBasicBlock,utility.detectIndependetPathsForMethod(actualControlFlowGraph,null, callSiteBasicBlock));
+                        PathsPool.getInstance().registerNewPathsFromCallSite(rcfg.getClassName(),rcfg.getMethodName(),callSiteBasicBlock,utility.detectIndependetPathsForMethod(actualControlFlowGraph,callSiteBasicBlock, null));
                     }
                 }
             }
@@ -80,7 +78,7 @@ public class CFGGenerator {
         GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
         for (RawControlFlowGraph rcfg:rawCFGs){
             ActualControlFlowGraph actualControlFlowGraph = graphPool.getActualCFG(rcfg.getClassName(),rcfg.getMethodName());
-            PathsPool.getInstance().registerNewPathsForMethod(rcfg.getClassName(),rcfg.getMethodName(),utility.detectIndependetPathsForMethod(actualControlFlowGraph,null));
+            PathsPool.getInstance().registerNewPathsForMethod(rcfg.getClassName(),rcfg.getMethodName(),utility.detectIndependetPathsForMethod(actualControlFlowGraph,null, null));
         }
     }
 
