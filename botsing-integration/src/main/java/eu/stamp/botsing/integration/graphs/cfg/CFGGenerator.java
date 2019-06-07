@@ -66,8 +66,10 @@ public class CFGGenerator {
             if(callSites.containsKey(methodName)){
                 ActualControlFlowGraph actualControlFlowGraph = graphPool.getActualCFG(rcfg.getClassName(),rcfg.getMethodName());
                 for(BytecodeInstruction CallSiteBCInst: callSites.get(methodName).keySet()){
-                    BasicBlock targetBasicBlock = actualControlFlowGraph.getBlockOf(CallSiteBCInst);
-                    PathsPool.getInstance().registerNewPathsForCallSite(rcfg.getClassName(),rcfg.getMethodName(),targetBasicBlock,utility.detectIndependetPathsForMethod(actualControlFlowGraph,targetBasicBlock));
+                    if(CallSiteBCInst.getCalledMethodsClass().equals(this.callee.getClassName())){
+                        BasicBlock targetBasicBlock = actualControlFlowGraph.getBlockOf(CallSiteBCInst);
+                        PathsPool.getInstance().registerNewPathsForCallSite(rcfg.getClassName(),rcfg.getMethodName(),targetBasicBlock,utility.detectIndependetPathsForMethod(actualControlFlowGraph,targetBasicBlock));
+                    }
                 }
             }
         }

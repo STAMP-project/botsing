@@ -70,7 +70,30 @@ public class CFGGeneratorUtility {
         // BFS
         BasicBlock entryPoint = controlFlowGraph.getEntryPoint().getBasicBlock();
         // Detected paths using BFS
-        List<List<BasicBlock>> detectedPaths = makePath(entryPoint,controlFlowGraph, new HashMap<>(),targetNode);
+        Map<BasicBlock,Integer> coveredNodes = new HashMap<>();
+        coveredNodes.put(entryPoint,1);
+        List<List<BasicBlock>> detectedPaths = makePath(entryPoint,controlFlowGraph, coveredNodes,targetNode);
+        sortPathsAccordingToSize(detectedPaths);
+        // Remove paths which does not reach to an exitPoints:
+
+        if(targetNode == null){
+            Iterator<List<BasicBlock>> iter = detectedPaths.listIterator();
+            while (iter.hasNext()){
+                List<BasicBlock> path = iter.next();
+                if(!path.get(path.size()-1).isExitBlock()){
+                    iter.remove();
+                }
+            }
+        }else {
+            Iterator<List<BasicBlock>> iter = detectedPaths.listIterator();
+            while (iter.hasNext()) {
+                List<BasicBlock> path = iter.next();
+                if (!path.get(path.size() - 1).equals(targetNode)) {
+                    iter.remove();
+                }
+            }
+        }
+
         // remove non-independent paths
         if(targetNode!=null || detectedPaths.size() > maximumPaths){
             removeNonIndependentPaths(detectedPaths);
@@ -79,11 +102,21 @@ public class CFGGeneratorUtility {
         return detectedPaths;
     }
 
+    private void sortPathsAccordingToSize(List<List<BasicBlock>> detectedPaths) {
+        detectedPaths.sort((xs1, xs2) -> xs1.size() - xs2.size());
+    }
+
     private void removeNonIndependentPaths(List<List<BasicBlock>> detectedPaths){
         Map<BasicBlock,List<BasicBlock>> coveredEdges = new HashMap<>();
-        List<Integer> shouldRemove = new ArrayList<>();
-        for (List<BasicBlock> path: detectedPaths){
+        Iterator<List<BasicBlock>> iter = detectedPaths.listIterator();
+        while (iter.hasNext()){
+            List<BasicBlock> path = iter.next();
             boolean newEdgeAdded = false;
+            // Handle a corner case: when we have only one node both as the entry point and the target node
+            if(path.size() == 1 && !coveredEdges.keySet().contains(path.get(0))){
+                newEdgeAdded=true;
+            }
+
             for(int sequenceIndex=1;sequenceIndex<path.size();sequenceIndex++){
                 BasicBlock src = path.get(sequenceIndex-1);
                 BasicBlock target = path.get(sequenceIndex);
@@ -100,29 +133,30 @@ public class CFGGeneratorUtility {
 
             if(!newEdgeAdded){
                 // This path does not add sth new to the other existing paths
-                shouldRemove.add(detectedPaths.indexOf(path));
+                iter.remove();
             }
         }
 
-        for(int index:shouldRemove){
-            detectedPaths.remove(index);
-        }
 
     }
 
     private List<List<BasicBlock>> makePath(BasicBlock currentNode,  ActualControlFlowGraph controlFlowGraph, Map<BasicBlock,Integer> coveredNodes, BasicBlock targetNode) {
         List<List<BasicBlock>> result = new ArrayList<>();
         Set<BasicBlock>  children = controlFlowGraph.getChildren(currentNode);
+        if(currentNode.equals(targetNode)){
+            children = new HashSet<>();
+        }
         for(BasicBlock child : children){
             // If a node is counted two times, we won't include it for for the further part of the path (Avoiding loops)
+            Map<BasicBlock,Integer> tempcoveredNodes = new HashMap<>(coveredNodes);
 
-            if(coveredNodes.containsKey(child) && coveredNodes.get(child) == 2){
+            if(tempcoveredNodes.containsKey(child) && tempcoveredNodes.get(child) == 2){
                 continue;
             }
-            if(!coveredNodes.containsKey(child)){
-                coveredNodes.put(child,1);
+            if(!tempcoveredNodes.containsKey(child)){
+                tempcoveredNodes.put(child,1);
             }else {
-                coveredNodes.replace(child,coveredNodes.get(child)+1);
+                tempcoveredNodes.replace(child,tempcoveredNodes.get(child)+1);
             }
 
             // If there is no path from child to the target node, we won't include it for for the further part of the path
@@ -130,7 +164,7 @@ public class CFGGeneratorUtility {
                 continue;
             }
 
-            List<List<BasicBlock>> furthurPath = makePath(child,controlFlowGraph,coveredNodes,targetNode);
+            List<List<BasicBlock>> furthurPath = makePath(child,controlFlowGraph,tempcoveredNodes,targetNode);
             for (List<BasicBlock> path: furthurPath){
 //                List tempPath = new ArrayList<>();
 //                tempPath.addAll(path);

@@ -27,8 +27,11 @@ public class CalleeClass {
     protected List<RawControlFlowGraph> involvedCFGs =  new ArrayList<>();
     private BotsingRawControlFlowGraph rawInterProceduralGraph;
 
+    private Class originalClass;
+
     public CalleeClass(Class callee){
         ClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),callee.getName());
+        originalClass = callee;
     }
 
     protected void setListOfInvolvedCFGs(Map<String,List<RawControlFlowGraph>> cfgs){
@@ -70,6 +73,10 @@ public class CalleeClass {
         }
         LOG.warn("could not fine method {}",methodName);
         return null;
+    }
+
+    public String getClassName(){
+        return originalClass.getName();
     }
 
     public void addCallSite(BytecodeInstruction bcInstruction){
