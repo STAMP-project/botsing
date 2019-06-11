@@ -26,6 +26,7 @@ public class ClassInstrumentation {
         List<String> nunDuplicatedClasses = interestingClasses.stream().distinct().collect(Collectors.toList());
 
         try{
+            Properties.TARGET_CLASS=testingClassName;
             instrumentClassByTestExecution(testingClassName);
         }catch (Exception e){
             LOG.warn("Could not instrument the target class!");
@@ -42,7 +43,7 @@ public class ClassInstrumentation {
                 Properties.TARGET_CLASS=clazz;
                 cls = Class.forName(clazz,true, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
                 if(!clazz.contains(testingClassName)){
-                    instrumentClassByTestExecution(Properties.TARGET_CLASS);
+                    instrumentClassByTestExecution(clazz);
                 }
                 instrumentedClasses.add(cls);
                 instrumentedClassesName.add(clazz);
