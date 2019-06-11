@@ -3,6 +3,7 @@ package eu.stamp.botsing.integration.graphs.cfg;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.graphs.cfg.BotsingActualControlFlowGraph;
 import eu.stamp.botsing.commons.graphs.cfg.BotsingRawControlFlowGraph;
+import eu.stamp.botsing.integration.IntegrationTestingProperties;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cdg.ControlDependenceGraph;
 import org.evosuite.graphs.cfg.*;
@@ -39,10 +40,6 @@ public class CFGGenerator {
 
         this.caller.setListOfInvolvedCFGs(cfgs);
         this.callee.setListOfInvolvedCFGs(cfgs);
-
-        registerIndependetPaths();
-
-        LOG.info("Registration of paths has been done!");
     }
 
     private void registerIndependetPaths() {
@@ -65,8 +62,8 @@ public class CFGGenerator {
                 for(BytecodeInstruction CallSiteBCInst: callSites.get(methodName).keySet()){
                     if(CallSiteBCInst.getCalledMethodsClass().equals(this.callee.getClassName())){
                         BasicBlock callSiteBasicBlock = actualControlFlowGraph.getBlockOf(CallSiteBCInst);
-                        PathsPool.getInstance().registerNewPathsToCallSite(rcfg.getClassName(),rcfg.getMethodName(),callSiteBasicBlock,utility.detectIndependetPathsForMethod(actualControlFlowGraph,null, callSiteBasicBlock));
-                        PathsPool.getInstance().registerNewPathsFromCallSite(rcfg.getClassName(),rcfg.getMethodName(),callSiteBasicBlock,utility.detectIndependetPathsForMethod(actualControlFlowGraph,callSiteBasicBlock, null));
+                        PathsPool.getInstance().registerNewPathsToCallSite(rcfg.getClassName(),rcfg.getMethodName(),CallSiteBCInst,utility.detectIndependetPathsForMethod(actualControlFlowGraph,null, callSiteBasicBlock));
+                        PathsPool.getInstance().registerNewPathsFromCallSite(rcfg.getClassName(),rcfg.getMethodName(),CallSiteBCInst,utility.detectIndependetPathsForMethod(actualControlFlowGraph,callSiteBasicBlock, null));
                     }
                 }
             }
@@ -189,4 +186,15 @@ public class CFGGenerator {
     }
 
 
+    public void generate() {
+        for(IntegrationTestingProperties.FitnessFunction ff: IntegrationTestingProperties.fitnessFunctions){
+            switch (ff){
+                case Independent_Paths:
+                    registerIndependetPaths();
+                    break;
+                case Regular_Branch_Coverage:
+                    generateInterProceduralGraphs();
+            }
+        }
+    }
 }
