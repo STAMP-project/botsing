@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static eu.stamp.botsing.commons.PostProcessUtility.*;
@@ -66,16 +67,16 @@ public class IntegrationTesting {
             // In the first step initialize the target classes
             ClassInstrumentation classInstrumenter = new ClassInstrumentation();
             List <String> interestingClasses = Arrays.asList(IntegrationTestingProperties.TARGET_CLASSES);
-            List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses,interestingClasses.get(0));
+            Collections.reverse(interestingClasses);
+            List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses,interestingClasses.get(1));
             // We assume that first passed class is tha caller, and second one is the callee
-            Class caller = instrumentedClasses.get(0);
+            Class caller = instrumentedClasses.get(1);
             LOG.info("Instrumented caller class: {}",caller.getName());
-            Class callee = instrumentedClasses.get(1);
+            Class callee = instrumentedClasses.get(0);
             LOG.info("Instrumented callee class: {}",callee.getName());
-            // Generate the inter-procedural graphs (IRCFG, IACFG, and ICDG)
-            LOG.info("Generating inter-procedural graphs...");
+            // Generate the graphs according to the chosen fitness function
             CFGGenerator cfgGenerator = new CFGGenerator(caller,callee);
-            cfgGenerator.generateInterProceduralGraphs();
+            cfgGenerator.generate();
             // Analyze the dependencies of the caller class
             LOG.info("Analyzing dependencies...");
             analyzeClassDependencies(caller.getName());
