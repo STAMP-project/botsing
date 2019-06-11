@@ -1,10 +1,7 @@
 package eu.stamp.botsing.integration.fitnessfunction;
 
-import eu.stamp.botsing.integration.IntegrationTestingProperties;
 import eu.stamp.botsing.integration.coverage.branch.IntegrationTestingBranchCoverageFactory;
-import org.evosuite.Properties;
 import org.evosuite.coverage.ControlFlowDistance;
-import org.evosuite.coverage.branch.BranchCoverageFactory;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.graphs.cfg.BasicBlock;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
