@@ -1,6 +1,10 @@
 package eu.stamp.botsing.integration.integrationtesting;
 
-import eu.stamp.botsing.integration.fitnessfunction.FitnessFunctions;
+import eu.stamp.botsing.integration.IntegrationTestingProperties;
+import eu.stamp.botsing.integration.coverage.branch.IntegrationTestingBranchCoverageFactory;
+import eu.stamp.botsing.integration.fitnessfunction.IndependentPathFF;
+import eu.stamp.botsing.integration.graphs.cfg.PathsPool;
+import org.evosuite.graphs.cfg.BasicBlock;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testsuite.AbstractFitnessFactory;
 
@@ -11,10 +15,22 @@ public class IntegrationTestingGoalFactory extends AbstractFitnessFactory<TestFi
     private static List<TestFitnessFunction> goals = new LinkedList<>();
 
     public IntegrationTestingGoalFactory(){
-        // This is for branch coverage
-        FitnessFunctions ff = new FitnessFunctions();
-        goals.addAll(ff.getFitnessFunctionList());
-        // ToDo: Make it a proper factory after defining new FFs
+        goals.clear();
+        for(IntegrationTestingProperties.FitnessFunction ff: IntegrationTestingProperties.fitnessFunctions){
+            switch (ff){
+                case Independent_Paths:
+                    // get pathPairs for each call site and  make independentpathFF for each of them and add them to goals
+                    String callerClassName = IntegrationTestingProperties.TARGET_CLASSES[1];
+                    List<List<BasicBlock>[]> pathPairs = PathsPool.getInstance().getPathPairs(callerClassName);
+                    for (List<BasicBlock>[] pair : pathPairs){
+                        goals.add(new IndependentPathFF(pair[0],pair[1]));
+                    }
+                    break;
+                case Regular_Branch_Coverage:
+                    IntegrationTestingBranchCoverageFactory branchCoverageFactory = new IntegrationTestingBranchCoverageFactory();
+                    goals.addAll(branchCoverageFactory.getCoverageGoals());
+            }
+        }
     }
     @Override
     public List<TestFitnessFunction> getCoverageGoals() {

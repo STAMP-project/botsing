@@ -34,7 +34,9 @@ public class IntegrationTestingProperties {
 
 
     public enum FitnessFunction {
-        Integration;
+        Regular_Branch_Coverage,
+        Independent_Paths,
+        Use_Def;
         FitnessFunction() {
         }
     }
@@ -51,7 +53,7 @@ public class IntegrationTestingProperties {
 
 
     @Properties.Parameter(key = "FitnessFunctions", group = "search algorithm", description = "Which fitness function(s) should be used for the search process")
-    public static IntegrationTestingProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.Integration};
+    public static IntegrationTestingProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.Independent_Paths};
 
     /** Classes under test */
     @Parameter(key = "targetClasses", group = "Runtime", description = "Classes under test")

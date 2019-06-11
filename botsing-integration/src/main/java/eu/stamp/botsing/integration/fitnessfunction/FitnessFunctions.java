@@ -1,6 +1,6 @@
 package eu.stamp.botsing.integration.fitnessfunction;
 
-import eu.stamp.botsing.integration.coverage.branch.IntegrationTestingBranchCoverageFactory;
+import eu.stamp.botsing.integration.integrationtesting.IntegrationTestingGoalFactory;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.testcase.TestFitnessFunction;
@@ -17,9 +17,9 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
 
     public List<TestFitnessFunction> getFitnessFunctionList(){
         List<TestFitnessFunction> goalsList = new ArrayList<>();
-        IntegrationTestingBranchCoverageFactory branchCoverageFactory = new IntegrationTestingBranchCoverageFactory();
-        goalsList.addAll(branchCoverageFactory.getCoverageGoals());
-
+        // Collecting goals which are related to the integration points coverage
+        IntegrationTestingGoalFactory integrationTestingGoalFactory = new IntegrationTestingGoalFactory();
+        goalsList.addAll(integrationTestingGoalFactory.getCoverageGoals());
         return goalsList;
     }
 
