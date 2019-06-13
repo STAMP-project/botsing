@@ -1,10 +1,8 @@
 package eu.stamp.botsing.integration.coverage.defuse;
 
-import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.integration.IntegrationTestingProperties;
 import eu.stamp.botsing.integration.graphs.cfg.CalleeClass;
 import eu.stamp.botsing.integration.graphs.cfg.CallerClass;
-import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.*;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
