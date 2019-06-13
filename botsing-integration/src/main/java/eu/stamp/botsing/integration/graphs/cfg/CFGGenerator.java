@@ -4,6 +4,7 @@ import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.graphs.cfg.BotsingActualControlFlowGraph;
 import eu.stamp.botsing.commons.graphs.cfg.BotsingRawControlFlowGraph;
 import eu.stamp.botsing.integration.IntegrationTestingProperties;
+import eu.stamp.botsing.integration.coverage.defuse.DefUseCollector;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cdg.ControlDependenceGraph;
 import org.evosuite.graphs.cfg.*;
@@ -191,6 +192,9 @@ public class CFGGenerator {
             switch (ff){
                 case Independent_Paths:
                     registerIndependetPaths();
+                    break;
+                case Use_Def:
+                    DefUseCollector.registerDefUsePaths(caller,callee);
                     break;
                 case Regular_Branch_Coverage:
                     generateInterProceduralGraphs();

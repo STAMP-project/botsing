@@ -75,6 +75,10 @@ public class CalleeClass {
         return null;
     }
 
+    public List<RawControlFlowGraph> getInvolvedCFGs() {
+        return involvedCFGs;
+    }
+
     public String getClassName(){
         return originalClass.getName();
     }

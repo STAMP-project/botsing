@@ -146,7 +146,7 @@ public class CFGGeneratorUtility {
 
     }
 
-    private List<List<BasicBlock>> makePath(BasicBlock currentNode,  ActualControlFlowGraph controlFlowGraph, Map<BasicBlock,Integer> coveredNodes, BasicBlock targetNode) {
+    public List<List<BasicBlock>> makePath(BasicBlock currentNode,  ActualControlFlowGraph controlFlowGraph, Map<BasicBlock,Integer> coveredNodes, BasicBlock targetNode) {
         List<List<BasicBlock>> result = new ArrayList<>();
         Set<BasicBlock>  children = controlFlowGraph.getChildren(currentNode);
         if(currentNode.equals(targetNode)){

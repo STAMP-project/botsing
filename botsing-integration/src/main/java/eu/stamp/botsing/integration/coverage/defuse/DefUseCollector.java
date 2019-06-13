@@ -1,11 +1,11 @@
 package eu.stamp.botsing.integration.coverage.defuse;
 
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.integration.IntegrationTestingProperties;
 import eu.stamp.botsing.integration.graphs.cfg.CalleeClass;
 import eu.stamp.botsing.integration.graphs.cfg.CallerClass;
-import org.evosuite.graphs.cfg.BytecodeInstruction;
-import org.evosuite.graphs.cfg.ControlFlowEdge;
-import org.evosuite.graphs.cfg.RawControlFlowGraph;
+import org.evosuite.graphs.GraphPool;
+import org.evosuite.graphs.cfg.*;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,13 +57,13 @@ public class DefUseCollector {
     }
 
     private static void collectLastDefs(RawControlFlowGraph controlFlowGraph, CallerClass caller, CalleeClass callee) {
-        collectLastDefsBeforeCall(controlFlowGraph,caller);
+//        collectLastDefsBeforeCall(controlFlowGraph,caller);
         collectLastDefsBeforeReturn(controlFlowGraph,callee);
     }
 
-    private static void collectLastDefsBeforeCall(RawControlFlowGraph controlFlowGraph, CallerClass caller) {
-        // method --> call_site --> variable --> Set<Nodes>
-        Map<String,Map<BytecodeInstruction,Map<String,Set<BytecodeInstruction>>>> nodesForAllCouplingPaths = new HashMap<>();
+    private static void collectLastDefsBeforeCall(CallerClass caller) {
+        // method --> call_site --> paramIndex --> Set<Nodes>
+        Map<String,Map<BytecodeInstruction,Map<Integer,Set<BasicBlock>>>> nodesForAllCouplingPaths = new HashMap<>();
 //        Set<BytecodeInstruction> nodesForAllCouplingPaths = new HashSet<>();
         // method --> call_site --> variable --> Set<Edges>
         Map<String,Map<BytecodeInstruction,Map<String,Set<ControlFlowEdge>>>> edgesForAllCouplingPaths = new HashMap<>();
@@ -95,7 +95,7 @@ public class DefUseCollector {
                     if(var == null){
                         continue;
                     }
-                    nodesForAllCouplingPaths.get(method).get(call_site).put(var,new HashSet<>());
+                    nodesForAllCouplingPaths.get(method).get(call_site).put(varCounter,new HashSet<>());
                     edgesForAllCouplingPaths.get(method).get(call_site).put(var,new HashSet<>());
                     // We perform this process for each varName
                     parents.clear();
@@ -104,7 +104,7 @@ public class DefUseCollector {
                         // get the candidate node
                         BytecodeInstruction currentNode = parents.remove(0);
                         if(currentNode.getMethodName().equals(method)){
-                            nodesForAllCouplingPaths.get(method).get(call_site).get(var).add(currentNode);
+                            nodesForAllCouplingPaths.get(method).get(call_site).get(varCounter).add(currentNode.getBasicBlock());
 
                             if(currentNode.isDefinition() && currentNode.getVariableName().equals(var)){
                                 // This node is a last_definition for the current variable
@@ -114,14 +114,14 @@ public class DefUseCollector {
                         }
 
                         for (BytecodeInstruction parent: caller.getMethodCFG(method).getParents(currentNode)){
-                            if(nodesForAllCouplingPaths.get(method).get(call_site).get(var).contains(parent)){
+                            if(nodesForAllCouplingPaths.get(method).get(call_site).get(varCounter).contains(parent)){
                                 continue;
                             }
                             if(!parent.getMethodName().equals(method)){
                                 parents.add(parent);
                                 continue;
                             }
-                            ControlFlowEdge edgeToParent  = controlFlowGraph.getEdge(parent,currentNode);
+                            ControlFlowEdge edgeToParent  =  caller.getMethodCFG(method).getEdge(parent,currentNode);
                             edgesForAllCouplingPaths.get(method).get(call_site).get(var).add(edgeToParent);
                             parents.add(parent);
                         }
@@ -129,6 +129,9 @@ public class DefUseCollector {
                 }
             }
         }
+
+
+        IntegrationDefUsePool.getInstance().registerCallSitesLastDef(caller.getClassName(),nodesForAllCouplingPaths);
     }
 
     private static List<String> detectVariableNames(BytecodeInstruction call_site,List<Type> types, RawControlFlowGraph controlFlowGraph) {
@@ -154,4 +157,42 @@ public class DefUseCollector {
     }
 
 
+    public static void registerDefUsePaths(CallerClass caller, CalleeClass callee) {
+        // Register first uses of input parameters in each method of callee
+        registerUsesOfMethod(callee);
+        LOG.info("last uses of methods of callee have been collected");
+
+        // Register last Defs before each call_site in the caller
+        collectLastDefsBeforeCall(caller);
+        LOG.info("last defs of methods of caller have been collected");
+
+        // Register last Defs before return in the callee and caller (for passed values) !
+
+
+
+        // Register first uses after each call_site in the caller
+
+        // We need the class call graphs of callee and caller.
+    }
+
+    private static void registerUsesOfMethod(CalleeClass callee) {
+        for(RawControlFlowGraph methodRCFG: callee.getInvolvedCFGs()){
+            String methodDesc = methodRCFG.getMethodName().substring(methodRCFG.getMethodName().indexOf('('));
+            Type[] argTypes = Type.getArgumentTypes(methodDesc);
+
+            for (BytecodeInstruction instruction: methodRCFG.vertexSet()){
+                if(instruction.isUse()){
+                    String varName = instruction.getVariableName();
+                    for (int paramIndex = 1; paramIndex<=argTypes.length; paramIndex++){
+                        if(varName.endsWith("_LV_"+paramIndex)){
+                            LOG.debug("{} is usage of parameter number {}.",instruction,paramIndex);
+                            ActualControlFlowGraph actualControlFlowGraph = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getActualCFG(methodRCFG.getClassName(),methodRCFG.getMethodName());
+                            IntegrationDefUsePool.getInstance().registerMethodsFirstUses(actualControlFlowGraph,paramIndex,instruction.getBasicBlock());
+                        }
+                    }
+                }
+            }
+        }
+
+    }
 }
