@@ -58,7 +58,7 @@ public class DefUseCollector {
 
     private static void collectLastDefs(RawControlFlowGraph controlFlowGraph, CallerClass caller, CalleeClass callee) {
 //        collectLastDefsBeforeCall(controlFlowGraph,caller);
-        collectLastDefsBeforeReturn(controlFlowGraph,callee);
+//        collectLastDefsBeforeReturn(controlFlowGraph,callee);
     }
 
     private static void collectLastDefsBeforeCall(CallerClass caller) {
@@ -153,7 +153,49 @@ public class DefUseCollector {
         return variableNames;
     }
 
-    private static void collectLastDefsBeforeReturn(RawControlFlowGraph controlFlowGraph, CalleeClass callee) {
+    private static void collectLastDefsBeforeReturn(CalleeClass callee) {
+        String className = callee.getClassName();
+        for (String methodName: callee.getReturnPoints().keySet()){
+            for(BytecodeInstruction returnPoint: callee.getReturnPoints().get(methodName)){
+                String variableName = detectReturnVariableName(returnPoint);
+                Set<BasicBlock> setOfNodes = new HashSet<>();
+
+                List<BytecodeInstruction> parents = new ArrayList<>();
+                parents.add(returnPoint);
+
+                while(!parents.isEmpty()){
+                    BytecodeInstruction currentNode = parents.remove(0);
+                    if(setOfNodes.contains(currentNode)){
+                        // We already analyze this node. We will skip it.
+                        continue;
+                    }
+                    setOfNodes.add(currentNode.getBasicBlock());
+                    if(currentNode.isDefinition() && currentNode.getVariableName().equals(variableName)){
+                        continue;
+                        // we reached to the definition we will not continue in this path
+                    }
+
+                    parents.addAll(currentNode.getRawCFG().getParents(currentNode));
+                }
+
+                // register the nodes to the integration defUsePool
+                IntegrationDefUsePool.getInstance().registerReturnsLastDefs(className,methodName,returnPoint,setOfNodes);
+            }
+        }
+    }
+
+
+    private static String detectReturnVariableName(BytecodeInstruction returnPoint){
+        List<BytecodeInstruction> candidates = new ArrayList<>();
+        candidates.add(returnPoint);
+        while(!candidates.isEmpty()){
+            BytecodeInstruction currentBC = candidates.remove(0);
+            if(currentBC.isUse()){
+                return currentBC.getVariableName();
+            }
+            candidates.addAll(currentBC.getRawCFG().getParents(currentBC));
+        }
+        return null;
     }
 
 
@@ -166,13 +208,71 @@ public class DefUseCollector {
         collectLastDefsBeforeCall(caller);
         LOG.info("last defs of methods of caller have been collected");
 
-        // Register last Defs before return in the callee and caller (for passed values) !
-
-
+        // Register last Defs before return in the callee
+        collectLastDefsBeforeReturn(callee);
+        LOG.info("last defs of return points of callee have been collected");
 
         // Register first uses after each call_site in the caller
-
+        collectFirstUsesAfterCallSites(caller);
+        LOG.info("First uses of call sites of caller have been collected");
         // We need the class call graphs of callee and caller.
+    }
+
+    private static void collectFirstUsesAfterCallSites(CallerClass caller) {
+        for (String method: caller.getInvolvedMethods()) {
+            Map<BytecodeInstruction, List<Type>> callSitesOfMethod = caller.getCallSitesOfMethod(method);
+            if (callSitesOfMethod == null) {
+                LOG.info("method {} does not have call_site.", method);
+                continue;
+            }
+
+
+            for (BytecodeInstruction call_site : callSitesOfMethod.keySet()) {
+                // First, we need to check if the call site used as a definition!
+                String variableName = null;
+                List<BytecodeInstruction> children = new ArrayList<>();
+                children.add(call_site);
+                while (!children.isEmpty()){
+                    BytecodeInstruction currentInstruction = children.remove(0);
+                    if(currentInstruction.getLineNumber() != call_site.getLineNumber()){
+                        continue;
+                    }
+                    if(currentInstruction.isDefinition()){
+                        variableName = currentInstruction.getVariableName();
+                        break;
+                    }
+                    children.addAll(currentInstruction.getRawCFG().getChildren(currentInstruction));
+                }
+                if(variableName == null){
+                    // there is no definition for the return value
+                    continue;
+                    // ToDo: What about cases that uses the return value directly?
+                }
+
+                Set<BasicBlock> nodeSet = new HashSet<>();
+
+                children.clear();
+                children.add(call_site);
+                while (!children.isEmpty()){
+                    BytecodeInstruction currentInstruction = children.remove(0);
+                    if(nodeSet.contains(currentInstruction)){
+                        continue;
+                    }
+
+                    nodeSet.add(currentInstruction.getBasicBlock());
+
+                    if(currentInstruction.isUse() && currentInstruction.getVariableName().equals(variableName)){
+                        // one last use is found. We will not add its children anymore.
+                        continue;
+                    }
+
+                    children.addAll(currentInstruction.getRawCFG().getChildren(currentInstruction));
+                }
+                // Save the detected node set
+                IntegrationDefUsePool.getInstance().registerReturnsFirstUses(caller.getClassName(),method,call_site,nodeSet);
+            }
+
+        }
     }
 
     private static void registerUsesOfMethod(CalleeClass callee) {
@@ -180,19 +280,25 @@ public class DefUseCollector {
             String methodDesc = methodRCFG.getMethodName().substring(methodRCFG.getMethodName().indexOf('('));
             Type[] argTypes = Type.getArgumentTypes(methodDesc);
 
-            for (BytecodeInstruction instruction: methodRCFG.vertexSet()){
-                if(instruction.isUse()){
-                    String varName = instruction.getVariableName();
-                    for (int paramIndex = 1; paramIndex<=argTypes.length; paramIndex++){
-                        if(varName.endsWith("_LV_"+paramIndex)){
-                            LOG.debug("{} is usage of parameter number {}.",instruction,paramIndex);
-                            ActualControlFlowGraph actualControlFlowGraph = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getActualCFG(methodRCFG.getClassName(),methodRCFG.getMethodName());
-                            IntegrationDefUsePool.getInstance().registerMethodsFirstUses(actualControlFlowGraph,paramIndex,instruction.getBasicBlock());
-                        }
+            for (int paramIndex = 1; paramIndex<=argTypes.length; paramIndex++){
+                Set<BasicBlock> nodeSet = new HashSet<>();
+                List<BytecodeInstruction> children = new ArrayList<>();
+                children.add(methodRCFG.determineEntryPoint());
+                while (!children.isEmpty()){
+                    BytecodeInstruction currentInstruction = children.remove(0);
+                    if(nodeSet.contains(currentInstruction)){
+                        continue;
                     }
+                    nodeSet.add(currentInstruction.getBasicBlock());
+                    if(currentInstruction.isUse() && currentInstruction.getVariableName().endsWith("_LV_"+paramIndex)){
+                        LOG.debug("{} is usage of parameter number {}.",currentInstruction,paramIndex);
+                        continue;
+                    }
+                    children.addAll(currentInstruction.getRawCFG().getChildren(currentInstruction));
                 }
+
+                IntegrationDefUsePool.getInstance().registerMethodsFirstUses(callee.getClassName(),methodRCFG.getMethodName(),paramIndex,nodeSet);
             }
         }
-
     }
 }

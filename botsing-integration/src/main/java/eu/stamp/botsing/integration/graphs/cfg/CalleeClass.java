@@ -91,4 +91,9 @@ public class CalleeClass {
         Type[] argTypes = Type.getArgumentTypes(bcInstruction.getMethodCallDescriptor());
         this.callSites.get(methodName).put(bcInstruction,Arrays.asList(argTypes));
     }
+
+
+    public Map<String, List<BytecodeInstruction>> getReturnPoints() {
+        return returnPoints;
+    }
 }
