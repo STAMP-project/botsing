@@ -76,9 +76,6 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
         // Add fitnes functions
         List<TestFitnessFunction> fitnessFunctions = fitnessFunctionCollector.getFitnessFunctionList();
         LOG.info("The number of goals are {}: ",fitnessFunctions.size());
-        for(TestFitnessFunction ff: fitnessFunctions){
-            LOG.info(ff.getClass().getName());
-        }
 
         ga.addFitnessFunctions((List)fitnessFunctions);
 

@@ -97,10 +97,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         }
 
         try{
-//            LOG.info(""+this.rankingFunction.getSubfront(0).get(0).getFitnessValues());
-            for(FitnessFunction<T> g: this.archive.keySet()){
-                LOG.info(""+g);
-            }
+
 
 
             Map<FitnessFunction<?>, Double> front0= this.rankingFunction.getSubfront(0).get(0).getFitnessValues();
