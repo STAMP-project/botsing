@@ -2,6 +2,9 @@ package eu.stamp.botsing.integration.graphs.cfg;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.graphs.cfg.BotsingRawControlFlowGraph;
+import org.evosuite.coverage.branch.Branch;
+import org.evosuite.coverage.branch.BranchPool;
+import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.ccg.ClassCallGraph;
 import org.evosuite.graphs.ccg.ClassCallNode;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
@@ -22,6 +25,9 @@ public class CalleeClass {
     protected Map<String,Map<BytecodeInstruction,List<Type>>> callSites = new HashMap<>();
 
     protected Map<String,List<BytecodeInstruction>> returnPoints = new HashMap<>();
+
+    // <callsite, branches>
+    protected Map<BytecodeInstruction,Set<Branch>> branches = new HashMap<>();
 
     protected List<String> calledMethods =  new ArrayList<>();
     protected List<RawControlFlowGraph> involvedCFGs =  new ArrayList<>();
@@ -95,5 +101,70 @@ public class CalleeClass {
 
     public Map<String, List<BytecodeInstruction>> getReturnPoints() {
         return returnPoints;
+    }
+
+    // This method find the called methods in callee by the method which is passed as input
+    public List<RawControlFlowGraph> getCalledMethodsBy(String methodName) {
+        List<RawControlFlowGraph> result = new ArrayList<>();
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        ClassCallNode calledMethodNode = ClassCallGraph.getNodeByMethodName(methodName);
+        LinkedList<ClassCallNode> methodsToCheck = new LinkedList();
+        methodsToCheck.addLast(calledMethodNode);
+
+        // To avoid loops
+        List<String> handled = new ArrayList<>();
+        while (methodsToCheck.size() > 0){
+            ClassCallNode currentNode = methodsToCheck.pop();
+            if(handled.contains(currentNode.getMethod())){
+                continue;
+            }
+
+            result.add(graphPool.getRawCFG(this.getClassName(),currentNode.getMethod()));
+            handled.add(currentNode.getMethod());
+            for(ClassCallNode called: ClassCallGraph.getChildren(currentNode)){
+                methodsToCheck.addLast(called);
+            }
+        }
+
+
+        return result;
+    }
+
+    // This method collects branches in the callee (from the called method and other methods in callee which are invoked because of the call site)
+    public void collectBranches(BytecodeInstruction callSiteBC) {
+        BranchPool branchPool = BranchPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        String methodName = callSiteBC.getCalledMethod();
+        List<RawControlFlowGraph> calledMethods = getCalledMethodsBy(methodName);
+        for(RawControlFlowGraph rcfg: calledMethods){
+            for(BytecodeInstruction branchBC: rcfg.determineBranches()){
+                if(branchPool.isKnownAsNormalBranchInstruction(branchBC)){
+                    Branch branch = branchPool.getBranchForInstruction(branchBC);
+                    addBranchesOfCallSite(branch,callSiteBC);
+                }else if(branchPool.isKnownAsSwitchBranchInstruction(branchBC)){
+                    for (Branch branch: branchPool.getCaseBranchesForSwitch(branchBC)){
+                        addBranchesOfCallSite(branch,callSiteBC);
+                    }
+                }else{
+                    throw new IllegalStateException("branch "+branchBC.explain()+" is not switch or normal.");
+                }
+            }
+        }
+
+    }
+
+    private void addBranchesOfCallSite(Branch branch, BytecodeInstruction callSiteBC) {
+        if(!branches.containsKey(callSiteBC)){
+            branches.put(callSiteBC,new HashSet<>());
+        }
+
+        branches.get(callSiteBC).add(branch);
+    }
+
+    public Set<Branch> getBranchesOfCallSite(BytecodeInstruction callSiteBC) {
+        if(!branches.containsKey(callSiteBC)) {
+            return new HashSet<>();
+        }
+
+        return branches.get(callSiteBC);
     }
 }

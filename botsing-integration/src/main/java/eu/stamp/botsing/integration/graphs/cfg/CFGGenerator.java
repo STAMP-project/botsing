@@ -4,7 +4,9 @@ import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.graphs.cfg.BotsingActualControlFlowGraph;
 import eu.stamp.botsing.commons.graphs.cfg.BotsingRawControlFlowGraph;
 import eu.stamp.botsing.integration.IntegrationTestingProperties;
+import eu.stamp.botsing.integration.coverage.branch.BranchPairPool;
 import eu.stamp.botsing.integration.coverage.defuse.DefUseCollector;
+import org.evosuite.coverage.branch.Branch;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cdg.ControlDependenceGraph;
 import org.evosuite.graphs.cfg.*;
@@ -45,7 +47,7 @@ public class CFGGenerator {
 
     private void registerIndependetPaths() {
         // Collect independent paths of each involved method
-        registerIndependetPathsOfMethod(this.caller.involvedCFGs);
+//        registerIndependetPathsOfMethod(this.caller.involvedCFGs);
         registerIndependetPathsOfMethod(this.callee.involvedCFGs);
 
         // Collect independent paths of each call_site
@@ -90,7 +92,7 @@ public class CFGGenerator {
         }
         for (String methodName : methodsGraphs.keySet()) {
             for (BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCalls()){
-                if(bcInstruction.isMethodCallForClass(callee.getName()) || bcInstruction.isMethodCallForClass(caller.getName())){
+                if(bcInstruction.isMethodCallForClass(callee.getName()) ){
                     if(!this.caller.callSites.containsKey(methodName)){
                         this.caller.callSites.put(methodName,new HashMap<>());
                     }
@@ -120,11 +122,6 @@ public class CFGGenerator {
                 }
             }
 
-            for(BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCalls()){
-                if(bcInstruction.isMethodCallForClass(callee.getName())){
-                    this.callee.addCallSite(bcInstruction);
-                }
-            }
         }
     }
 
@@ -196,8 +193,80 @@ public class CFGGenerator {
                 case Use_Def:
                     DefUseCollector.registerDefUsePaths(caller,callee);
                     break;
+                case Branch_Pairs:
+                    registerBranchPairs();
+                    break;
                 case Regular_Branch_Coverage:
                     generateInterProceduralGraphs();
+            }
+        }
+    }
+
+    private void registerBranchPairs() {
+        // Collect interesting branches for each integration call_site
+        for(String methodInCaller: this.caller.callSites.keySet()){
+            Map<BytecodeInstruction,List<Type>> callSites = this.caller.callSites.get(methodInCaller);
+            // collect caller-side branches
+            for(BytecodeInstruction callSiteBC: callSites.keySet()){
+                this.caller.collectBranches(methodInCaller,callSiteBC,callSiteBC, new HashSet<>());
+            }
+
+            // collect callee-side branches
+            for(BytecodeInstruction callSiteBC: callSites.keySet()){
+                this.callee.collectBranches(callSiteBC);
+            }
+        }
+
+        // Detect pairs and register them
+        collectPairs();
+        LOG.info("Branch pairs are registered.");
+    }
+
+    private void collectPairs() {
+        for (Map<BytecodeInstruction,List<Type>> callSite : caller.callSites.values()) {
+            for(BytecodeInstruction callSiteBC: callSite.keySet()){
+                // collect pairs for each call site
+                // collect control dependet branches before the call site
+                Set<ControlDependency> callerSideBranchesBeforeCallSite = this.caller.getControlDependenciesOfCallSite(callSiteBC);
+                // collect branches after call site in the caller method
+                Set<Branch> callerSideBranchesAfterCallSite = this.caller.getBranchesAfterCallSite(callSiteBC);
+                // collect branches in the called methods (by call site) of callee
+                Set<Branch> calleeSideBranches = this.callee.getBranchesOfCallSite(callSiteBC);
+
+                // Handle empty lists of branches
+                if(callerSideBranchesBeforeCallSite.isEmpty() && callerSideBranchesAfterCallSite.isEmpty() && calleeSideBranches.isEmpty()){
+                    LOG.warn("There is no branch fo call_site {}",callSiteBC.explain());
+                }
+
+                if(callerSideBranchesBeforeCallSite.isEmpty()){
+                    callerSideBranchesBeforeCallSite.add(null);
+                }
+
+                if(callerSideBranchesAfterCallSite.isEmpty()){
+                    callerSideBranchesAfterCallSite.add(null);
+                }
+
+                if(calleeSideBranches.isEmpty()){
+                    calleeSideBranches.add(null);
+                }
+                // register pairs of the branches before call site and branches in callee
+                for(ControlDependency callerCD : callerSideBranchesBeforeCallSite){
+                    for (Branch calleeBranch : calleeSideBranches){
+                        if(callerCD != null){
+                            BranchPairPool.getInstance().addPair(callerCD.getBranch(),calleeBranch,callSiteBC,callerCD.getBranchExpressionValue());
+                        }else{
+                            BranchPairPool.getInstance().addPair(null,calleeBranch,callSiteBC,false);
+                        }
+
+                    }
+                }
+                // register pairs of branches in the callee and branches after return
+                for(Branch calleeBranch : calleeSideBranches){
+                    for (Branch callerBranch : callerSideBranchesAfterCallSite){
+                        BranchPairPool.getInstance().addPair(calleeBranch,callerBranch,callSiteBC);
+                    }
+                }
+
             }
         }
     }

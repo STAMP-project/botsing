@@ -5,6 +5,7 @@ import eu.stamp.botsing.commons.coverage.branch.IntegrationTestingBranchCoverage
 import eu.stamp.botsing.commons.coverage.branch.IntegrationTestingBranchCoverageTestFitness;
 import org.evosuite.coverage.MethodNameMatcher;
 import org.evosuite.coverage.branch.Branch;
+import org.evosuite.coverage.branch.BranchCoverageGoal;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.coverage.branch.BranchPool;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
@@ -27,6 +28,10 @@ public class IntegrationTestingBranchCoverageFactory {
 
     public static BranchCoverageTestFitness createBranchCoverageTestFitness(Branch b, boolean branchExpressionValue) {
         return new IntegrationTestingBranchCoverageTestFitness(new IntegrationTestingBranchCoverageGoal(b, branchExpressionValue, b.getClassName(), b.getMethodName()));
+    }
+
+    public static BranchCoverageTestFitness EvoSuitecreateBranchCoverageTestFitness(Branch b, boolean branchExpressionValue) {
+        return new BranchCoverageTestFitness(new BranchCoverageGoal(b, branchExpressionValue, b.getClassName(), b.getMethodName()));
     }
 
 

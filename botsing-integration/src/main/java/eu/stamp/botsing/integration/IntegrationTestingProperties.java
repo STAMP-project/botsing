@@ -36,7 +36,8 @@ public class IntegrationTestingProperties {
     public enum FitnessFunction {
         Regular_Branch_Coverage,
         Independent_Paths,
-        Use_Def;
+        Use_Def,
+        Branch_Pairs;
         FitnessFunction() {
         }
     }
