@@ -60,4 +60,8 @@ public class BranchPair {
 
         return expression;
     }
+
+    public BytecodeInstruction getCallSite() {
+        return callSite;
+    }
 }

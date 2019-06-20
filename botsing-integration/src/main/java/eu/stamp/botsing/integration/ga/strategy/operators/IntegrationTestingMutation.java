@@ -1,33 +1,26 @@
-package eu.stamp.botsing.ga.strategy.operators;
+package eu.stamp.botsing.integration.ga.strategy.operators;
 
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
-import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
+import eu.stamp.botsing.integration.testgeneration.CallableMethodPool;
+import org.evosuite.ga.Chromosome;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.evosuite.ga.Chromosome;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class GuidedMutation<T extends Chromosome> extends Mutation<T> {
+public class IntegrationTestingMutation<T extends Chromosome> extends Mutation<T> {
+    private static final Logger LOG = LoggerFactory.getLogger(IntegrationTestingMutation.class);
 
-    private static final Logger LOG = LoggerFactory.getLogger(GuidedGeneticAlgorithm.class);
-    private static GuidedSearchUtility utility = new GuidedSearchUtility();
-
-    Set<GenericAccessibleObject<?>> publicCalls = new HashSet<>();
-    @Override
     public void mutateOffspring(T offspring) {
-        if(this.publicCalls.isEmpty()){
-            throw new IllegalStateException("set of public calls is empty");
-        }
         boolean isValid = false;
         int nTrials = 0; // we try maximum 50 insertion mutations (to avoid infinite loop)
         while (!isValid && nTrials < 5) {
             try {
-                    doRandomMutation(offspring);
-                isValid = utility.includesPublicCall(offspring,publicCalls);
+                doRandomMutation(offspring);
+                isValid = CallableMethodPool.getInstance().includesPublicCall((TestChromosome) offspring);
             } catch (AssertionError e) {
                 LOG.debug("Random insertion mutation was unsuccessful.");
             } finally {
@@ -37,6 +30,7 @@ public class GuidedMutation<T extends Chromosome> extends Mutation<T> {
         offspring.setChanged(true);
         offspring.updateAge(offspring.getAge() + 1);
     }
+
 
     protected void doRandomMutation(Chromosome offspring) {
         boolean mutated = false;
@@ -50,12 +44,10 @@ public class GuidedMutation<T extends Chromosome> extends Mutation<T> {
         }
     }
 
-    protected void insertRandomStatement(Chromosome chromosome) {
-        ((TestChromosome) chromosome).mutationInsert();
-    }
-
-    public void updatePublicCalls(Set<GenericAccessibleObject<?>> publicCalls){
-        this.publicCalls.clear();
-        this.publicCalls.addAll(publicCalls);
-    }
+//    @Override
+//    public void mutateOffspring(Chromosome offspring) {
+//        offspring.mutate();
+//        offspring.setChanged(true);
+//        offspring.updateAge(offspring.getAge() + 1);
+//    }
 }

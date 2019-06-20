@@ -145,7 +145,7 @@ public class CalleeClass {
                         addBranchesOfCallSite(branch,callSiteBC);
                     }
                 }else{
-                    throw new IllegalStateException("branch "+branchBC.explain()+" is not switch or normal.");
+//                    throw new IllegalStateException("branch "+branchBC.explain()+" is not switch or normal.");
                 }
             }
         }
