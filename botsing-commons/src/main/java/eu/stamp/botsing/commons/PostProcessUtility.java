@@ -1,6 +1,7 @@
 package eu.stamp.botsing.commons;
 
 import org.evosuite.Properties;
+import org.evosuite.TestSuiteGeneratorHelper;
 import org.evosuite.TimeController;
 import org.evosuite.contracts.FailingTestSet;
 import org.evosuite.coverage.TestFitnessFactory;
@@ -47,6 +48,11 @@ public class PostProcessUtility {
             if (after > before + 0.01d) { // assume minimization
                 throw new Error("EvoSuite bug: minimization lead fitness from " + before + " to " + after);
             }
+        }
+
+        if (Properties.ASSERTIONS) {
+            LOG.info("Generating assertions");
+            TestSuiteGeneratorHelper.addAssertions(testSuite);
         }
 
 
