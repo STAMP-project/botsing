@@ -4,12 +4,8 @@ import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import eu.stamp.botsing.integration.testgeneration.CallableMethodPool;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.testcase.TestChromosome;
-import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class IntegrationTestingMutation<T extends Chromosome> extends Mutation<T> {
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTestingMutation.class);

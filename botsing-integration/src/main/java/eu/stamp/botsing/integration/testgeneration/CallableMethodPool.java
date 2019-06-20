@@ -8,7 +8,6 @@ import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.ccg.ClassCallGraph;
 import org.evosuite.graphs.ccg.ClassCallNode;
 import org.evosuite.setup.TestCluster;
-import org.evosuite.setup.TestClusterUtils;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.statements.Statement;
