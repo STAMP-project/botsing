@@ -61,8 +61,15 @@ public class BranchPairFF extends TestFitnessFunction {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
-        result = prime * result + (branchPair.hashCode());
+        int result = prime;
+        if(branchPair.getFirstBranch() != null){
+            result+=branchPair.getFirstBranch().hashCode();
+        }
+
+        if(branchPair.getSecondBranch() != null){
+            result+=branchPair.getSecondBranch().hashCode();
+        }
+
         return result;
     }
 
@@ -74,7 +81,18 @@ public class BranchPairFF extends TestFitnessFunction {
         if (this == obj) {
             return true;
         }
-        return getClass() == obj.getClass();
+
+        if(obj instanceof BranchPairFF){
+            BranchPairFF ff2 = (BranchPairFF) obj;
+            if(ff2.isOnePairIsNull() && this.isOnePairIsNull() && this.getNonNullPairFF().equals(ff2.getNonNullPairFF())){
+                    return true;
+            }else if(!ff2.isOnePairIsNull() && !this.isOnePairIsNull() && ff2.firstBranchFF.equals(this.firstBranchFF) && ff2.secondBranchFF.equals(this.secondBranchFF)){
+                return true;
+            }
+        }
+
+        return false;
+
     }
 
     @Override
@@ -85,5 +103,25 @@ public class BranchPairFF extends TestFitnessFunction {
     @Override
     public String getTargetMethod() {
         return this.branchPair.getFirstBranch().getMethodName();
+    }
+
+    public boolean isOnePairIsNull(){
+        return (firstBranchFF == null || secondBranchFF == null);
+    }
+
+    public BranchCoverageTestFitness getNonNullPairFF(){
+        if(!isOnePairIsNull()){
+            throw new IllegalStateException("Pairs are not null!");
+        }
+
+        if(firstBranchFF != null){
+            return firstBranchFF;
+        }
+
+        if(secondBranchFF != null){
+            return secondBranchFF;
+        }
+
+        throw new IllegalStateException("Both pairs are null!");
     }
 }
