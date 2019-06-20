@@ -200,6 +200,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         } else {
             archive.put(covered, solution);
             this.uncoveredGoals.remove(covered);
+            LOG.debug("New covered goal: {}",covered);
         }
     }
 
