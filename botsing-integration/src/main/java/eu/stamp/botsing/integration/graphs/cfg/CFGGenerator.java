@@ -212,8 +212,9 @@ public class CFGGenerator {
             }
 
             // collect callee-side branches
+            List<String> alreadyHandledInnerMethods = new ArrayList<>();
             for(BytecodeInstruction callSiteBC: callSites.keySet()){
-                this.callee.collectBranches(callSiteBC);
+                this.callee.collectBranches(callSiteBC,alreadyHandledInnerMethods);
             }
         }
 
@@ -226,7 +227,7 @@ public class CFGGenerator {
         for (Map<BytecodeInstruction,List<Type>> callSite : caller.callSites.values()) {
             for(BytecodeInstruction callSiteBC: callSite.keySet()){
                 // collect pairs for each call site
-                // collect control dependet branches before the call site
+                // collect control dependent branches before the call site
                 Set<ControlDependency> callerSideBranchesBeforeCallSite = this.caller.getControlDependenciesOfCallSite(callSiteBC);
                 // collect branches after call site in the caller method
                 Set<Branch> callerSideBranchesAfterCallSite = this.caller.getBranchesAfterCallSite(callSiteBC);

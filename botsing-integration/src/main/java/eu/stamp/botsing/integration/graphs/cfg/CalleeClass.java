@@ -20,6 +20,7 @@ public class CalleeClass {
     private CFGGeneratorUtility utility = new CFGGeneratorUtility();
 
     protected ClassCallGraph ClassCallGraph;
+    protected Map<String,ClassCallGraph> innerClassesCallGraphs = new HashMap<>();
 
     // call sites of the caller <methodName,List<BytecodeInstruction>>
     protected Map<String,Map<BytecodeInstruction,List<Type>>> callSites = new HashMap<>();
@@ -38,6 +39,90 @@ public class CalleeClass {
     public CalleeClass(Class callee){
         ClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),callee.getName());
         originalClass = callee;
+    }
+
+    private Map<String,Set<String>> detectCalledInnerMethods(RawControlFlowGraph methodRCFG, BytecodeInstruction callSiteBC, List<String> alreadyHandledInnerMethods) {
+        String className = methodRCFG.getClassName();
+        Map<String,Set<String>> interestingInnerMethods = new HashMap<>();
+        for(BytecodeInstruction calls: methodRCFG.determineMethodCalls()){
+
+            if(calls.getCalledMethodsClass().startsWith(className+"$")){
+                String innerClass = calls.getCalledMethodsClass();
+                String innerClassMethod = calls.getCalledMethod();
+
+                if(!interestingInnerMethods.containsKey(innerClass) || !interestingInnerMethods.get(innerClass).contains(innerClassMethod)){
+                    try {
+                        if(Class.forName(innerClass,true,BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).isInterface()){
+                            Set<String> loadedClasses = BotsingTestGenerationContext.getInstance().getClassLoaderForSUT().getLoadedClasses();
+                            for (String loadedClass: loadedClasses){
+                                if(loadedClass.startsWith(className+"$") && isExtendedBy(loadedClass,innerClass)){
+                                    collectInterestingInnerMethods(loadedClass,innerClassMethod,interestingInnerMethods);
+                                }
+                            }
+
+                        }else{
+                            collectInterestingInnerMethods(innerClass,innerClassMethod,interestingInnerMethods);
+                        }
+
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        for (String innerClass: interestingInnerMethods.keySet()){
+            for (String innerMethod: interestingInnerMethods.get(innerClass)){
+                if(alreadyHandledInnerMethods.contains(innerClass+"."+innerMethod)){
+                    continue;
+                }
+                RawControlFlowGraph innerMethodRCFG = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getRawCFG(innerClass,innerMethod);
+                addBranchesOfCFG(innerMethodRCFG,callSiteBC);
+
+                alreadyHandledInnerMethods.add(innerClass+"."+innerMethod);
+            }
+
+//            innerClassesCallGraphs.put(innerClass,)
+        }
+
+        return interestingInnerMethods;
+    }
+
+    private boolean isExtendedBy(String loadedClass,String innerClass) throws ClassNotFoundException {
+        Class loadedClazz = Class.forName(loadedClass,true,BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        for (Class interfaceClazz :loadedClazz.getInterfaces()){
+            if(interfaceClazz.getName().contains("evosuite")){
+                continue;
+            }
+            if(interfaceClazz.getName().equals(innerClass)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void collectInterestingInnerMethods(String innerClass, String innerClassMethod, Map<String,Set<String>> interestingInnerMethods) {
+
+        if(GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getRawCFG(innerClass,innerClassMethod) == null){
+            return;
+        }
+        ClassCallGraph innerClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),innerClass);
+        List<ClassCallNode> nodesToCheck = new ArrayList<>();
+        nodesToCheck.add(innerClassCallGraph.getNodeByMethodName(innerClassMethod));
+        while (!nodesToCheck.isEmpty()){
+            ClassCallNode currentNode = nodesToCheck.remove(0);
+
+            if(!interestingInnerMethods.containsKey(innerClass)){
+                interestingInnerMethods.put(innerClass,new HashSet<>());
+            }
+            interestingInnerMethods.get(innerClass).add(currentNode.getMethod());
+
+            for(ClassCallNode child : innerClassCallGraph.getChildren(currentNode)){
+                if(!interestingInnerMethods.get(innerClass).contains(child.getMethod())){
+                    nodesToCheck.add(child);
+                }
+            }
+        }
     }
 
     protected void setListOfInvolvedCFGs(Map<String,List<RawControlFlowGraph>> cfgs){
@@ -131,25 +216,31 @@ public class CalleeClass {
     }
 
     // This method collects branches in the callee (from the called method and other methods in callee which are invoked because of the call site)
-    public void collectBranches(BytecodeInstruction callSiteBC) {
-        BranchPool branchPool = BranchPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+    public void collectBranches(BytecodeInstruction callSiteBC, List<String> alreadyHandledInnerMethods) {
         String methodName = callSiteBC.getCalledMethod();
         List<RawControlFlowGraph> calledMethods = getCalledMethodsBy(methodName);
         for(RawControlFlowGraph rcfg: calledMethods){
-            for(BytecodeInstruction branchBC: rcfg.determineBranches()){
-                if(branchPool.isKnownAsNormalBranchInstruction(branchBC)){
-                    Branch branch = branchPool.getBranchForInstruction(branchBC);
-                    addBranchesOfCallSite(branch,callSiteBC);
-                }else if(branchPool.isKnownAsSwitchBranchInstruction(branchBC)){
-                    for (Branch branch: branchPool.getCaseBranchesForSwitch(branchBC)){
-                        addBranchesOfCallSite(branch,callSiteBC);
-                    }
-                }else{
-//                    throw new IllegalStateException("branch "+branchBC.explain()+" is not switch or normal.");
-                }
-            }
+            detectCalledInnerMethods(rcfg,callSiteBC,alreadyHandledInnerMethods);
+            // add Branches Of Regular Methods
+            addBranchesOfCFG(rcfg,callSiteBC);
         }
 
+    }
+
+    private void addBranchesOfCFG(RawControlFlowGraph rcfg, BytecodeInstruction callSiteBC) {
+        BranchPool branchPool = BranchPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        for(BytecodeInstruction branchBC: rcfg.determineBranches()){
+            if(branchPool.isKnownAsNormalBranchInstruction(branchBC)){
+                Branch branch = branchPool.getBranchForInstruction(branchBC);
+                addBranchesOfCallSite(branch,callSiteBC);
+            }else if(branchPool.isKnownAsSwitchBranchInstruction(branchBC)){
+                for (Branch branch: branchPool.getCaseBranchesForSwitch(branchBC)){
+                    addBranchesOfCallSite(branch,callSiteBC);
+                }
+            }else{
+//                    throw new IllegalStateException("branch "+branchBC.explain()+" is not switch or normal.");
+            }
+        }
     }
 
     private void addBranchesOfCallSite(Branch branch, BytecodeInstruction callSiteBC) {
