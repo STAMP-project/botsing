@@ -57,7 +57,7 @@ public class CallableMethodPool {
         while (!nodesToHandle.isEmpty()){
             ClassCallNode currentNode = nodesToHandle.remove(0);
             // If the method is not private, we will add it as a callable class
-            int methodAccess = graphPool.getActualCFG(callGraph.getClassName(),methodName).getMethodAccess();
+            int methodAccess = graphPool.getActualCFG(callGraph.getClassName(),currentNode.getMethod()).getMethodAccess();
             if(!isPrivateMethod(methodAccess)){
                 GenericAccessibleObject<?> methodGenericObj = getGenericObject(currentNode.getMethod());
                 if(methodGenericObj != null){
