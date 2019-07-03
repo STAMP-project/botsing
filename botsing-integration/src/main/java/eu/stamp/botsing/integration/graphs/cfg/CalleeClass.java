@@ -19,7 +19,7 @@ public class CalleeClass {
     private static final Logger LOG = LoggerFactory.getLogger(CalleeClass.class);
     private CFGGeneratorUtility utility = new CFGGeneratorUtility();
 
-    protected ClassCallGraph ClassCallGraph;
+    protected ClassCallGraph classCallGraph;
     protected Map<String,ClassCallGraph> innerClassesCallGraphs = new HashMap<>();
 
     // call sites of the caller <methodName,List<BytecodeInstruction>>
@@ -32,13 +32,26 @@ public class CalleeClass {
 
     protected List<String> calledMethods =  new ArrayList<>();
     protected List<RawControlFlowGraph> involvedCFGs =  new ArrayList<>();
+    protected List<ClassCallGraph> superClassesCallGraph = new ArrayList<>();
+    // Collect the index of involved cfgs for each call
+    protected Map<String,List<Integer>> calledMethodsBy = new HashMap<>();
     private BotsingRawControlFlowGraph rawInterProceduralGraph;
 
     private Class originalClass;
 
     public CalleeClass(Class callee){
-        ClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),callee.getName());
+        classCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),callee.getName());
+        handleSuperClasses(callee);
         originalClass = callee;
+    }
+
+    private void handleSuperClasses(Class callee) {
+        Class superClass = callee.getSuperclass();
+
+        while (superClass.getName() != "java.lang.Object"){
+            superClassesCallGraph.add(new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),superClass.getName()));
+            superClass = superClass.getSuperclass();
+        }
     }
 
     private Map<String,Set<String>> detectCalledInnerMethods(RawControlFlowGraph methodRCFG, BytecodeInstruction callSiteBC, List<String> alreadyHandledInnerMethods) {
@@ -125,27 +138,9 @@ public class CalleeClass {
         }
     }
 
-    protected void setListOfInvolvedCFGs(Map<String,List<RawControlFlowGraph>> cfgs){
-        Set<String> involvedMethods = new HashSet<>();
+    protected void setListOfInvolvedCFGs(){
         for(String calledMethod: calledMethods){
-            ClassCallNode calledMethodNode = ClassCallGraph.getNodeByMethodName(calledMethod);
-            LinkedList<ClassCallNode> methodsToCheck = new LinkedList();
-            methodsToCheck.addLast(calledMethodNode);
-            involvedMethods.add(calledMethod);
-            while (methodsToCheck.size() > 0){
-                ClassCallNode currentNode = methodsToCheck.pop();
-                for(ClassCallNode child: ClassCallGraph.getChildren(currentNode)){
-                    if(!involvedMethods.contains(child.getMethod())){
-                        methodsToCheck.addLast(child);
-                        involvedMethods.add(child.getMethod());
-                    }
-                }
-            }
-        }
-        for(RawControlFlowGraph rcfg : cfgs.get(ClassCallGraph.getClassName())){
-            if(involvedMethods.contains(rcfg.getMethodName())){
-                involvedCFGs.add(rcfg);
-            }
+            collectCFGS(calledMethod,classCallGraph,involvedCFGs);
         }
     }
 
@@ -188,30 +183,68 @@ public class CalleeClass {
         return returnPoints;
     }
 
-    // This method find the called methods in callee by the method which is passed as input
-    public List<RawControlFlowGraph> getCalledMethodsBy(String methodName) {
-        List<RawControlFlowGraph> result = new ArrayList<>();
-        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-        ClassCallNode calledMethodNode = ClassCallGraph.getNodeByMethodName(methodName);
-        LinkedList<ClassCallNode> methodsToCheck = new LinkedList();
-        methodsToCheck.addLast(calledMethodNode);
 
-        // To avoid loops
-        List<String> handled = new ArrayList<>();
-        while (methodsToCheck.size() > 0){
-            ClassCallNode currentNode = methodsToCheck.pop();
-            if(handled.contains(currentNode.getMethod())){
-                continue;
+    protected void collectCFGS(String methodName, ClassCallGraph callGraph, List<RawControlFlowGraph> result){
+
+        // Check if we can go to sub classes
+        if(superClassesCallGraph.contains(callGraph)){
+            int index = superClassesCallGraph.indexOf(callGraph);
+            for(int i=-1;i<index;i++){
+                ClassCallGraph tempCallGraph;
+                if(i==-1){
+                    tempCallGraph = classCallGraph;
+                }else{
+                    tempCallGraph = superClassesCallGraph.get(i);
+                }
+                ClassCallNode node = tempCallGraph.getNodeByMethodName(methodName);
+                if(node != null){
+                    collectCFGS(methodName,tempCallGraph, result);
+                    return;
+                }
+            }
+        }
+        // Here, we know that the sub classes did not override this method. So, first, we try to find the cfg in the current class. If it is not available here, we will go for super classes.
+        ClassCallNode calledMethodNode = callGraph.getNodeByMethodName(methodName);
+        if(calledMethodNode == null){
+            // Our target is the closest super class which contains the method.
+            for(ClassCallGraph superCallGraph: superClassesCallGraph){
+                ClassCallNode superCalledMethodNode = superCallGraph.getNodeByMethodName(methodName);
+                if(superCalledMethodNode!=null){
+                    collectCFGS(methodName,superCallGraph, result);
+                    return;
+                }
+            }
+        }else{
+            // Here, we know that the current call graph contains the right method. We can just add it to results.
+            // 1- get the cfg:
+            GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+            RawControlFlowGraph targetedCFG = graphPool.getRawCFG(callGraph.getClassName(),methodName);
+            if(targetedCFG == null){
+                throw new IllegalStateException("Method is not available in the graph pool");
+            }
+            // 2- Save it in the invloved cfg if it is not available
+            if(!result.contains(targetedCFG)){
+                result.add(targetedCFG);
+
+                // 3- go for the childrens
+                for(ClassCallNode child: callGraph.getChildren(calledMethodNode)){
+                    collectCFGS(child.getMethod(),callGraph,result);
+                }
             }
 
-            result.add(graphPool.getRawCFG(this.getClassName(),currentNode.getMethod()));
-            handled.add(currentNode.getMethod());
-            for(ClassCallNode called: ClassCallGraph.getChildren(currentNode)){
-                methodsToCheck.addLast(called);
-            }
+            return;
         }
 
 
+        throw new IllegalStateException("method "+methodName+" is not available in hierarchy tree!");
+
+
+    }
+
+    // This method find the called methods in callee by the method which is passed as input
+    public List<RawControlFlowGraph> getCalledMethodsBy(String methodName) {
+        List<RawControlFlowGraph> result = new ArrayList<>();
+        collectCFGS(methodName,classCallGraph,result);
         return result;
     }
 
