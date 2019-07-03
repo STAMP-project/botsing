@@ -78,7 +78,9 @@ public class CallerClass {
 
 
         // Collect control dependencies of call site
-        ControlDependenceGraph methodCDG = graphPool.getCDG(this.getClassName(),methodName);
+
+        ControlDependenceGraph methodCDG = new ControlDependenceGraph(graphPool.getActualCFG(this.getClassName(),methodName));
+
         BasicBlock callSiteBlock = callSiteBC.getBasicBlock();
         Map<BytecodeInstruction,Boolean> controlDependencies = new HashMap();
         List<ControlDependency> dependenciesToCheck = new ArrayList<>();
@@ -156,7 +158,13 @@ public class CallerClass {
             branchesAfterCallSite.put(callSiteBC,new HashSet<>());
         }
 
-        branchesAfterCallSite.get(callSiteBC).add(branchPool.getBranchForInstruction(branch));
+        if(branchPool.isKnownAsNormalBranchInstruction(branch)){
+            branchesAfterCallSite.get(callSiteBC).add(branchPool.getBranchForInstruction(branch));
+        }else if(branchPool.isKnownAsSwitchBranchInstruction(branch)){
+            for(Branch switchBranch:branchPool.getCaseBranchesForSwitch(branch)){
+                branchesAfterCallSite.get(callSiteBC).add(switchBranch);
+            }
+        }
     }
 
     private void addBranchesBeforeCallSite(BytecodeInstruction callSiteBC, BytecodeInstruction branch) {
@@ -166,7 +174,7 @@ public class CallerClass {
         }
         if(branchPool.isKnownAsNormalBranchInstruction(branch)){
             branchesBeforeCallSite.get(callSiteBC).add(branchPool.getBranchForInstruction(branch));
-        }else{
+        }else if(branchPool.isKnownAsSwitchBranchInstruction(branch)){
             for(Branch switchBranch:branchPool.getCaseBranchesForSwitch(branch)){
                 branchesBeforeCallSite.get(callSiteBC).add(switchBranch);
             }
