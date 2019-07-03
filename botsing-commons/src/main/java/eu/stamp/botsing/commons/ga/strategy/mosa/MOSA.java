@@ -11,6 +11,7 @@ import java.util.*;
 import org.evosuite.ga.comparators.OnlyCrowdingComparator;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
+import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testsuite.TestSuiteChromosome;
@@ -142,6 +143,15 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
             this.evolve();
             LOG.info("generation #{} is created.",this.currentIteration);
             this.notifyIteration();
+        }
+
+        if(this.isFinished()){
+            for(StoppingCondition stoppingCondition : this.stoppingConditions){
+                if(stoppingCondition.isFinished()){
+                    LOG.info("Stopping reason: {}", stoppingCondition.toString());
+                }
+
+            }
         }
     }
 
