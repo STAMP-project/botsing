@@ -39,11 +39,40 @@ public class CFGGenerator {
         this.callee =  new CalleeClass(callee);
         utility.collectCFGS(callee,cfgs);
 
-        detectIntegrationPointsInCaller(caller,callee);
+        Class parentInHierarchyTree = detectParentInHierarchyTree(caller,callee);
+        if(parentInHierarchyTree == null){
+            detectIntegrationPointsInCaller(caller,callee);
+            this.caller.setListOfInvolvedCFGs(cfgs);
+            this.callee.setListOfInvolvedCFGs();
+        }else{
+            detectIntegrationPointsInHierarchyTree(caller,callee, parentInHierarchyTree);
+            setListOfInvolvedCFGsInCaller(parentInHierarchyTree);
+            setListOfInvolvedCFGsInCallee(parentInHierarchyTree);
+        }
 
-        this.caller.setListOfInvolvedCFGs(cfgs);
-        this.callee.setListOfInvolvedCFGs(cfgs);
+
+
     }
+
+    // This method and next one are only executed if we caller and callee are in the same hierarchy tree
+    private void setListOfInvolvedCFGsInCaller(Class parentInHierarchyTree) {
+        if(this.caller.getOriginalClass().equals(parentInHierarchyTree)){
+            // caller is super class
+        }else{
+            // caller is sub class
+        }
+        // ToDo: Complete this method
+    }
+
+    private void setListOfInvolvedCFGsInCallee(Class parentInHierarchyTree) {
+        if(this.caller.getOriginalClass().equals(parentInHierarchyTree)){
+            // callee is super class
+        }else{
+            // callee is sub class
+        }
+        // ToDo: Complete this method
+    }
+
 
     private void registerIndependetPaths() {
         // Collect independent paths of each involved method
@@ -122,6 +151,55 @@ public class CFGGenerator {
         return false;
     }
 
+    private void detectIntegrationPointsInHierarchyTree(Class caller, Class callee, Class parentInHierarchyTree) {
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        if(caller.equals(parentInHierarchyTree)){
+            // caller is super class, and callee is sub class
+            Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(caller.getName());
+            if (methodsGraphs == null) {
+                throw new IllegalStateException("Botsing could not detect any CFG in the caller class");
+            }
+
+            Set<String> calleeMethods = graphPool.getRawCFGs(callee.getName()).keySet();
+            for (String methodName : methodsGraphs.keySet()) {
+                for (BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCallsToOwnClass()){
+                    String calledMethod = bcInstruction.getCalledMethod();
+                    // Check if called method is overridden in the sub class
+                    if(calleeMethods.contains(calledMethod)){
+                        this.caller.addCallSite(methodName,bcInstruction);
+                        // Add called method to callee
+                        this.callee.calledMethods.add(calledMethod);
+                    }
+                }
+            }
+        }else if(callee.equals(parentInHierarchyTree)){
+            // caller is sub class, and callee is super class
+            Map<String, RawControlFlowGraph> methodsGraphs = graphPool.getRawCFGs(caller.getName());
+            if (methodsGraphs == null) {
+                throw new IllegalStateException("Botsing could not detect any CFG in the caller class");
+            }
+
+            Set<String> calleeMethods = graphPool.getRawCFGs(callee.getName()).keySet();
+            for (String methodName : methodsGraphs.keySet()) {
+                for (BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCalls()){
+                    String calledMethod = bcInstruction.getCalledMethod();
+                    // Check if called method is not overridden in the sub class
+                    if(!methodsGraphs.keySet().contains(calledMethod) && calleeMethods.contains(calledMethod)){
+                        LOG.debug("** the class name is {}, and the method name is {}. They are all in method {}",bcInstruction.getCalledMethodsClass(),calledMethod,bcInstruction.getMethodName());
+                        this.caller.addCallSite(methodName,bcInstruction);
+                        // Add called method to callee
+                        this.callee.calledMethods.add(calledMethod);
+                    }
+                }
+            }
+
+
+        }else{
+            throw new IllegalStateException("Caller and callee are not in the same hierarchy tree.");
+        }
+
+    }
+
     private void detectIntegrationPointsInCaller(Class caller, Class callee) {
         GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
         // Detect call_sites
@@ -132,13 +210,8 @@ public class CFGGenerator {
         for (String methodName : methodsGraphs.keySet()) {
             for (BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCalls()){
                 if(bcInstruction.isMethodCallForClass(callee.getName()) || isExtendedBy(callee.getName(),bcInstruction.getCalledMethodsClass())){
-                    if(!this.caller.callSites.containsKey(methodName)){
-                        this.caller.callSites.put(methodName,new HashMap<>());
-                    }
-//                    HashMap<BytecodeInstruction,List<Type>> callSite = new HashMap<>();
-                    Type[] argTypes = Type.getArgumentTypes(bcInstruction.getMethodCallDescriptor());
-//                    callSite.put(bcInstruction,Arrays.asList(argTypes));
-                    this.caller.callSites.get(methodName).put(bcInstruction,Arrays.asList(argTypes));
+                    this.caller.addCallSite(methodName,bcInstruction);
+
                     if(bcInstruction.isMethodCallForClass(callee.getName())){
                         this.callee.calledMethods.add(bcInstruction.getCalledMethod());
                     }
@@ -162,6 +235,16 @@ public class CFGGenerator {
             }
 
         }
+    }
+
+    private Class detectParentInHierarchyTree(Class caller, Class callee) {
+        if(isExtendedBy(caller.getName(),callee.getName())){
+            return callee;
+        }else if(isExtendedBy(callee.getName(),caller.getName())){
+            return caller;
+        }
+            return null;
+
     }
 
 
@@ -197,7 +280,7 @@ public class CFGGenerator {
                 }
 
                 if(targetRCFG == null){
-                    throw new IllegalStateException("could not fine the target rcfg");
+                    throw new IllegalStateException("could not find the target rcfg");
                 }
                 BytecodeInstruction target = targetRCFG.determineEntryPoint();
                 Set<BytecodeInstruction> exitPoints = targetRCFG.determineExitPoints();

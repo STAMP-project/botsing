@@ -251,4 +251,16 @@ public class CallerClass {
         }
         return branchesAfterCallSite.get(callSiteBC);
     }
+
+    public void addCallSite(String methodName, BytecodeInstruction bcInstruction){
+        if(!this.callSites.containsKey(methodName)){
+            this.callSites.put(methodName,new HashMap<>());
+        }
+        Type[] argTypes = Type.getArgumentTypes(bcInstruction.getMethodCallDescriptor());
+        this.callSites.get(methodName).put(bcInstruction,Arrays.asList(argTypes));
+    }
+
+    public Class getOriginalClass() {
+        return originalClass;
+    }
 }
