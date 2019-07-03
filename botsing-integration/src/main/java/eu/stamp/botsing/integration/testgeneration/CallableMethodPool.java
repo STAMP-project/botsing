@@ -16,10 +16,13 @@ import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class CallableMethodPool {
+    private static final Logger LOG = LoggerFactory.getLogger(CallableMethodPool.class);
     private static CallableMethodPool instance;
     // pool of public/protected method calls which can be used to cover the integration points
     Set<GenericAccessibleObject<?>> callableMethods = new HashSet<>();
@@ -57,13 +60,15 @@ public class CallableMethodPool {
             int methodAccess = graphPool.getActualCFG(callGraph.getClassName(),methodName).getMethodAccess();
             if(!isPrivateMethod(methodAccess)){
                 GenericAccessibleObject<?> methodGenericObj = getGenericObject(currentNode.getMethod());
-                callableMethods.add(methodGenericObj);
+                if(methodGenericObj != null){
+                    callableMethods.add(methodGenericObj);
+                }
             }
             // Detecting the new callers
             for(ClassCallNode caller : callGraph.getParents(currentNode)){
                 GenericAccessibleObject<?> callerMethodGenericObj = getGenericObject(caller.getMethod());
                 // Avoiding Loop
-                if(callableMethods.contains(callerMethodGenericObj)){
+                if(callerMethodGenericObj==null || callableMethods.contains(callerMethodGenericObj)){
                     continue;
                 }
                 nodesToHandle.add(caller);
@@ -89,7 +94,8 @@ public class CallableMethodPool {
             }
 
         }
-        throw new IllegalStateException("method "+method+" is not detected!");
+        LOG.info("method "+method+" is not detected!");
+        return null;
     }
 
     private static boolean isPrivateMethod(int methodAccess){

@@ -69,4 +69,12 @@ public class BotsingIntegration {
     }
 
 
+    @SuppressWarnings("checkstyle:systemexit")
+    public static void main(String[] args) {
+        BotsingIntegration bot = new BotsingIntegration();
+        bot.parseCommandLine(args);
+        System.exit(0);
+    }
+
+
 }

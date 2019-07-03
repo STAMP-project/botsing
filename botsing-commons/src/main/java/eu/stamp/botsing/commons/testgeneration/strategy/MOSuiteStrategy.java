@@ -18,6 +18,7 @@ import org.evosuite.utils.ResourceController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class MOSuiteStrategy extends TestGenerationStrategy {
@@ -39,6 +40,13 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
 
         // Get the search algorithm
         GeneticAlgorithm<TestSuiteChromosome> ga = utility.getGA();
+        if(!ga.getStoppingConditions().isEmpty()){
+            Iterator it = ga.getStoppingConditions().iterator();
+            while (it.hasNext()){
+                ga.removeStoppingCondition((StoppingCondition) it.next());
+            }
+        }
+
 
         if(!(ga instanceof AbstractMOSA)){
             throw new IllegalArgumentException("The search algorithm of MOSuite should be MOSA");
@@ -55,6 +63,8 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
 
         if (!(stoppingCondition instanceof MaxTimeStoppingCondition)) {
             ga.addStoppingCondition(new GlobalTimeStoppingCondition());
+        }else{
+            ga.addStoppingCondition(stoppingCondition);
         }
 
         if (Properties.CHECK_BEST_LENGTH) {
