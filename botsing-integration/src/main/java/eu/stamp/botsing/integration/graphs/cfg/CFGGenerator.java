@@ -82,6 +82,45 @@ public class CFGGenerator {
         }
     }
 
+    private boolean isExtendedBy(String loadedClass,String calledClass) {
+        Class loadedClazz = null;
+        try {
+            loadedClazz = Class.forName(loadedClass,true,BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        //  Checking the interfaces
+        for (Class interfaceClazz :loadedClazz.getInterfaces()){
+            if(interfaceClazz.getName().contains("evosuite")){
+                continue;
+            }
+            if(interfaceClazz.getName().equals(calledClass)){
+
+                return true;
+            }
+        }
+
+        // Checking the abstract classes
+
+        Class superClass = loadedClazz.getSuperclass();
+
+        while(!superClass.getName().equals("java.lang.Object")){
+            if(superClass.getName().equals(calledClass)){
+                if(!BotsingTestGenerationContext.getInstance().getClassLoaderForSUT().getLoadedClasses().contains(superClass)){
+                    try {
+                        Class.forName(superClass.getName(),true, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return true;
+            }
+            superClass = superClass.getSuperclass();
+        }
+
+        return false;
+    }
 
     private void detectIntegrationPointsInCaller(Class caller, Class callee) {
         GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
@@ -92,7 +131,7 @@ public class CFGGenerator {
         }
         for (String methodName : methodsGraphs.keySet()) {
             for (BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCalls()){
-                if(bcInstruction.isMethodCallForClass(callee.getName()) ){
+                if(bcInstruction.isMethodCallForClass(callee.getName()) || isExtendedBy(callee.getName(),bcInstruction.getCalledMethodsClass())){
                     if(!this.caller.callSites.containsKey(methodName)){
                         this.caller.callSites.put(methodName,new HashMap<>());
                     }
@@ -255,7 +294,7 @@ public class CFGGenerator {
                     for (Branch calleeBranch : calleeSideBranches){
                         if(callerCD != null){
                             BranchPairPool.getInstance().addPair(callerCD.getBranch(),calleeBranch,callSiteBC,callerCD.getBranchExpressionValue());
-                        }else{
+                        }else if(calleeBranch != null){
                             BranchPairPool.getInstance().addPair(null,calleeBranch,callSiteBC,false);
                         }
 
@@ -264,6 +303,9 @@ public class CFGGenerator {
                 // register pairs of branches in the callee and branches after return
                 for(Branch calleeBranch : calleeSideBranches){
                     for (Branch callerBranch : callerSideBranchesAfterCallSite){
+                        if(calleeBranch == null && callerBranch == null){
+                            continue;
+                        }
                         BranchPairPool.getInstance().addPair(calleeBranch,callerBranch,callSiteBC);
                     }
                 }
