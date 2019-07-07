@@ -46,9 +46,12 @@ public class ClassCouplingAnalyzer {
             // initial classes in the same hierarchy tree
             ClassesInSameHierarchyTreeAnalyzer classesInSameHierarchyTreeAnalyzer = new ClassesInSameHierarchyTreeAnalyzer(classPathEntries,projectPrefix);
 
-
+            // Analyzing couplings according to the method calls
             methodCallAnalyzer.execute();
+            // Analyzing coupling according in the super and sub classes
+            classesInSameHierarchyTreeAnalyzer.execute();
 
+            // ToDo: save lists into a csv file
             String outputFolder = commands.hasOption(OUTPUT_FOLDER) ? commands.getOptionValue(OUTPUT_FOLDER) :
                     "generated_results";
 

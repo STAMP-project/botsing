@@ -1,6 +1,8 @@
 package eu.stamp.botsing.coupling.analyze.calls;
 
 public class ClassPair implements Comparable<ClassPair> {
+
+    // In hierarchy analysis, class1 is sub class and class2 is super class
     protected String class1;
     protected String class2;
     protected int score1 = 0;
