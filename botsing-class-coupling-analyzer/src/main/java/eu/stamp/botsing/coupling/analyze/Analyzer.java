@@ -2,6 +2,7 @@ package eu.stamp.botsing.coupling.analyze;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.analysis.classpath.CPAnalyzer;
+import eu.stamp.botsing.coupling.analyze.calls.ClassPair;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.junit.CoverageAnalysis;
@@ -23,6 +24,8 @@ public abstract class Analyzer {
     protected String projectPrefix = "";
     protected String[] projectClassPaths;
     protected List<String> interestingClasses;
+
+    protected List<ClassPair> finalList = new ArrayList<>();
 
     public Analyzer(List<String> classPathEntries, String projectPrefix) {
         this.classPathEntries = classPathEntries;
@@ -87,4 +90,7 @@ public abstract class Analyzer {
 
     }
 
+    public List<ClassPair> getFinalList() {
+        return finalList;
+    }
 }

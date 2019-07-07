@@ -14,18 +14,17 @@ public class MethodCallAnalyzer extends Analyzer {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodCallAnalyzer.class);
 
-    HashMap<String,HashMap<String, Integer>> callMap = new HashMap<>();
-    List<ClassPair> finalList = new ArrayList<>();
+    private HashMap<String,HashMap<String, Integer>> callMap = new HashMap<>();
 
     public MethodCallAnalyzer(List<String> classPathEntries, String projectPrefix) {
         super(classPathEntries,projectPrefix);
-        // Initialize map with 0 values
-        initializeMap(interestingClasses);
+        // Initialize map with 0 values in each cell
+        initializeMap();
     }
 
 
 
-    private void initializeMap(List<String> interestingClasses) {
+    private void initializeMap() {
         callMap.clear();
         for (String callerClass : interestingClasses){
             callMap.put(callerClass,new HashMap<>());
