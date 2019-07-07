@@ -1,15 +1,19 @@
 package eu.stamp.botsing.integration.integrationtesting;
 
+import eu.stamp.botsing.commons.SetupUtility;
 import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
 import eu.stamp.botsing.integration.IntegrationTestingProperties;
 import eu.stamp.botsing.integration.graphs.cfg.CFGGenerator;
 import org.evosuite.Properties;
+import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.coverage.TestFitnessFactory;
 import org.evosuite.result.TestGenerationResult;
 import org.evosuite.rmi.ClientServices;
 import org.evosuite.rmi.service.ClientState;
 import org.evosuite.runtime.LoopCounter;
 import org.evosuite.runtime.sandbox.Sandbox;
+import org.evosuite.setup.DependencyAnalysis;
+import org.evosuite.setup.TestCluster;
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.TestCaseExecutor;
@@ -17,13 +21,13 @@ import org.evosuite.testsuite.TestSuiteChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static eu.stamp.botsing.commons.PostProcessUtility.*;
-import static eu.stamp.botsing.commons.SetupUtility.analyzeClassDependencies;
 import static eu.stamp.botsing.commons.SetupUtility.configureClassReInitializer;
 
 public class IntegrationTesting {
@@ -68,7 +72,14 @@ public class IntegrationTesting {
             ClassInstrumentation classInstrumenter = new ClassInstrumentation();
             List <String> interestingClasses = Arrays.asList(IntegrationTestingProperties.TARGET_CLASSES);
             Collections.reverse(interestingClasses);
-            List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses,interestingClasses.get(1));
+            String testingClass = interestingClasses.get(1);
+            if(Properties.INSTRUMENT_PARENT==true){
+                String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
+                List<String> classPath = Arrays.asList(cp.split(File.pathSeparator));
+                DependencyAnalysis.initInheritanceTree(classPath);
+                TestCluster.setInheritanceTree(DependencyAnalysis.getInheritanceTree());
+            }
+            List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses,testingClass);
             // We assume that first passed class is tha caller, and second one is the callee
             Class caller = instrumentedClasses.get(1);
             LOG.info("Instrumented caller class: {}",caller.getName());
@@ -79,7 +90,8 @@ public class IntegrationTesting {
             cfgGenerator.generate();
             // Analyze the dependencies of the caller class
             LOG.info("Analyzing dependencies...");
-            analyzeClassDependencies(caller.getName());
+            SetupUtility.analyzeClassDependencies(caller.getName());
+
         }catch (Exception e){
             LOG.error("Error in target initialization:");
             e.printStackTrace();

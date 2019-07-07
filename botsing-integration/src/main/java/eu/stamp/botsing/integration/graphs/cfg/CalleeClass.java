@@ -2,6 +2,7 @@ package eu.stamp.botsing.integration.graphs.cfg;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.graphs.cfg.BotsingRawControlFlowGraph;
+import eu.stamp.botsing.integration.integrationtesting.IntegrationTestingUtility;
 import org.evosuite.coverage.branch.Branch;
 import org.evosuite.coverage.branch.BranchPool;
 import org.evosuite.graphs.GraphPool;
@@ -30,7 +31,7 @@ public class CalleeClass {
     // <callsite, branches>
     protected Map<BytecodeInstruction,Set<Branch>> branches = new HashMap<>();
 
-    protected List<String> calledMethods =  new ArrayList<>();
+    protected Set<String> calledMethods =  new HashSet<>();
     protected List<RawControlFlowGraph> involvedCFGs =  new ArrayList<>();
     protected List<ClassCallGraph> superClassesCallGraph = new ArrayList<>();
     // Collect the index of involved cfgs for each call
@@ -65,7 +66,7 @@ public class CalleeClass {
 
                 if(!interestingInnerMethods.containsKey(innerClass) || !interestingInnerMethods.get(innerClass).contains(innerClassMethod)){
                     try {
-                        if(Class.forName(innerClass,true,BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).isInterface()){
+                        if(IntegrationTestingUtility.fetchClass(innerClass).isInterface()){
                             Set<String> loadedClasses = BotsingTestGenerationContext.getInstance().getClassLoaderForSUT().getLoadedClasses();
                             for (String loadedClass: loadedClasses){
                                 if(loadedClass.startsWith(className+"$") && isExtendedBy(loadedClass,innerClass)){
@@ -102,7 +103,8 @@ public class CalleeClass {
     }
 
     private boolean isExtendedBy(String loadedClass,String innerClass) throws ClassNotFoundException {
-        Class loadedClazz = Class.forName(loadedClass,true,BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+
+        Class loadedClazz = IntegrationTestingUtility.fetchClass(loadedClass);
         for (Class interfaceClazz :loadedClazz.getInterfaces()){
             if(interfaceClazz.getName().contains("evosuite")){
                 continue;
@@ -141,6 +143,27 @@ public class CalleeClass {
     protected void setListOfInvolvedCFGs(){
         for(String calledMethod: calledMethods){
             collectCFGS(calledMethod,classCallGraph,involvedCFGs);
+        }
+    }
+
+    protected void setListOfInvolvedCFGsInHierarchy(boolean isSubClass, Class caller){
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        for(String calledMethod: calledMethods){
+            List<ClassCallNode> nodesToCheck = new ArrayList<>();
+            nodesToCheck.add(classCallGraph.getNodeByMethodName(calledMethod));
+            while(!nodesToCheck.isEmpty()){
+                ClassCallNode currentNode = nodesToCheck.remove(0);
+                RawControlFlowGraph rcfg = graphPool.getRawCFG(this.getClassName(),currentNode.getMethod());
+                if(!involvedCFGs.contains(rcfg)){
+                    involvedCFGs.add(rcfg);
+                    for(ClassCallNode child: classCallGraph.getChildren(currentNode)){
+                        Set<String> methodsInCaller = graphPool.getRawCFGs(caller.getName()).keySet();
+                        if(isSubClass || !methodsInCaller.contains(child.getMethod())){
+                            nodesToCheck.add(child);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -263,6 +286,7 @@ public class CalleeClass {
     private void addBranchesOfCFG(RawControlFlowGraph rcfg, BytecodeInstruction callSiteBC) {
         BranchPool branchPool = BranchPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
         for(BytecodeInstruction branchBC: rcfg.determineBranches()){
+            IntegrationTestingUtility.registerBranch(branchBC,branchPool);
             if(branchPool.isKnownAsNormalBranchInstruction(branchBC)){
                 Branch branch = branchPool.getBranchForInstruction(branchBC);
                 addBranchesOfCallSite(branch,callSiteBC);
@@ -271,7 +295,7 @@ public class CalleeClass {
                     addBranchesOfCallSite(branch,callSiteBC);
                 }
             }else{
-//                    throw new IllegalStateException("branch "+branchBC.explain()+" is not switch or normal.");
+                    throw new IllegalStateException("branch "+branchBC.explain()+" is not switch or normal.");
             }
         }
     }
@@ -290,5 +314,10 @@ public class CalleeClass {
         }
 
         return branches.get(callSiteBC);
+    }
+
+
+    public Class getOriginalClass() {
+        return originalClass;
     }
 }

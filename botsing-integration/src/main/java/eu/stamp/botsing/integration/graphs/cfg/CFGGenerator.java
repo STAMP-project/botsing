@@ -6,6 +6,7 @@ import eu.stamp.botsing.commons.graphs.cfg.BotsingRawControlFlowGraph;
 import eu.stamp.botsing.integration.IntegrationTestingProperties;
 import eu.stamp.botsing.integration.coverage.branch.BranchPairPool;
 import eu.stamp.botsing.integration.coverage.defuse.DefUseCollector;
+import eu.stamp.botsing.integration.integrationtesting.IntegrationTestingUtility;
 import org.evosuite.coverage.branch.Branch;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cdg.ControlDependenceGraph;
@@ -39,7 +40,7 @@ public class CFGGenerator {
         this.callee =  new CalleeClass(callee);
         utility.collectCFGS(callee,cfgs);
 
-        Class parentInHierarchyTree = detectParentInHierarchyTree(caller,callee);
+        Class parentInHierarchyTree = IntegrationTestingUtility.detectParentInHierarchyTree(caller,callee);
         if(parentInHierarchyTree == null){
             detectIntegrationPointsInCaller(caller,callee);
             this.caller.setListOfInvolvedCFGs(cfgs);
@@ -49,28 +50,27 @@ public class CFGGenerator {
             setListOfInvolvedCFGsInCaller(parentInHierarchyTree);
             setListOfInvolvedCFGsInCallee(parentInHierarchyTree);
         }
-
-
-
     }
 
     // This method and next one are only executed if we caller and callee are in the same hierarchy tree
     private void setListOfInvolvedCFGsInCaller(Class parentInHierarchyTree) {
         if(this.caller.getOriginalClass().equals(parentInHierarchyTree)){
             // caller is super class
+            caller.setListOfInvolvedCFGsInHierarchy(false,callee.getOriginalClass());
         }else{
             // caller is sub class
+            caller.setListOfInvolvedCFGsInHierarchy(true,callee.getOriginalClass());
         }
-        // ToDo: Complete this method
     }
 
     private void setListOfInvolvedCFGsInCallee(Class parentInHierarchyTree) {
-        if(this.caller.getOriginalClass().equals(parentInHierarchyTree)){
+        if(this.callee.getOriginalClass().equals(parentInHierarchyTree)){
             // callee is super class
+            callee.setListOfInvolvedCFGsInHierarchy(false,caller.getOriginalClass());
         }else{
             // callee is sub class
+            callee.setListOfInvolvedCFGsInHierarchy(true,caller.getOriginalClass());
         }
-        // ToDo: Complete this method
     }
 
 
@@ -111,45 +111,6 @@ public class CFGGenerator {
         }
     }
 
-    private boolean isExtendedBy(String loadedClass,String calledClass) {
-        Class loadedClazz = null;
-        try {
-            loadedClazz = Class.forName(loadedClass,true,BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        //  Checking the interfaces
-        for (Class interfaceClazz :loadedClazz.getInterfaces()){
-            if(interfaceClazz.getName().contains("evosuite")){
-                continue;
-            }
-            if(interfaceClazz.getName().equals(calledClass)){
-
-                return true;
-            }
-        }
-
-        // Checking the abstract classes
-
-        Class superClass = loadedClazz.getSuperclass();
-
-        while(!superClass.getName().equals("java.lang.Object")){
-            if(superClass.getName().equals(calledClass)){
-                if(!BotsingTestGenerationContext.getInstance().getClassLoaderForSUT().getLoadedClasses().contains(superClass)){
-                    try {
-                        Class.forName(superClass.getName(),true, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
-                return true;
-            }
-            superClass = superClass.getSuperclass();
-        }
-
-        return false;
-    }
 
     private void detectIntegrationPointsInHierarchyTree(Class caller, Class callee, Class parentInHierarchyTree) {
         GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
@@ -209,7 +170,7 @@ public class CFGGenerator {
         }
         for (String methodName : methodsGraphs.keySet()) {
             for (BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCalls()){
-                if(bcInstruction.isMethodCallForClass(callee.getName()) || isExtendedBy(callee.getName(),bcInstruction.getCalledMethodsClass())){
+                if(bcInstruction.isMethodCallForClass(callee.getName()) || IntegrationTestingUtility.isExtendedBy(callee.getName(),bcInstruction.getCalledMethodsClass())){
                     this.caller.addCallSite(methodName,bcInstruction);
 
                     if(bcInstruction.isMethodCallForClass(callee.getName())){
@@ -237,15 +198,7 @@ public class CFGGenerator {
         }
     }
 
-    private Class detectParentInHierarchyTree(Class caller, Class callee) {
-        if(isExtendedBy(caller.getName(),callee.getName())){
-            return callee;
-        }else if(isExtendedBy(callee.getName(),caller.getName())){
-            return caller;
-        }
-            return null;
 
-    }
 
 
     public void generateInterProceduralGraphs(){

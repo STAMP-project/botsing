@@ -10,6 +10,7 @@ import org.evosuite.graphs.ccg.ClassCallNode;
 import org.evosuite.graphs.cdg.ControlDependenceGraph;
 import org.evosuite.graphs.cfg.BasicBlock;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
+import org.evosuite.graphs.cfg.CFGGenerator;
 import org.evosuite.graphs.cfg.ControlDependency;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class CallerClass {
     private static final Logger LOG = LoggerFactory.getLogger(CallerClass.class);
     private CFGGeneratorUtility utility = new CFGGeneratorUtility();
 
-    protected ClassCallGraph ClassCallGraph;
+    protected ClassCallGraph classCallGraph;
     protected Set<String> privateMethods = new HashSet<>();
 
     // <callsite, branches>
@@ -47,7 +48,7 @@ public class CallerClass {
 
 
     public CallerClass(Class caller){
-        ClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),caller.getName());
+        classCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),caller.getName());
         originalClass = caller;
     }
 
@@ -72,13 +73,27 @@ public class CallerClass {
         return null;
     }
 
+    public void collectBranchesInSameHierarchy(String methodName, BytecodeInstruction callSiteBC, BytecodeInstruction rootCallSiteBC, Set<String> handledMethods){
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        // Collect control dependencies of call site
+        ControlDependenceGraph methodCDG = new ControlDependenceGraph(graphPool.getActualCFG(this.getClassName(),methodName));
+        BasicBlock callSiteBlock = callSiteBC.getBasicBlock();
+        Map<BytecodeInstruction,Boolean> controlDependencies = new HashMap();
+        List<ControlDependency> dependenciesToCheck = new ArrayList<>();
+        dependenciesToCheck.addAll(methodCDG.getControlDependentBranches(callSiteBlock));
+
+        while (!dependenciesToCheck.isEmpty()){
+            ControlDependency currentCD = dependenciesToCheck.remove(0);
+            controlDependencies.put(currentCD.getBranch().getInstruction(),currentCD.getBranchExpressionValue());
+
+        }
+
+    }
+
     public void collectBranches(String methodName, BytecodeInstruction callSiteBC, BytecodeInstruction rootCallSiteBC, Set<String> handledMethods) {
 
         GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-
-
         // Collect control dependencies of call site
-
         ControlDependenceGraph methodCDG = new ControlDependenceGraph(graphPool.getActualCFG(this.getClassName(),methodName));
 
         BasicBlock callSiteBlock = callSiteBC.getBasicBlock();
@@ -131,14 +146,34 @@ public class CallerClass {
             }
 
         }
+    }
 
 
+    protected void setListOfInvolvedCFGsInHierarchy(boolean isSubClass, Class callee){
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        for(String methodsWithCallSite: callSites.keySet()){
+            List<ClassCallNode> nodesToCheck = new ArrayList<>();
+            nodesToCheck.add(classCallGraph.getNodeByMethodName(methodsWithCallSite));
+            while(!nodesToCheck.isEmpty()){
+                ClassCallNode currentNode = nodesToCheck.remove(0);
+                RawControlFlowGraph rcfg = graphPool.getRawCFG(this.getClassName(),currentNode.getMethod());
+                if(!involvedCFGs.contains(rcfg)){
+                    involvedCFGs.add(rcfg);
+                    for(ClassCallNode parent: classCallGraph.getParents(currentNode)){
+                        Set<String> methodsInCallee = graphPool.getRawCFGs(callee.getName()).keySet();
+                        if(isSubClass || !methodsInCallee.contains(parent.getMethod())){
+                            nodesToCheck.add(parent);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void collectBranchesOfParents(String methodName, BytecodeInstruction rootCallSiteBC, Set<String> handledMethods) {
         GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-        ClassCallNode callerMethodNode = ClassCallGraph.getNodeByMethodName(methodName);
-        for(ClassCallNode parent: ClassCallGraph.getParents(callerMethodNode)){
+        ClassCallNode callerMethodNode = classCallGraph.getNodeByMethodName(methodName);
+        for(ClassCallNode parent: classCallGraph.getParents(callerMethodNode)){
             if(handledMethods.contains(parent.getMethod())){
                 continue;
             }
@@ -188,13 +223,13 @@ public class CallerClass {
         }
 
         for(String callerMethod: callSites.keySet()){
-            ClassCallNode callerMethodNode = ClassCallGraph.getNodeByMethodName(callerMethod);
+            ClassCallNode callerMethodNode = classCallGraph.getNodeByMethodName(callerMethod);
             LinkedList<ClassCallNode> methodsToCheck = new LinkedList();
             methodsToCheck.addLast(callerMethodNode);
             involvedMethods.add(callerMethod);
             while (methodsToCheck.size() > 0){
                 ClassCallNode currentNode = methodsToCheck.pop();
-                for(ClassCallNode parent: ClassCallGraph.getParents(currentNode)){
+                for(ClassCallNode parent: classCallGraph.getParents(currentNode)){
                     if(!involvedMethods.contains(parent.getMethod())){
                         methodsToCheck.addLast(parent);
                         involvedMethods.add(parent.getMethod());
@@ -204,7 +239,7 @@ public class CallerClass {
         }
 
         // Here, we have name of the involved methods. So, we get their raw CFGs and register both involved CFGs and private involved methods
-        for(RawControlFlowGraph rcfg : cfgs.get(ClassCallGraph.getClassName())){
+        for(RawControlFlowGraph rcfg : cfgs.get(classCallGraph.getClassName())){
             if(involvedMethods.contains(rcfg.getMethodName())){
                 involvedCFGs.add(rcfg);
                 if(isPrivateMethod(rcfg)){

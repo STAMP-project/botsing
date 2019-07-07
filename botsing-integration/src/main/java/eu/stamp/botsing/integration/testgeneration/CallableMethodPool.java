@@ -3,6 +3,7 @@ package eu.stamp.botsing.integration.testgeneration;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.integration.IntegrationTestingProperties;
 import eu.stamp.botsing.integration.coverage.branch.BranchPairPool;
+import eu.stamp.botsing.integration.integrationtesting.IntegrationTestingUtility;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.ccg.ClassCallGraph;
@@ -30,13 +31,43 @@ public class CallableMethodPool {
     private List<GenericAccessibleObject<?>> allMethods = new LinkedList<GenericAccessibleObject<?>>();
 
     private CallableMethodPool(){
-        allMethods.addAll(TestCluster.getInstance().getTestCalls());
-        String callerClass = IntegrationTestingProperties.TARGET_CLASSES[1];
-        ClassCallGraph callGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),callerClass);
-        Set<String> methodsWithCallSite = BranchPairPool.getInstance().getSetOfMethodsWithCallSite();
-        for (String methodName: methodsWithCallSite){
-            collectPublicCallers(callGraph, methodName);
+
+        Class callerClass = IntegrationTestingUtility.getCallerClass();
+        Class calleeClass = IntegrationTestingUtility.getCalleeClass();
+        Class subClass = IntegrationTestingUtility.detectSubClassInHierarchyTree(callerClass,calleeClass);
+        String testingClass;
+        if(subClass == null || subClass.equals(callerClass)){
+            testingClass = IntegrationTestingProperties.TARGET_CLASSES[1];
+            allMethods.addAll(TestCluster.getInstance().getTestCalls());
+        }else{
+            testingClass = IntegrationTestingProperties.TARGET_CLASSES[0];
+            IntegrationTestingUtility.analyzeClassDependencies(testingClass);
+            allMethods.addAll(getOnlySuperClassMethods(testingClass,TestCluster.getInstance().getTestCalls()));
         }
+
+        ClassCallGraph callGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),testingClass);
+        Set<String> methodsWithCallSite = BranchPairPool.getInstance().getSetOfMethodsWithCallSite();
+        if(subClass == null || subClass.equals(callerClass)){
+            for (String methodName: methodsWithCallSite){
+                collectPublicCallers(callGraph, methodName);
+            }
+        }else{
+            Set<String> subClassMethods = IntegrationTestingUtility.collectSubClassMethodCallers(calleeClass.getName(),methodsWithCallSite);
+            for (String methodName: subClassMethods){
+                collectPublicCallers(callGraph, methodName);
+            }
+        }
+
+    }
+
+    private List<GenericAccessibleObject<?>> getOnlySuperClassMethods(String testingClass,List<GenericAccessibleObject<?>> testCalls) {
+        List<GenericAccessibleObject<?>> result = new ArrayList<>();
+        for(GenericAccessibleObject obj: testCalls){
+            if(obj.getDeclaringClass().getName().equals(testingClass)){
+                result.add(obj);
+            }
+        }
+        return result;
     }
 
     public static CallableMethodPool getInstance(){
