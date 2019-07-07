@@ -50,6 +50,7 @@ Thumbs.db
 **/test/**/botsing/local/
 **/test/**/botsing/model/generation/local/
 **/test/**/botsing/integration/local/
+**/test/**/botsing/coupling/analyze/local/
 
 
 # Generated website

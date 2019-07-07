@@ -420,6 +420,7 @@
         <module>botsing-model-generation</module>
         <module>botsing-parsers</module>
         <module>botsing-integration</module>
+        <module>botsing-class-coupling-analyzer</module>
     </modules>
 
 </project>
