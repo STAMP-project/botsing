@@ -1,7 +1,6 @@
 package eu.stamp.botsing.integration.integrationtesting;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
-import eu.stamp.botsing.commons.instrumentation.ClassPool;
 import eu.stamp.botsing.commons.testgeneration.strategy.MOSuiteStrategy;
 import eu.stamp.botsing.integration.IntegrationTestingProperties;
 import eu.stamp.botsing.integration.fitnessfunction.FitnessFunctions;
@@ -13,7 +12,6 @@ import org.evosuite.coverage.branch.BranchPool;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
-import org.evosuite.instrumentation.testability.BooleanTestabilityTransformation;
 import org.evosuite.setup.DependencyAnalysis;
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.slf4j.Logger;

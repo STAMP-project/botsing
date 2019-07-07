@@ -10,7 +10,6 @@ import org.evosuite.graphs.ccg.ClassCallNode;
 import org.evosuite.graphs.cdg.ControlDependenceGraph;
 import org.evosuite.graphs.cfg.BasicBlock;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
-import org.evosuite.graphs.cfg.CFGGenerator;
 import org.evosuite.graphs.cfg.ControlDependency;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.slf4j.Logger;
