@@ -3,6 +3,7 @@ package eu.stamp.botsing.coupling.analyze;
 import eu.stamp.botsing.commons.ClassPaths;
 import eu.stamp.botsing.coupling.analyze.calls.MethodCallAnalyzer;
 import eu.stamp.botsing.coupling.analyze.hierarchy.ClassesInSameHierarchyTreeAnalyzer;
+import eu.stamp.botsing.coupling.analyze.report.ReportSaver;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,9 @@ public class ClassCouplingAnalyzer {
 
             String projectPrefix = commands.getOptionValue(PROJECT_PREFIX);
 
+            String outputFolder = commands.hasOption(OUTPUT_FOLDER) ? commands.getOptionValue(OUTPUT_FOLDER) :
+                    "generated_results";
+
             // initialize analyzers
             // initial method call analyzer
             MethodCallAnalyzer methodCallAnalyzer = new MethodCallAnalyzer(classPathEntries,projectPrefix);
@@ -48,13 +52,13 @@ public class ClassCouplingAnalyzer {
 
             // Analyzing couplings according to the method calls
             methodCallAnalyzer.execute();
+            // Save the result of analysis
+            ReportSaver.saveMethodCallAnalyzerReport(outputFolder,methodCallAnalyzer.getFinalList());
+
             // Analyzing coupling according in the super and sub classes
             classesInSameHierarchyTreeAnalyzer.execute();
-
-            // ToDo: save lists into a csv file
-            String outputFolder = commands.hasOption(OUTPUT_FOLDER) ? commands.getOptionValue(OUTPUT_FOLDER) :
-                    "generated_results";
-
+            // Save the result of analysis
+            ReportSaver.saveSuperSubClassReport(outputFolder,classesInSameHierarchyTreeAnalyzer.getFinalList());
 
             } else {
                 LOG.error("Project classpath and prefix should be passed as input. For more information. For more " +

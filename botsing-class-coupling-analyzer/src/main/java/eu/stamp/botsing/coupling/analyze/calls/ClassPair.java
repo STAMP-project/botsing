@@ -39,4 +39,25 @@ public class ClassPair implements Comparable<ClassPair> {
     public int compareTo(ClassPair otherPair) {
         return Integer.compare(this.totalScore,otherPair.totalScore);
     }
+
+
+    public String getClass1() {
+        return class1;
+    }
+
+    public String getClass2() {
+        return class2;
+    }
+
+    public int getScore1() {
+        return score1;
+    }
+
+    public int getScore2() {
+        return score2;
+    }
+
+    public int getTotalScore() {
+        return totalScore;
+    }
 }
