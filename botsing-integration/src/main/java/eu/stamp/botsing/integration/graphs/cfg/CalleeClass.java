@@ -8,6 +8,8 @@ import org.evosuite.coverage.branch.BranchPool;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.ccg.ClassCallGraph;
 import org.evosuite.graphs.ccg.ClassCallNode;
+import org.evosuite.graphs.cdg.ControlDependenceGraph;
+import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.objectweb.asm.Type;
@@ -85,12 +87,18 @@ public class CalleeClass {
             }
         }
 
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+
         for (String innerClass: interestingInnerMethods.keySet()){
             for (String innerMethod: interestingInnerMethods.get(innerClass)){
                 if(alreadyHandledInnerMethods.contains(innerClass+"."+innerMethod)){
                     continue;
                 }
-                RawControlFlowGraph innerMethodRCFG = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT()).getRawCFG(innerClass,innerMethod);
+                RawControlFlowGraph innerMethodRCFG = graphPool.getRawCFG(innerClass,innerMethod);
+                ActualControlFlowGraph innerMethodACFG = graphPool.getActualCFG(innerClass,innerMethod);
+                ControlDependenceGraph cdg = new ControlDependenceGraph(innerMethodACFG);
+                graphPool.registerControlDependence(cdg);
+
                 addBranchesOfCFG(innerMethodRCFG,callSiteBC);
 
                 alreadyHandledInnerMethods.add(innerClass+"."+innerMethod);
@@ -259,7 +267,7 @@ public class CalleeClass {
         }
 
 
-        throw new IllegalStateException("method "+methodName+" is not available in hierarchy tree!");
+       LOG.error("method "+methodName+" is not available in hierarchy tree!");
 
 
     }
