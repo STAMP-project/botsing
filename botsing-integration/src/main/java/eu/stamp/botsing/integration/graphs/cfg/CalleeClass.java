@@ -286,6 +286,10 @@ public class CalleeClass {
     private void addBranchesOfCFG(RawControlFlowGraph rcfg, BytecodeInstruction callSiteBC) {
         BranchPool branchPool = BranchPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
         for(BytecodeInstruction branchBC: rcfg.determineBranches()){
+            if(!branchBC.isActualBranch()){
+                //Apparently there is a bug in determining branch in evosuite. So, we should check if bc is actually a branch
+                continue;
+            }
             IntegrationTestingUtility.registerBranch(branchBC,branchPool);
             if(branchPool.isKnownAsNormalBranchInstruction(branchBC)){
                 Branch branch = branchPool.getBranchForInstruction(branchBC);
