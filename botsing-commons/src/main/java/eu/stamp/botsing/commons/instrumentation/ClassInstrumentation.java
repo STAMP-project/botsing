@@ -30,14 +30,12 @@ public class ClassInstrumentation {
 
         try{
             if(!Properties.INSTRUMENT_PARENT){
-                String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
-
                 for(String clazz : nonDuplicatedClasses){
                     if (clazz.equals(testingClassName)){
                         continue;
                     }
                     Properties.TARGET_CLASS=clazz;
-                    DependencyAnalysis.analyzeClass(clazz, Arrays.asList(cp.split(File.pathSeparator)));
+                    DependencyAnalysis.addNewTargetClass(clazz);
                 }
             }
 
@@ -58,6 +56,9 @@ public class ClassInstrumentation {
             try {
                 Properties.TARGET_CLASS=clazz;
                 cls = Class.forName(clazz,true, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+                if(clazz != testingClassName){
+                    instrumentClassByTestExecution(clazz);
+                }
                 instrumentedClasses.add(cls);
                 instrumentedClassesName.add(clazz);
             } catch (ClassNotFoundException | NoClassDefFoundError e) {
