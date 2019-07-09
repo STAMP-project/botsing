@@ -2,6 +2,8 @@ package eu.stamp.botsing.commons.instrumentation;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.Properties;
+import org.evosuite.classpath.ClassPathHandler;
+import org.evosuite.setup.DependencyAnalysis;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.TestCaseExecutor;
@@ -14,6 +16,7 @@ import org.evosuite.utils.generic.GenericMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,9 +26,22 @@ public class ClassInstrumentation {
     public List<Class> instrumentClasses(List<String> interestingClasses, String testingClassName){
         List<Class> instrumentedClasses = new ArrayList<>();
         List<String> instrumentedClassesName = new ArrayList<>();
-        List<String> nunDuplicatedClasses = interestingClasses.stream().distinct().collect(Collectors.toList());
+        List<String> nonDuplicatedClasses = interestingClasses.stream().distinct().collect(Collectors.toList());
 
         try{
+            if(!Properties.INSTRUMENT_PARENT){
+                String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
+
+                for(String clazz : nonDuplicatedClasses){
+                    if (clazz.equals(testingClassName)){
+                        continue;
+                    }
+                    Properties.TARGET_CLASS=clazz;
+                    DependencyAnalysis.analyzeClass(clazz, Arrays.asList(cp.split(File.pathSeparator)));
+                }
+            }
+
+
             Properties.TARGET_CLASS=testingClassName;
             instrumentClassByTestExecution(testingClassName);
         }catch (Exception e){
@@ -33,7 +49,7 @@ public class ClassInstrumentation {
         }
 
 
-        for(String clazz: nunDuplicatedClasses ){
+        for(String clazz: nonDuplicatedClasses ){
             if(instrumentedClassesName.contains(clazz)){
                 continue;
             }
@@ -42,9 +58,6 @@ public class ClassInstrumentation {
             try {
                 Properties.TARGET_CLASS=clazz;
                 cls = Class.forName(clazz,true, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                if(!clazz.contains(testingClassName)){
-                    instrumentClassByTestExecution(clazz);
-                }
                 instrumentedClasses.add(cls);
                 instrumentedClassesName.add(clazz);
             } catch (ClassNotFoundException | NoClassDefFoundError e) {
