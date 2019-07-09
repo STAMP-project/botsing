@@ -49,7 +49,7 @@ public class CalleeClass {
     private void handleSuperClasses(Class callee) {
         Class superClass = callee.getSuperclass();
 
-        while (superClass.getName() != "java.lang.Object"){
+        while (!superClass.getName().startsWith("java.")){
             superClassesCallGraph.add(new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),superClass.getName()));
             superClass = superClass.getSuperclass();
         }
