@@ -29,7 +29,6 @@ public class ClassInstrumentation {
         List<String> nonDuplicatedClasses = interestingClasses.stream().distinct().collect(Collectors.toList());
 
         try{
-            if(!Properties.INSTRUMENT_PARENT){
                 for(String clazz : nonDuplicatedClasses){
                     if (clazz.equals(testingClassName)){
                         continue;
@@ -37,7 +36,6 @@ public class ClassInstrumentation {
                     Properties.TARGET_CLASS=clazz;
                     DependencyAnalysis.addNewTargetClass(clazz);
                 }
-            }
 
 
             Properties.TARGET_CLASS=testingClassName;

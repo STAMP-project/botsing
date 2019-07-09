@@ -73,15 +73,6 @@ public class IntegrationTesting {
             List <String> interestingClasses = Arrays.asList(IntegrationTestingProperties.TARGET_CLASSES);
             Collections.reverse(interestingClasses);
             String testingClass = interestingClasses.get(1);
-            if(Properties.INSTRUMENT_PARENT){
-                String cp = ClassPathHandler.getInstance().getTargetProjectClasspath();
-                List<String> classPath = Arrays.asList(cp.split(File.pathSeparator));
-                DependencyAnalysis.initInheritanceTree(classPath);
-                TestCluster.setInheritanceTree(DependencyAnalysis.getInheritanceTree());
-                if(DependencyAnalysis.getInheritanceTree().getSuperclasses(interestingClasses.get(0)).contains(testingClass)){
-                    testingClass = interestingClasses.get(0);
-                }
-            }
             List<Class> instrumentedClasses = classInstrumenter.instrumentClasses(interestingClasses,testingClass);
             // We assume that first passed class is tha caller, and second one is the callee
             Class caller = instrumentedClasses.get(1);
