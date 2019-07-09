@@ -123,8 +123,13 @@ public class CFGGenerator {
 
             Set<String> calleeMethods = graphPool.getRawCFGs(callee.getName()).keySet();
             for (String methodName : methodsGraphs.keySet()) {
-                for (BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCallsToOwnClass()){
+                for (BytecodeInstruction bcInstruction : methodsGraphs.get(methodName).determineMethodCalls()){
                     String calledMethod = bcInstruction.getCalledMethod();
+                    String calledClass = bcInstruction.getCalledMethodsClass();
+
+                    if(!calledClass.equals(this.caller.getClassName()) && !calledClass.equals(this.callee.getClassName())){
+                        continue;
+                    }
                     // Check if called method is overridden in the sub class
                     if(calleeMethods.contains(calledMethod)){
                         this.caller.addCallSite(methodName,bcInstruction);
