@@ -2,7 +2,6 @@ package eu.stamp.botsing.commons.instrumentation;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.Properties;
-import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.setup.DependencyAnalysis;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.execution.ExecutionResult;
@@ -16,7 +15,6 @@ import org.evosuite.utils.generic.GenericMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
