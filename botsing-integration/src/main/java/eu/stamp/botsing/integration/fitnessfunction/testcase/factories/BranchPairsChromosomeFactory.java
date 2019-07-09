@@ -111,7 +111,7 @@ public class BranchPairsChromosomeFactory implements ChromosomeFactory<TestChrom
                         target_counter++;
                         prob = 1/length;
                     }
-                } catch (ConstructionFailedException | Error e) {
+                } catch (ConstructionFailedException | Error | NullPointerException e ) {
                     if (injecting) {
                         prob = 1 / (length - test.size() + 1);
                     }
