@@ -130,8 +130,11 @@ public class ClassesInSameHierarchyTreeAnalyzer extends Analyzer {
         createFinalList();
 
         LOG.info("Sorting the final list ...");
-        Collections.sort(finalList);
-        Collections.reverse(finalList);
+//        Collections.sort(finalList);
+//        Collections.reverse(finalList);
+        List<ClassPair> paretoFront = collectParetoFront();
+        finalList.clear();
+        finalList.addAll(paretoFront);
         LOG.info("Final list is ready.");
 
     }
@@ -142,6 +145,12 @@ public class ClassesInSameHierarchyTreeAnalyzer extends Analyzer {
             for(String superClass : superClassesMap.get(subClass).keySet()){
                 CouplingScores scores = superClassesMap.get(subClass).get(superClass);
                 ClassPair newPair = new ClassPair(subClass,superClass,scores.subClassScore,scores.superClassScore);
+                addBranchScores(newPair,subClass,superClass);
+                // skip cases which has at least one class without branch
+                if(newPair.getNumberOfBranchesInClass1() == 0 || newPair.getNumberOfBranchesInClass2() == 0){
+                    continue;
+                }
+
 
                 if(!finalList.contains(newPair)){
                     finalList.add(newPair);

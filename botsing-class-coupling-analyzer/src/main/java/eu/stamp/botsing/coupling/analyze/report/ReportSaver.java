@@ -41,13 +41,15 @@ public class ReportSaver {
             for(ClassPair classPair : list){
                 csvWriter.append(classPair.getClass1());
                 csvWriter.append(",");
-                csvWriter.append(classPair.getScore1()+"");
+                csvWriter.append(classPair.getCallScore1()+"");
+                csvWriter.append(",");
+                csvWriter.append(classPair.getNumberOfBranchesInClass1()+"");
                 csvWriter.append(",");
                 csvWriter.append(classPair.getClass2());
                 csvWriter.append(",");
-                csvWriter.append(classPair.getScore2()+"");
+                csvWriter.append(classPair.getCallScore2()+"");
                 csvWriter.append(",");
-                csvWriter.append(classPair.getTotalScore()+"");
+                csvWriter.append(classPair.getNumberOfBranchesInClass2()+"");
                 csvWriter.append("\n");
             }
 
@@ -63,7 +65,7 @@ public class ReportSaver {
     public static void saveMethodCallAnalyzerReport(String outputDir, List<ClassPair> list){
         String csvFileName = "method-calls-coupling.csv";
         String csvFileDir = Paths.get(outputDir).toString();
-        List<String> titles = Arrays.asList("Class1Name", "Class1Score", "Class2Name", "Class2Score", "totalScore");
+        List<String> titles = Arrays.asList("Class1Name", "Class1CallScore",  "Class1ComplexityScore", "Class2Name", "Class2CallScore",  "Class2ComplexityScore");
 
         save(csvFileDir,csvFileName,titles,list);
     }

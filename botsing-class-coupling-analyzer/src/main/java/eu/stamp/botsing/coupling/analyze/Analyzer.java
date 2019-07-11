@@ -5,6 +5,8 @@ import eu.stamp.botsing.commons.analysis.classpath.CPAnalyzer;
 import eu.stamp.botsing.coupling.analyze.calls.ClassPair;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
+import org.evosuite.graphs.GraphPool;
+import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.evosuite.junit.CoverageAnalysis;
 import org.evosuite.setup.InheritanceTree;
 import org.slf4j.Logger;
@@ -88,6 +90,59 @@ public abstract class Analyzer {
             }
         }
 
+    }
+
+    protected void addBranchScores(ClassPair classPair, String class1, String class2){
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+
+        // get number of branches in each class
+        if(graphPool.getRawCFGs(class1) != null) {
+            for (RawControlFlowGraph rawControlFlowGraph : graphPool.getRawCFGs(class1).values()) {
+                classPair.addTonumberOfBranches(class1, rawControlFlowGraph.determineBranches().size());
+            }
+        }
+        if(graphPool.getRawCFGs(class2) != null){
+            for(RawControlFlowGraph rawControlFlowGraph : graphPool.getRawCFGs(class2).values()){
+                classPair.addTonumberOfBranches(class2,rawControlFlowGraph.determineBranches().size());
+            }
+        }
+    }
+
+
+    protected List<ClassPair> collectParetoFront() {
+        List<ClassPair> paretoFront = new ArrayList<>();
+        for(ClassPair classPair : finalList){
+            if(finalList.size() == 0){
+                paretoFront.add(classPair);
+                continue;
+            }
+            updateParetoFront(paretoFront, classPair);
+        }
+        return paretoFront;
+    }
+
+
+
+
+    private void updateParetoFront(List<ClassPair> paretoFront, ClassPair candidate) {
+        Iterator<ClassPair> listIterator = paretoFront.iterator();
+        boolean shouldAdd = true;
+        while(listIterator.hasNext()){
+            ClassPair currentClassPair = listIterator.next();
+            int comparison = currentClassPair.compareTo(candidate);
+            if(comparison > 0){
+                shouldAdd = false;
+                break;
+            }else if (comparison < 0){
+                listIterator.remove();
+            }else{
+                continue;
+            }
+        }
+
+        if(shouldAdd){
+            paretoFront.add(candidate);
+        }
     }
 
     public List<ClassPair> getFinalList() {

@@ -81,10 +81,15 @@ public class MethodCallAnalyzer extends Analyzer {
                 int score1 = callMap.get(class1).get(class2);
                 int score2 = callMap.get(class2).get(class1);
 
-                ClassPair currentPair = new ClassPair(class1,class2,score1,score2);
-
                 // We are not interested on class pairs which do not have any coupling
                 if(score1+score2 == 0){
+                    continue;
+                }
+
+                ClassPair currentPair = new ClassPair(class1,class2,score1,score2);
+                addBranchScores(currentPair,class1,class2);
+                // skip cases which has at least one class without branch
+                if(currentPair.getNumberOfBranchesInClass1() == 0 || currentPair.getNumberOfBranchesInClass2() == 0){
                     continue;
                 }
 
@@ -97,10 +102,14 @@ public class MethodCallAnalyzer extends Analyzer {
         }
 
         LOG.info("Sorting the final list ...");
-        Collections.sort(finalList);
-        Collections.reverse(finalList);
+//        Collections.sort(finalList);
+//        Collections.reverse(finalList);
+        List<ClassPair> paretoFront = collectParetoFront();
+        finalList.clear();
+        finalList.addAll(paretoFront);
         LOG.info("Final list is ready.");
     }
+
 
 
 
