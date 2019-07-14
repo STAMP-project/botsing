@@ -74,7 +74,7 @@ public class ReportSaver {
     public static void saveSuperSubClassReport(String outputDir, List<ClassPair> list){
         String csvFileName = "super-sub-classes-coupling.csv";
         String csvFileDir = Paths.get(outputDir).toString();
-        List<String> titles = Arrays.asList("subClass", "subClassScore", "superClass", "superClassScore", "totalScore");
+        List<String> titles = Arrays.asList("subClass", "subClassScore", "subClassComplexityScore","superClass", "superClassScore", "superClassComplexityScore");
 
         save(csvFileDir,csvFileName,titles,list);
     }
