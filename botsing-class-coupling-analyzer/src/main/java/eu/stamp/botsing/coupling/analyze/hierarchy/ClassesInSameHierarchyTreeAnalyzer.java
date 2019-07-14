@@ -59,68 +59,9 @@ public class ClassesInSameHierarchyTreeAnalyzer extends Analyzer {
                 continue;
             }
 
-            Map<String,RawControlFlowGraph> subClassCFGs = graphPool.getRawCFGs(subClass);
-            ClassCallGraph subClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),subClass);
+            detectSuperClassesForSingleClass(subClass);
 
-            for(String superClass : superClassesMap.get(subClass).keySet()){
-                // If evosuite can not instrument a class, we will skip it.
-                if(graphPool.getRawCFGs(superClass) == null){
-                    LOG.warn("super class {} does not have the control flow graph.",superClass);
-                    continue;
-                }
 
-                Map<String,RawControlFlowGraph> superClassCFGs = graphPool.getRawCFGs(superClass);
-                ClassCallGraph superClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),superClass);
-
-                // Iterate on bytecode instructions of super class
-                for(String methodName : superClassCFGs.keySet()){
-                    RawControlFlowGraph methodCFG = superClassCFGs.get(methodName);
-                    for(BytecodeInstruction callInst : methodCFG.determineMethodCalls()){
-                        // Skip irrelevant method calls
-                        if(!callInst.getCalledMethodsClass().equals(superClass) && !callInst.getCalledMethodsClass().equals(subClass)){
-                            continue;
-                        }
-
-                        String calledMethod = callInst.getCalledMethod();
-
-                        // Skip if subClass does not override the calledMethod
-                        if(subClassCallGraph.getNodeByMethodName(calledMethod) == null){
-                            continue;
-                        }
-
-                        // Here, we know that this bytecode instruction is a call to subClass
-                        // So, we increase the score of super class in the map.
-                        superClassesMap.get(subClass).get(superClass).increaseSuperClassScore();
-                    }
-                }
-
-                // Iterate on bytecode instructions of sub class
-                for(String methodName : subClassCFGs.keySet()){
-                    RawControlFlowGraph methodCFG = subClassCFGs.get(methodName);
-                    for(BytecodeInstruction callInst : methodCFG.determineMethodCalls()){
-                        // Skip irrelevant method calls
-                        if(!callInst.getCalledMethodsClass().equals(superClass) && !callInst.getCalledMethodsClass().equals(subClass)){
-                            continue;
-                        }
-
-                        String calledMethod = callInst.getCalledMethod();
-
-                        // Skip if subClass contains the called method
-                        if(subClassCallGraph.getNodeByMethodName(calledMethod) != null){
-                            continue;
-                        }
-
-                        // Skip if super class does not contain the called method
-                        if(superClassCallGraph.getNodeByMethodName(calledMethod) == null){
-                            continue;
-                        }
-
-                        // Here, we know that this bytecode instruction is a call to superClass
-                        // So, we increase the score of sub class in the map.
-                        superClassesMap.get(subClass).get(superClass).increaseSubClassScore();
-                    }
-                }
-            }
         }
 
         LOG.info("Static analysis has been finished. Preparing the final list ...");
@@ -137,6 +78,72 @@ public class ClassesInSameHierarchyTreeAnalyzer extends Analyzer {
         finalList.addAll(paretoFront);
         LOG.info("Final list is ready.");
 
+    }
+
+
+    private void detectSuperClassesForSingleClass(String subClass){
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        Map<String,RawControlFlowGraph> subClassCFGs = graphPool.getRawCFGs(subClass);
+        ClassCallGraph subClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),subClass);
+        for(String superClass : superClassesMap.get(subClass).keySet()){
+            // If evosuite can not instrument a class, we will skip it.
+            if(graphPool.getRawCFGs(superClass) == null){
+                LOG.warn("super class {} does not have the control flow graph.",superClass);
+                continue;
+            }
+
+            Map<String,RawControlFlowGraph> superClassCFGs = graphPool.getRawCFGs(superClass);
+            ClassCallGraph superClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),superClass);
+
+            // Iterate on bytecode instructions of super class
+            for(String methodName : superClassCFGs.keySet()){
+                RawControlFlowGraph methodCFG = superClassCFGs.get(methodName);
+                for(BytecodeInstruction callInst : methodCFG.determineMethodCalls()){
+                    // Skip irrelevant method calls
+                    if(!callInst.getCalledMethodsClass().equals(superClass) && !callInst.getCalledMethodsClass().equals(subClass)){
+                        continue;
+                    }
+
+                    String calledMethod = callInst.getCalledMethod();
+
+                    // Skip if subClass does not override the calledMethod
+                    if(subClassCallGraph.getNodeByMethodName(calledMethod) == null){
+                        continue;
+                    }
+
+                    // Here, we know that this bytecode instruction is a call to subClass
+                    // So, we increase the score of super class in the map.
+                    superClassesMap.get(subClass).get(superClass).increaseSuperClassScore();
+                }
+            }
+
+            // Iterate on bytecode instructions of sub class
+            for(String methodName : subClassCFGs.keySet()){
+                RawControlFlowGraph methodCFG = subClassCFGs.get(methodName);
+                for(BytecodeInstruction callInst : methodCFG.determineMethodCalls()){
+                    // Skip irrelevant method calls
+                    if(!callInst.getCalledMethodsClass().equals(superClass) && !callInst.getCalledMethodsClass().equals(subClass)){
+                        continue;
+                    }
+
+                    String calledMethod = callInst.getCalledMethod();
+
+                    // Skip if subClass contains the called method
+                    if(subClassCallGraph.getNodeByMethodName(calledMethod) != null){
+                        continue;
+                    }
+
+                    // Skip if super class does not contain the called method
+                    if(superClassCallGraph.getNodeByMethodName(calledMethod) == null){
+                        continue;
+                    }
+
+                    // Here, we know that this bytecode instruction is a call to superClass
+                    // So, we increase the score of sub class in the map.
+                    superClassesMap.get(subClass).get(superClass).increaseSubClassScore();
+                }
+            }
+        }
     }
 
     private void createFinalList() {
@@ -177,5 +184,16 @@ public class ClassesInSameHierarchyTreeAnalyzer extends Analyzer {
                 mapIterator.remove();
             }
         }
+    }
+
+    public void execute(String targetClass) {
+        GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        // If evosuite can not instrument a class, we will skip it.
+        if(graphPool.getRawCFGs(targetClass) == null){
+            LOG.warn("sub class {} does not have the control flow graph.",targetClass);
+            return;
+        }
+
+        detectSuperClassesForSingleClass(targetClass);
     }
 }

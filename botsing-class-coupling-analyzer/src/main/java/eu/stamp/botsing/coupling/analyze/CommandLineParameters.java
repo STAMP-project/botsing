@@ -10,6 +10,7 @@ public class CommandLineParameters {
     public static final String HELP_OPT = "help";
     public static final String OUTPUT_FOLDER = "out_dir";
     public static final String PROJECT_PREFIX = "project_prefix";
+    public static final String TARGET_CLASS = "target_class";
 
 
     public static Options getCommandLineOptions() {
@@ -30,6 +31,11 @@ public class CommandLineParameters {
         options.addOption(Option.builder(OUTPUT_FOLDER)
                 .hasArg()
                 .desc("the output directory.")
+                .build());
+        // the class that should always be in the branch pairs
+        options.addOption(Option.builder(TARGET_CLASS)
+                .hasArg()
+                .desc("the class that should always be in the branch pairs.")
                 .build());
         //if all of the interesting classes has the same prefix, the user can use this option
         options.addOption(Option.builder(PROJECT_PREFIX)

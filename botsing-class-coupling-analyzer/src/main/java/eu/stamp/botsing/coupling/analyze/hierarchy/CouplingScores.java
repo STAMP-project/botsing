@@ -19,7 +19,7 @@ public class CouplingScores {
     }
 
     public boolean isZero(){
-        if(subClassScore+superClassScore == 0){
+        if(subClassScore+superClassScore < 5){
             return true;
         }
 

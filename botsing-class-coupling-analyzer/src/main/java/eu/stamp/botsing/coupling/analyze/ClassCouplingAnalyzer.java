@@ -20,16 +20,14 @@ public class ClassCouplingAnalyzer {
     @SuppressWarnings("checkstyle:systemexit")
     public static void main(String[] args) {
         ClassCouplingAnalyzer analyzer = new ClassCouplingAnalyzer();
-        try {
-            analyzer.parseCommandLine(args);
-        } catch(IOException e) {
-            LOG.error("Exception occured during model generation!", e);
-        }
+        analyzer.parseCommandLine(args);
+
+
         System.exit(0);
     }
 
 
-    public void parseCommandLine(String[] args) throws IOException {
+    public void parseCommandLine(String[] args) {
         Options options = CommandLineParameters.getCommandLineOptions();
         CommandLine commands = parseCommands(args, options);
         if(commands.hasOption(HELP_OPT)) {
@@ -50,14 +48,23 @@ public class ClassCouplingAnalyzer {
             // initial classes in the same hierarchy tree
             ClassesInSameHierarchyTreeAnalyzer classesInSameHierarchyTreeAnalyzer = new ClassesInSameHierarchyTreeAnalyzer(classPathEntries,projectPrefix);
 
-            // Analyzing couplings according to the method calls
-            methodCallAnalyzer.execute();
-            // Save the result of analysis
+            if(commands.hasOption(TARGET_CLASS) && commands.getOptionValue(TARGET_CLASS) != ""){
+                String targetClass = commands.getOptionValue(TARGET_CLASS);
+                // Analyzing couplings according to the method calls
+                methodCallAnalyzer.execute(targetClass);
+                // Analyzing coupling according in the super and sub classes
+                classesInSameHierarchyTreeAnalyzer.execute(targetClass);
+            }else{
+                // Analyzing couplings according to the method calls
+                methodCallAnalyzer.execute();
+                // Analyzing coupling according in the super and sub classes
+                classesInSameHierarchyTreeAnalyzer.execute();
+            }
+
+            // Save the result of analysis -> call methods
             ReportSaver.saveMethodCallAnalyzerReport(outputFolder,methodCallAnalyzer.getFinalList());
 
-            // Analyzing coupling according in the super and sub classes
-            classesInSameHierarchyTreeAnalyzer.execute();
-            // Save the result of analysis
+            // Save the result of analysis -> super/sub classes
             ReportSaver.saveSuperSubClassReport(outputFolder,classesInSameHierarchyTreeAnalyzer.getFinalList());
 
             } else {

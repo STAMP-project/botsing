@@ -4,6 +4,8 @@ import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.coupling.analyze.Analyzer;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
+import org.evosuite.setup.InheritanceTree;
+import org.evosuite.setup.InheritanceTreeGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +53,7 @@ public class MethodCallAnalyzer extends Analyzer {
             List<BytecodeInstruction> instructions =bcInstPool.getInstructionsIn(classUnderAnalysis);
 
             for(BytecodeInstruction currentInst : instructions){
-                // Skip methods which are not a method call
+                // Skip bytecode instructions which are not a method call
                 if(!currentInst.isMethodCall()){
                     continue;
                 }
@@ -70,6 +72,19 @@ public class MethodCallAnalyzer extends Analyzer {
         }
 
         LOG.info("Static analysis has been finished. Preparing the final list ...");
+        prepareFinalList();
+
+
+        LOG.info("Sorting the final list ...");
+//        Collections.sort(finalList);
+//        Collections.reverse(finalList);
+        List<ClassPair> paretoFront = collectParetoFront();
+        finalList.clear();
+        finalList.addAll(paretoFront);
+        LOG.info("Final list is ready.");
+    }
+
+    private void prepareFinalList() {
         finalList.clear();
         for (String class1 : interestingClasses){
             for(String class2 : interestingClasses){
@@ -100,17 +115,103 @@ public class MethodCallAnalyzer extends Analyzer {
                 }
             }
         }
-
-        LOG.info("Sorting the final list ...");
-//        Collections.sort(finalList);
-//        Collections.reverse(finalList);
-        List<ClassPair> paretoFront = collectParetoFront();
-        finalList.clear();
-        finalList.addAll(paretoFront);
-        LOG.info("Final list is ready.");
     }
 
+    @Override
+    public void execute(String targetClass) {
+        LOG.info("Start analyzing {} classes for target class {}.", interestingClasses.size(),targetClass);
+        if(!interestingClasses.contains(targetClass)){
+            throw new IllegalArgumentException("Target class is not valid");
+        }
+        // All of the bytecode instructions for the interesting classes should be stored in this pool.
+        BytecodeInstructionPool bcInstPool = BytecodeInstructionPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        LOG.info("Initializing the inheritance tree ...");
+        InheritanceTree inheritanceTree = InheritanceTreeGenerator.createFromClassPath(this.classPathEntries);
+        List<String> targetClasses = new ArrayList<>();
+        for(String superClass : inheritanceTree.getSuperclasses(targetClass)){
+            if(this.interestingClasses.contains(superClass)){
+                targetClasses.add(superClass);
+            }
+        }
 
+
+        if(bcInstPool.knownClasses().contains(targetClass)){
+
+
+// The following commented code indicates the cases which are the target class is the caller
+//            // analyzing bytecodes in the target class
+//            List<BytecodeInstruction> instructions =bcInstPool.getInstructionsIn(targetClass);
+//
+//            for(BytecodeInstruction currentInst : instructions){
+//                // Skip bytecode instructions which are not a method call
+//                if(!currentInst.isMethodCall()){
+//                    continue;
+//                }
+//
+//                String calledMethodClass = currentInst.getCalledMethodsClass();
+//
+//                // callee class should be listed in the callMap of target class
+//                if(!callMap.get(targetClass).containsKey(calledMethodClass) ){
+//                    continue;
+//                }
+//
+//                // plus plus the value in the map
+//                int currentValue = callMap.get(targetClass).get(calledMethodClass);
+//                callMap.get(targetClass).put(calledMethodClass,currentValue+1);
+//            }
+
+
+            // analyzing bytecodes in the other classes in the project which are using the target class
+            for (String classUnderAnalysis : interestingClasses){
+
+                if(classUnderAnalysis.equals(targetClass)){
+                    continue;
+                }
+
+                if(!bcInstPool.knownClasses().contains(classUnderAnalysis)){
+                    LOG.warn("Bytecode instructions of class {} is not available.",classUnderAnalysis);
+                    // If it is not available, we will skip analyzing it.
+                    continue;
+                }
+
+                List<BytecodeInstruction> instructions =bcInstPool.getInstructionsIn(classUnderAnalysis);
+
+                for(BytecodeInstruction currentInst : instructions){
+                    // Skip bytecode instructions which are not a method call
+                    if(!currentInst.isMethodCall()){
+                        continue;
+                    }
+
+                    // Skip bytecode instructions which are not calling a method from target class
+                    String calledMethodClass = currentInst.getCalledMethodsClass();
+
+                    if(!targetClasses.contains(calledMethodClass)){
+                        continue;
+                    }
+
+
+
+                    // Caller class and callee class should exists in the callMap. Otherwise, the call method is not interesting for us.
+                    if(!callMap.containsKey(classUnderAnalysis) || !callMap.get(classUnderAnalysis).containsKey(calledMethodClass) ){
+                        continue;
+                    }
+
+                    // plus plus the value in the map
+                    int currentValue = callMap.get(classUnderAnalysis).get(calledMethodClass);
+                    callMap.get(classUnderAnalysis).put(calledMethodClass,currentValue+1);
+                }
+
+            }
+
+
+        }else{
+            LOG.error("bytecodes of target class is not available");
+        }
+
+        LOG.info("Static analysis has been finished. Preparing the final list ...");
+        prepareFinalList();
+        LOG.info("Sorting the final list ...");
+    }
 
 
 }
