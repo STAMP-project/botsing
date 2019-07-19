@@ -71,4 +71,16 @@ public class ClassPathsTest {
         assertThat(classPathEntries, containsInAnyOrder(entries.toArray(new String[entries.size()])));
     }
 
+    @Test
+    public void testUnexistingFile() throws IOException {
+        List<String> entries = Lists.newArrayList(tmpFolder.newFolder("oneentry").getAbsolutePath(),
+                tmpFolder.newFile("twoentry.jar").getAbsolutePath(),
+                tmpFolder.newFolder("threeentry").getAbsolutePath());
+        String nonExisting = tmpFolder.newFolder("fourthentry").getAbsolutePath() + File.separator + "nonexisting.jar";
+        String rawEntry = String.join(File.pathSeparator, entries) + File.pathSeparator + nonExisting;
+        List<String> classPathEntries = ClassPaths.getClassPathEntries(rawEntry);
+        assertThat(classPathEntries, containsInAnyOrder(entries.toArray(new String[entries.size()])));
+        assertThat(classPathEntries, not(contains(nonExisting)));
+    }
+
 }
