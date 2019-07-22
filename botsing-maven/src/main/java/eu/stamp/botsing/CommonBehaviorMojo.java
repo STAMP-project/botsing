@@ -76,7 +76,7 @@ public class CommonBehaviorMojo extends AbstractMojo {
 	/**
 	 * Botsing Model Generation version to use
 	 */
-	@Parameter(property = "model_geneation_version", defaultValue = "1.0.6-SNAPSHOT")
+	@Parameter(property = "model_geneation_version", defaultValue = "1.0.7-SNAPSHOT")
 	private String modelGenerationVersion;
 
 	@Parameter(property = "evosuite_master_version", defaultValue = "1.0.7")
