@@ -11,7 +11,6 @@ public abstract class AbstractConfiguration {
 	 * Botsing configuration is stored in a List of String
 	 */
 	protected List<String> properties;
-
 	protected Log log;
 
 	private boolean requiredOptions = false;
