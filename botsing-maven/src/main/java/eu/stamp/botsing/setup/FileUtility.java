@@ -1,4 +1,4 @@
-package eu.stamp.botsing;
+package eu.stamp.botsing.setup;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,7 @@ public class FileUtility {
 	 */
 	public static long getRowNumber(String file) throws IOException {
 
-		try ( Stream<String> lines = Files.lines(Paths.get(file), Charset.defaultCharset()) ) {
+		try (Stream<String> lines = Files.lines(Paths.get(file), Charset.defaultCharset())) {
 			return lines.count();
 		}
 	}
@@ -37,12 +37,12 @@ public class FileUtility {
 
 		Collection<File> files = FileUtils.listFiles(new File(folder), extensions, true);
 
-        for (File file : files) {
+		for (File file : files) {
 
-        	if (searchInFile(file, regex)) {
+			if (searchInFile(file, regex)) {
 				return true;
 			}
-        }
+		}
 
 		return false;
 	}
@@ -56,7 +56,7 @@ public class FileUtility {
 			while (it.hasNext()) {
 				String line = it.nextLine();
 				if (line.matches(regex)) {
-					result =  true;
+					result = true;
 					break;
 				}
 			}

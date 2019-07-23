@@ -34,12 +34,6 @@
 			<artifactId>commons-cli</artifactId>
 			<version>${commons-cli.version}</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.ow2.asm/asm -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.20</version>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

@@ -16,39 +16,36 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * Integration Test that runs botsing-maven on authzforce-ce-core-pdp-testutils. (It takes about 10 minutes to complete)
+ * Integration Test that runs botsing-maven on authzforce-ce-core-pdp-testutils.
+ * (It takes about 10 minutes to complete)
  *
  * @author luca
  *
  */
 public class BotsingMojoTestIT {
 
-	private final String crashLog = "java.lang.RuntimeException: Failed to load XML schemas: [classpath:pdp.xsd]\n" +
-			"	at org.ow2.authzforce.core.pdp.impl.SchemaHandler.createSchema(SchemaHandler.java:541)\n" +
-			"	at org.ow2.authzforce.core.pdp.impl.PdpModelHandler.<init>(PdpModelHandler.java:159)\n" +
-			"	at org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration.getInstance(PdpEngineConfiguration.java:682)\n" +
-			"	at org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration.getInstance(PdpEngineConfiguration.java:699)\n" +
-			"	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\n" +
-			"	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n" +
-			"	at java.lang.reflect.Method.invoke(Method.java:498)\n" +
-			"	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:162)";
+	private final String crashLog = "java.lang.RuntimeException: Failed to load XML schemas: [classpath:pdp.xsd]\n"
+			+ "	at org.ow2.authzforce.core.pdp.impl.SchemaHandler.createSchema(SchemaHandler.java:541)\n"
+			+ "	at org.ow2.authzforce.core.pdp.impl.PdpModelHandler.<init>(PdpModelHandler.java:159)\n"
+			+ "	at org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration.getInstance(PdpEngineConfiguration.java:682)\n"
+			+ "	at org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration.getInstance(PdpEngineConfiguration.java:699)\n"
+			+ "	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\n"
+			+ "	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
+			+ "	at java.lang.reflect.Method.invoke(Method.java:498)\n"
+			+ "	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:162)";
 
-	public static final String POM_FOR_BOTSING = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-			"<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n" +
-			"    <modelVersion>4.0.0</modelVersion>\n" +
-			"    <groupId>eu.stamp-project</groupId>\n" +
-			"    <artifactId>botsing-maven-working-project</artifactId>\n" +
-			"    <version>1.0.0-SNAPSHOT</version>\n" +
-			"    <packaging>pom</packaging>\n" +
-			"    <name>Project to run Botsing Maven</name>\n" +
-			"    <description>Project to run botsing-maven.</description>\n" +
-			"</project>";
+	public static final String POM_FOR_BOTSING = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			+ "<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n"
+			+ "    <modelVersion>4.0.0</modelVersion>\n" + "    <groupId>eu.stamp-project</groupId>\n"
+			+ "    <artifactId>botsing-maven-working-project</artifactId>\n" + "    <version>1.0.0-SNAPSHOT</version>\n"
+			+ "    <packaging>pom</packaging>\n" + "    <name>Project to run Botsing Maven</name>\n"
+			+ "    <description>Project to run botsing-maven.</description>\n" + "</project>";
 
-	private final String groupId="org.ow2.authzforce";
-	private final String artifactId="authzforce-ce-core-pdp-testutils";
-	private final String version="13.3.1";
-	private final String searchBudget="60";
-	private final String globalTimeout="90";
+	private final String groupId = "org.ow2.authzforce";
+	private final String artifactId = "authzforce-ce-core-pdp-testutils";
+	private final String version = "13.3.1";
+	private final String searchBudget = "60";
+	private final String globalTimeout = "90";
 
 	@Rule
 	public TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -83,8 +80,9 @@ public class BotsingMojoTestIT {
 		verifier.addCliOption("-Dsearch_budget=" + searchBudget);
 		verifier.addCliOption("-Dglobal_timeout=" + globalTimeout);
 
-		//verifier.addCliOption("-Dorg.slf4j.simpleLogger.log.org.evosuite=off ");
-		//verifier.addCliOption("-Dorg.slf4j.simpleLogger.showLogName=true");
+		// verifier.addCliOption("-Dorg.slf4j.simpleLogger.log.org.evosuite=off
+		// ");
+		// verifier.addCliOption("-Dorg.slf4j.simpleLogger.showLogName=true");
 
 		// add goals to execute
 		// TODO add current project version
@@ -97,7 +95,7 @@ public class BotsingMojoTestIT {
 
 			// check botsing default output folder
 			File outputDirToCheck = Paths.get(workingDir.getAbsolutePath(), "crash-reproduction-tests").toFile();
-			String message = "outputDir '"+outputDirToCheck.getAbsolutePath()+"' is empty";
+			String message = "outputDir '" + outputDirToCheck.getAbsolutePath() + "' is empty";
 			assertNotNull(message, outputDirToCheck);
 			assertNotNull(message, outputDirToCheck.list());
 			assertTrue(message, outputDirToCheck.list().length > 0);

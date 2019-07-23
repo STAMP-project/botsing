@@ -17,7 +17,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.StringReader;
 import java.util.ArrayList;
-
+import java.io.File;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -84,7 +84,7 @@ public class CrashPropertiesTest {
     @Test
     public void testSetClasspath() {
         CrashProperties properties = CrashProperties.getInstance();
-        properties.setClasspath("jar1:jar2");
+        properties.setClasspath("jar1" + File.pathSeparator + "jar2");
         String[] jars = properties.getProjectClassPaths();
 
         assertEquals("jar1", jars[0]);

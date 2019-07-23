@@ -11,6 +11,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import eu.stamp.botsing.setup.FileUtility;
+
 public class FileUtilityTest {
 
 	@Rule

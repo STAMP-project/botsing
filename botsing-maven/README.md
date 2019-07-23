@@ -61,6 +61,50 @@ The target_frame lets you specify how many rows of the stacktrace Botsing has to
 1. specifying the maximum value (e.g. `-Dmax_target_frame=2`), in this case it will start from the maximum value provided and decrease it until a reproduction test have been found
 1. reading it from the maximum rows of the stacktrace, no parameter for the target frame should be provided
 
+## How to run common behavior maven plugin
+
+### Configuration
+
+Before to run the plugin, we need to download and install the use case [AuthZforce](https://authzforce.ow2.org/) following the documentation provided at this [link](https://github.com/STAMP-project/evosuite-model-seeding-tutorial).
+
+Please note that you need also to add [EvoSuite-client](https://github.com/STAMP-project/botsing/tree/maven-common-behavior-integration#building-botsing) 
+
+```
+mvn install:install-file -Dfile=botsing-reproduction/evosuite-client-botsing-1.0.7.jar -DgroupId=org.evosuite -DartifactId=evosuite-client-botsing -Dversion=1.0.7 -Dpackaging=jar
+
+mvn package
+```
+
+Download and install botsing project from git:
+
+```
+git clone https://github.com/STAMP-project/botsing.git
+
+mvn clean install
+```
+
+Note you need also to download and install in maven repo the 'evosuite-master-1.0.7-SNAPSHOT.jar' from this [link](https://github.com/STAMP-project/evosuite-model-seeding-tutorial.git):
+
+```
+git clone https://github.com/STAMP-project/evosuite-model-seeding-tutorial.git
+
+cd evosuite-model-seeding-tutorial
+
+mvn install:install-file -Dfile=bin/evosuite-master-1.0.7-SNAPSHOT.jar -DgroupId=org.evosuite -DartifactId=evosuite-master -Dversion=1.0.7 -Dpackaging=jar
+
+```
+
+### Run plugin
+
+To run the maven plugin, go in the botsing-maven folder and type this command:
+
+```
+cd botsing/botsing-maven/
+
+mvn eu.stamp-project:botsing-maven:1.0.6-SNAPSHOT:common-behavior -Dproject_cp=/home/ubuntu/authzforce-core/pdp-engine/target/classes -Dproject_prefix=org.ow2.authzforce  -Dout_dir=results/authzforce -Dclass=org.ow2.authzforce.core.pdp.impl.PdpBean -Dsearch_budget=50
+```
+
+
 ## Help
 
 To view a list of all the parameters that can be set use this command:

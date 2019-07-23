@@ -13,7 +13,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.plugin.logging.Log;
 
+import eu.stamp.botsing.setup.BotsingConfiguration;
+import eu.stamp.botsing.setup.EvoSuiteConfiguration;
+import eu.stamp.botsing.setup.FileUtility;
+import eu.stamp.botsing.setup.ModelGenerationConfiguration;
+
 public class ProcessRunner {
+
+	final static String JAVA_CMD = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar
+			+ "java";
 
 	public static boolean executeBotsingPreprocessing(File basedir, File botsingPreprocessingJar, String crashLogInPath,
 			String crashLogOutPath, String packageFilter, Integer timeout, Log log)
@@ -42,8 +50,9 @@ public class ProcessRunner {
 		return success;
 	}
 
-	public static Integer executeBotsingReproduction(File basedir, File botsingReproductionJar, BotsingConfiguration configuration,
-			Integer maxTargetFrame, Log log) throws InterruptedException, IOException {
+	public static Integer executeBotsingReproduction(File basedir, File botsingReproductionJar,
+			BotsingConfiguration configuration, Integer maxTargetFrame, Log log)
+			throws InterruptedException, IOException {
 
 		Integer targetFrame = configuration.getTargetFrame();
 		boolean success = false;
@@ -57,20 +66,22 @@ public class ProcessRunner {
 			// targetFrame (should be null) overridden from maxTargetFrame
 			targetFrame = maxTargetFrame;
 
-			// execute Botsing decreasing target frame until a Botsing is executed successfully
+			// execute Botsing decreasing target frame until a Botsing is
+			// executed successfully
 			while (!success && targetFrame > 0) {
 
 				log.info("Running botsing-reproduction with frame " + targetFrame);
-				configuration.addTargetFrame(targetFrame);
+				configuration.addMandatoryProperty(BotsingConfiguration.TARGET_FRAME_OPT, targetFrame.toString());
 
 				// clean output folder
-				FileUtility.deleteFolder(configuration.getTestDir());
+				FileUtility.deleteFolder(configuration.getOptionValue(BotsingConfiguration.TEST_DIR_OPT));
 
 				// execute Botsing
 				success = ProcessRunner.executeJar(basedir, botsingReproductionJar,
 						new Long(configuration.getGlobalTimeout()), configuration.getProperties(), log);
 
-				// stop only if the generated test does not contains "EvoSuite did not generate any tests"
+				// stop only if the generated test does not contains "EvoSuite
+				// did not generate any tests"
 				if (success) {
 
 					if (hasReproductionTestBeenGenerated(configuration)) {
@@ -96,10 +107,10 @@ public class ProcessRunner {
 
 	private static boolean hasReproductionTestBeenGenerated(BotsingConfiguration configuration) throws IOException {
 
-		Path testDirPath = Paths.get(configuration.getTestDir());
+		Path testDirPath = Paths.get(configuration.getOptionValue(BotsingConfiguration.TEST_DIR_OPT));
 		if (Files.exists(testDirPath) && testDirPath.toFile().list().length > 0) {
 
-			boolean emptyTest = FileUtility.search(configuration.getTestDir(),
+			boolean emptyTest = FileUtility.search(configuration.getOptionValue(BotsingConfiguration.TEST_DIR_OPT),
 					".*EvoSuite did not generate any tests.*", new String[] { "java" });
 
 			if (!emptyTest) {
@@ -117,11 +128,8 @@ public class ProcessRunner {
 		}
 	}
 
-	private static boolean executeJar(File basedir, File botsingReproductionJar, long timeout,
-			List<String> properties, Log log) throws InterruptedException, IOException {
-
-		final String JAVA_CMD = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar
-				+ "java";
+	private static boolean executeJar(File basedir, File botsingReproductionJar, long timeout, List<String> properties,
+			Log log) throws InterruptedException, IOException {
 
 		ArrayList<String> jarCommand = new ArrayList<String>();
 		jarCommand.add(JAVA_CMD);
@@ -134,7 +142,8 @@ public class ProcessRunner {
 		return ProcessRunner.executeProcess(basedir, log, timeout, jarCommand.toArray(new String[0]));
 	}
 
-	private static boolean executeProcess(File workDir, Log log, long timeout, String... command) throws InterruptedException, IOException {
+	private static boolean executeProcess(File workDir, Log log, long timeout, String... command)
+			throws InterruptedException, IOException {
 		Process process = null;
 
 		if (log.isDebugEnabled()) {
@@ -175,7 +184,8 @@ public class ProcessRunner {
 			if (process != null) {
 
 				try {
-					// be sure streamers are closed, otherwise process might hang on Windows
+					// be sure streamers are closed, otherwise process might
+					// hang on Windows
 					process.getOutputStream().close();
 					process.getInputStream().close();
 					process.getErrorStream().close();
@@ -216,5 +226,39 @@ public class ProcessRunner {
 
 		reader.start();
 		logger.debug("Started thread to read spawn process output");
+	}
+
+	public static boolean executeBotsingModelGeneration(File basedir, File botsingModelGenerationJar,
+			ModelGenerationConfiguration configuration, Integer timeout, Log log)
+			throws InterruptedException, IOException {
+
+		ArrayList<String> jarCommand = new ArrayList<String>();
+		jarCommand.add(JAVA_CMD);
+		jarCommand.add("-jar");
+
+		jarCommand.add(botsingModelGenerationJar.getAbsolutePath());
+
+		jarCommand.addAll(configuration.getProperties());
+
+		// clean outDir folder
+		FileUtility.deleteFolder(configuration.getOptionValue(ModelGenerationConfiguration.OUT_DIR_OPT));
+
+		return ProcessRunner.executeProcess(basedir, log, timeout, jarCommand.toArray(new String[0]));
+	}
+
+	public static boolean executeEvoSuite(File basedir, File evoSuiteJar, EvoSuiteConfiguration configuration,
+			Integer timeout, Log log) throws InterruptedException, IOException {
+
+		ArrayList<String> jarCommand = new ArrayList<String>();
+		jarCommand.add(JAVA_CMD);
+		jarCommand.add("-jar");
+
+		jarCommand.add(evoSuiteJar.getAbsolutePath());
+
+		jarCommand.addAll(configuration.getProperties());
+
+		jarCommand.add("-generateMOSuite");
+
+		return ProcessRunner.executeProcess(basedir, log, timeout, jarCommand.toArray(new String[0]));
 	}
 }

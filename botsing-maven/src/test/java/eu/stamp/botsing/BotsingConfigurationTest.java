@@ -8,6 +8,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import eu.stamp.botsing.setup.BotsingConfiguration;
+
 public class BotsingConfigurationTest {
 
 	private BotsingConfiguration configuration;
@@ -20,13 +22,13 @@ public class BotsingConfigurationTest {
 
 	@Test
 	public void targetFrameShouldBeUpdated() throws IOException {
-		configuration.addTargetFrame(3);
+		configuration.addMandatoryProperty(BotsingConfiguration.TARGET_FRAME_OPT, "3");
 		Assert.assertEquals(new Integer(3), configuration.getTargetFrame());
 	}
 
 	@Test
 	public void targetFrameShouldBeDecreased() throws IOException {
-		configuration.addTargetFrame(3);
+		configuration.addMandatoryProperty(BotsingConfiguration.TARGET_FRAME_OPT, "3");
 		Assert.assertEquals(new Integer(2), configuration.decreaseTargetFrame());
 	}
 
