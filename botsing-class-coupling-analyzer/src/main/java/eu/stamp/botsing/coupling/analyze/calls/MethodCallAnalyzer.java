@@ -168,6 +168,8 @@ public class MethodCallAnalyzer extends Analyzer {
                     continue;
                 }
 
+                // class under analysis should not be a private inner class
+
                 if(!bcInstPool.knownClasses().contains(classUnderAnalysis)){
                     LOG.warn("Bytecode instructions of class {} is not available.",classUnderAnalysis);
                     // If it is not available, we will skip analyzing it.
@@ -198,7 +200,7 @@ public class MethodCallAnalyzer extends Analyzer {
 
                     // plus plus the value in the map
                     int currentValue = callMap.get(classUnderAnalysis).get(calledMethodClass);
-                    callMap.get(classUnderAnalysis).put(calledMethodClass,currentValue+1);
+                    callMap.get(classUnderAnalysis).put(targetClass,currentValue+1);
                 }
 
             }
