@@ -53,6 +53,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
 
     public GuidedGeneticAlgorithm(ChromosomeFactory<T> factory) {
         super(factory);
+        this.stoppingConditions.clear();
         this.crossoverFunction = new GuidedSinglePointCrossover();
         ((GuidedSinglePointCrossover)this.crossoverFunction).updatePublicCalls(((StackTraceChromosomeFactory) chromosomeFactory).getPublicCalls());
         this.mutation = new GuidedMutation<>();
