@@ -69,7 +69,7 @@ public class CrashPropertiesTest {
     @Test
     public void testProperties() throws Properties.NoSuchParameterException, IllegalAccessException {
         int popsize = CrashProperties.getInstance().getIntValue("population");
-        assertEquals(100, popsize);
+        assertEquals(50, popsize);
 
         long budget = CrashProperties.getInstance().getLongValue("search_budget");
         assertEquals(1800, budget);

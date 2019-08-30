@@ -87,11 +87,11 @@ public class CrashProperties {
 
 
     @Properties.Parameter(key = "SearchAlgorithm", group = "Crash reproduction", description = "Which search algorithm to use for crash reproduction")
-    public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.Guided_MOSA;
+    public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.Single_Objective_GGA;
 
 
     @Properties.Parameter(key = "FitnessFunctions", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
-    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.IntegrationSingleObjective};
+    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.WeightedSum};
 
 
 
