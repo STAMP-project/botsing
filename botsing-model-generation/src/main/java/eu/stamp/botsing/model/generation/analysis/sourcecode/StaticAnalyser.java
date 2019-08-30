@@ -67,10 +67,12 @@ public class StaticAnalyser {
                                 analyseMethod(clazz, entry.getKey(), entry.getValue(), isTest);
                         savingMethodCallSequences(collectedCallSequencesForCurrentMethod);
                     }
-                } else {
-                    LOG.warn("The generated control flow graphs for class {} was empty. We cannot execute manual " +
-                            "analysis withour the control flow graph.", clazz);
                 }
+
+//                else {
+//                    LOG.warn("The generated control flow graphs for class {} was empty. We cannot execute manual " +
+//                            "analysis without the control flow graph.", clazz);
+//                }
             } catch(Exception e) {
                 LOG.warn("Error in analyzing class {}", clazz, e);
             }

@@ -22,8 +22,6 @@ public class GuidedSinglePointCrossover extends CrossOverFunction {
     private static GuidedSearchUtility utility =  new GuidedSearchUtility();
 
     Set<GenericAccessibleObject<?>> publicCalls = new HashSet<>();
-//
-//    private SinglePointCrossOver crossover = new SinglePointCrossOver();
 
     public void crossOver(Chromosome parent1, Chromosome parent2) {
         if(this.publicCalls.isEmpty()){

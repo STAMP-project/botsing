@@ -39,7 +39,7 @@ public class CarvingRunListener extends org.evosuite.testcarver.extraction.Carvi
             }
             Capturer.clear();
         } catch(Exception e) {
-            LOG.warn("Error in capturing log: ", e);
+            LOG.warn("Error in capturing log of class {}.",description.getClassName());
         }
 
     }

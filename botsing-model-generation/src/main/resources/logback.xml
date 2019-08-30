@@ -5,10 +5,21 @@
         </encoder>
     </appender>
 
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <encoder>
+            <pattern></pattern>
+        </encoder>
+    </appender>
+
 
     <root level="info">
         <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDERR" />
     </root>
     <logger name="org.evosuite" level="off"/>
-    <logger name="evo_logger" level="error"/>
+    <logger name="evo_logger" level="off"/>
 </configuration>
