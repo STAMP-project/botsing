@@ -72,6 +72,8 @@ public class FitnessFunctionHelper {
                 return new WeightedSum(crash);
             case IntegrationSingleObjective:
                 return new IntegrationTestingFF(crash);
+            case IntegrationArrayIndex:
+                return new ITFFForArrayIndex(crash);
             default:
                 return new WeightedSum(crash);
         }
