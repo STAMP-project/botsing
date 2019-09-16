@@ -231,7 +231,7 @@ public class CrashProperties {
     }
 
     public Throwable getTargetException(int crashIndex) {
-        if(crashes.size() <= crashIndex){
+        if (crashes.size() <= crashIndex) {
             throw new IndexOutOfBoundsException("The given index for crashes is out of bounds");
         }
 
