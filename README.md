@@ -16,7 +16,7 @@ Botsing is a Java framework for search-based crash reproduction. It implements a
 
 This is **important** for us. As a recognition for your feedback, you will receive a limited edition **STAMP Software Test Pilot gift** and be recognized as a STAMP contributor. 
 
-This campaign will close on 31 September, 2019. You will be contacted individually for a customized gift and for contribution opportunities.
+This campaign will close on 30 September, 2019. You will be contacted individually for a customized gift and for contribution opportunities.
 
 
 ## Funding
