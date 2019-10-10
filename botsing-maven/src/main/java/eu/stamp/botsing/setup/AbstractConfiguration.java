@@ -60,9 +60,10 @@ public abstract class AbstractConfiguration {
 			addMandatoryProperty(name, value.toString());
 		}
 	}
-	
+
 	public void addMandatoryProperty(String name, String value) {
 		if (value != null && value.length() > 0) {
+
 			if (properties.contains("-" + name)) {
 				log.debug("Updating mandatory property '" + name + "'");
 				int i = properties.indexOf("-" + name);
@@ -70,11 +71,13 @@ public abstract class AbstractConfiguration {
 				properties.remove(i + 1);
 				// insert new value
 				properties.add(i + 1, value.toString());
+
 			} else {
 				// insert parameter and value
 				properties.add("-" + name);
 				properties.add(value.toString());
 			}
+
 		} else {
 			log.warn("Tryng to insert mandatory property '" + name + "' with empty value.");
 			setRequiredOptions(true);
@@ -86,13 +89,13 @@ public abstract class AbstractConfiguration {
 			addDProperty(name, value.toString());
 		}
 	}
-	
+
 	protected void addDProperty(String name, Long value) {
 		if (value != null) {
 			addDProperty(name, value.toString());
 		}
 	}
-	
+
 	protected void addDProperty(String name, String value) {
 		if (value != null && value.length() > 0) {
 			properties.add("-D" + name + "=" + value);

@@ -275,7 +275,7 @@ public class BotsingMojo extends AbstractMojo {
 
 		// TODO check other mandatory properties
 	}
-	
+
 	/**
 	 * if maxTargetFrame is not set, set maxTargetFrame from crashLog rows
 	 * @return
