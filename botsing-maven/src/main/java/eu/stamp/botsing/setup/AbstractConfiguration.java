@@ -55,6 +55,12 @@ public abstract class AbstractConfiguration {
 		return value;
 	}
 
+	public void addMandatoryProperty(String name, Integer value) {
+		if (value != null) {
+			addMandatoryProperty(name, value.toString());
+		}
+	}
+	
 	public void addMandatoryProperty(String name, String value) {
 		if (value != null && value.length() > 0) {
 			if (properties.contains("-" + name)) {
@@ -75,6 +81,18 @@ public abstract class AbstractConfiguration {
 		}
 	}
 
+	protected void addDProperty(String name, Integer value) {
+		if (value != null) {
+			addDProperty(name, value.toString());
+		}
+	}
+	
+	protected void addDProperty(String name, Long value) {
+		if (value != null) {
+			addDProperty(name, value.toString());
+		}
+	}
+	
 	protected void addDProperty(String name, String value) {
 		if (value != null && value.length() > 0) {
 			properties.add("-D" + name + "=" + value);

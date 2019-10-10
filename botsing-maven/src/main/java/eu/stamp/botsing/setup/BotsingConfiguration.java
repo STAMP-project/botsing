@@ -48,14 +48,14 @@ public class BotsingConfiguration extends AbstractConfiguration {
 		// mandatory parameters
 		addMandatoryProperty(BotsingConfiguration.PROJECT_CP_OPT, projectClasspath);
 		addMandatoryProperty(BotsingConfiguration.CRASH_LOG_OPT, crashLog);
-		addMandatoryProperty(BotsingConfiguration.TARGET_FRAME_OPT, targetFrame.toString());
+		addMandatoryProperty(BotsingConfiguration.TARGET_FRAME_OPT, targetFrame);
 
 		// add D optional parameters
-		addDProperty(BotsingConfiguration.POPULATION_OPT, population.toString());
-		addDProperty(BotsingConfiguration.SEARCH_BUDGET_OPT, searchBudget.toString());
-		addDProperty(BotsingConfiguration.GLOBAL_TIMEOUT_OPT, globalTimeout.toString());
+		addDProperty(BotsingConfiguration.POPULATION_OPT, population);
+		addDProperty(BotsingConfiguration.SEARCH_BUDGET_OPT, searchBudget);
+		addDProperty(BotsingConfiguration.GLOBAL_TIMEOUT_OPT, globalTimeout);
 		addDProperty(BotsingConfiguration.TEST_DIR_OPT, testDir);
-		addDProperty(BotsingConfiguration.RANDOM_SEED_OPT, randomSeed.toString());
+		addDProperty(BotsingConfiguration.RANDOM_SEED_OPT, randomSeed);
 		addDProperty(BotsingConfiguration.NO_RUNTIME_DEPENDENCY_OPT, noRuntimeDependency);
 	}
 

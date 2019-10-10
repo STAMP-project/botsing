@@ -212,7 +212,7 @@ public class BotsingMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException {
 		getLog().info("Starting Botsing to generate tests with EvoSuite");
 
-		// TODO check properties
+		checkParameters();
 
 		// Run botsing-preprocessing to clean crash log
 		String cleanedCrashLog = null;
@@ -265,16 +265,24 @@ public class BotsingMojo extends AbstractMojo {
 		getLog().info("Stopping Botsing");
 	}
 
+	private void checkParameters() throws MojoExecutionException {
+		// check log file first: must be with read permissions and not empty
+		// TODO check also after pre-processing!
+		File f = new File(crashLog);
+		if (f == null || !f.exists() || !f.isFile() || !f.canRead()) {
+			throw new MojoExecutionException("Cannot read log file '" + crashLog + "'");
+		}
+
+		// TODO check other mandatory properties
+	}
+	
 	/**
-	 * if maxTargetFrame and targetFrame are not set, set maxTargetFrame from crashLog rows
+	 * if maxTargetFrame is not set, set maxTargetFrame from crashLog rows
 	 * @return
 	 * @throws MojoExecutionException
 	 */
 	private Integer getMaxTargetFrame(String crashLog) throws MojoExecutionException {
-		if (targetFrame != null) {
-			return maxTargetFrame;
-
-		} else if (maxTargetFrame != null) {
+		if (maxTargetFrame != null) {
 			return maxTargetFrame;
 
 		} else {
@@ -358,8 +366,8 @@ public class BotsingMojo extends AbstractMojo {
 			// artifact to get
 			DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, classifier, extension, version);
 
-			// add input artifact if not a war file
-			if (!artifact.getExtension().equals("war")) {
+			// add input artifact if not a war or zip file
+			if (!artifact.getExtension().equals("war") || !artifact.getExtension().equals("zip")) {
 				File artifactFile = getArtifactFile(artifact);
 				result += artifactFile.getAbsolutePath() + File.pathSeparator;
 			}
