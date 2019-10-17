@@ -60,7 +60,16 @@ public class IntegrationTestingFF extends TestFitnessFunction {
             if(resultException.getStackTrace().length == 0 ){
                 continue;
             }
-            String crashingClass = resultException.getStackTrace()[0].getClassName();
+
+            int frame = -1;
+            String crashingClass;
+            do {
+                crashingClass = resultException.getStackTrace()[++frame].getClassName();
+            }
+            while (frame < resultException.getStackTrace().length && (crashingClass.startsWith("java") || crashingClass.startsWith("javax")));
+            if (frame == resultException.getStackTrace().length)
+                continue;
+
             int crashingLine = resultException.getStackTrace()[0].getLineNumber();
             if(targetCrash.getFrame(1).getLineNumber() != crashingLine || !targetCrash.getFrame(1).getClassName().equals(crashingClass)){
                 continue;
