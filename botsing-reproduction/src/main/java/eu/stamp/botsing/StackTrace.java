@@ -20,21 +20,33 @@ package eu.stamp.botsing;
  * #L%
  */
 
+import org.evosuite.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.StringTokenizer;
 
 public class StackTrace {
 
     private static final Logger LOG = LoggerFactory.getLogger(StackTrace.class);
 
     private String exceptionType;
-    private ArrayList<StackTraceElement> frames;
     private int targetFrameLevel;
-    private String targetClass;
+
+    /**
+     * All frames that are in the original log file.
+     */
     private ArrayList<StackTraceElement> allFrames;
+
+    /**
+     * Frames that will be reproduced. That is the frames above the target level.
+     */
+    private ArrayList<StackTraceElement> frames;
+    private String targetClass;
     private ArrayList<Integer> irrelevantFrames = new ArrayList<>();
     private int publicTargetFrameLevel;
 
@@ -57,8 +69,8 @@ public class StackTrace {
 
             // clear the frames in this.frames (if any)
             if (frames == null) {
-                frames = new ArrayList<StackTraceElement>();
-                allFrames = new ArrayList<StackTraceElement>();
+                frames = new ArrayList<>();
+                allFrames = new ArrayList<>();
             } else {
                 frames.clear();
                 allFrames.clear();
@@ -74,7 +86,7 @@ public class StackTrace {
                 frames.add(stringToStackTraceElement(tempFrame,counter,true));
                 allFrames.add(stringToStackTraceElement(tempFrame,counter,false));
             }
-            String tempFrame="";
+            String tempFrame;
             int counter = frameLevel;
             while((tempFrame=reader.readLine())!=null && tempFrame.length()!=0 && tempFrame.contains("at")){
                 allFrames.add(stringToStackTraceElement(tempFrame,counter,true));
@@ -84,8 +96,17 @@ public class StackTrace {
 
             // Parse Target class
             targetClass = frames.get(frameLevel - 1).getClassName();
-            org.evosuite.Properties.TARGET_CLASS = targetClass;
+            Properties.TARGET_CLASS = targetClass;
             LOG.info("Target Class is set to: " + targetClass);
+
+            // If the target exception is ArrayIndexOutOfBoundsException
+            if (exceptionType.equals(ArrayIndexOutOfBoundsException.class.getName())) {
+                // Set the line number where the array access call is located at.
+                Properties.TARGET_ARRAY_LINE = frames.get(0).getLineNumber();
+                // Set the fitness function for this crash to be the customized one.
+                CrashProperties.fitnessFunctions[CrashProperties.getInstance().getCrashesSize() - 1] =
+                        CrashProperties.FitnessFunction.IntegrationArrayIndex;
+            }
         } catch (FileNotFoundException e) {
             LOG.debug("Stack trace file not found!", e);
             throw new IllegalArgumentException("Stack trace file not found!", e);
@@ -175,7 +196,7 @@ public class StackTrace {
 
     public List<String> getTargetClasses() {
         List<String> classes = new ArrayList<>();
-        for(StackTraceElement frame: frames){
+        for (StackTraceElement frame: frames) {
             classes.add(frame.getClassName());
             LOG.debug(frame.getClassName());
         }
@@ -183,24 +204,20 @@ public class StackTrace {
     }
 
     public void addIrrelevantFrameLevel(int frameLevel){
-        if(frameLevel > this.targetFrameLevel){
+        if (frameLevel > this.targetFrameLevel) {
             throw new IllegalArgumentException("The passed irrelevant frame (frame level "+frameLevel+") is higher than the target frame level.");
         }
-        if(!this.irrelevantFrames.contains(frameLevel)){
+        if (!this.irrelevantFrames.contains(frameLevel)) {
             this.irrelevantFrames.add(frameLevel);
         }
     }
 
 
-    public boolean isIrrelevantFrame(int frameLevel){
-        if(this.irrelevantFrames.contains(frameLevel)){
-            return true;
-        }
-
-        return false;
+    public boolean isIrrelevantFrame(int frameLevel) {
+        return this.irrelevantFrames.contains(frameLevel);
     }
 
-    public void updatePublicTargetFrameLevel(int newLevel){
+    public void updatePublicTargetFrameLevel(int newLevel) {
         publicTargetFrameLevel = newLevel;
     }
 

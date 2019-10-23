@@ -17,7 +17,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 public class IntegrationTestingFFTest {
 
     @Test
-    public void testExceptionCoverage_executionResultWithoutTargetCrash(){
+    public void testExceptionCoverage_executionResultWithoutTargetCrash() throws FileNotFoundException {
         ExecutionResult executionResult = Mockito.mock(ExecutionResult.class);
         Set<Integer> exceptionLocators = new HashSet<>();
         exceptionLocators.add(1);

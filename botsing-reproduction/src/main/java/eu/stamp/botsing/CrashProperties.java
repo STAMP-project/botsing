@@ -25,8 +25,10 @@ import org.evosuite.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -66,8 +68,8 @@ public class CrashProperties {
     public enum FitnessFunction {
         WeightedSum,
         SimpleSum,
+        IntegrationArrayIndex,
         IntegrationSingleObjective;
-
         FitnessFunction() {
         }
     }
@@ -229,7 +231,7 @@ public class CrashProperties {
     }
 
     public Throwable getTargetException(int crashIndex) {
-        if(crashes.size() <= crashIndex){
+        if (crashes.size() <= crashIndex) {
             throw new IndexOutOfBoundsException("The given index for crashes is out of bounds");
         }
 

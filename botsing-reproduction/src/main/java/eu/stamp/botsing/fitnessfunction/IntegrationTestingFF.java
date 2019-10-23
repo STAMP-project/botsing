@@ -15,7 +15,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTestingFF.class);
     @Resource
     CrashCoverageFitnessCalculator fitnessCalculator;
-    private StackTrace targetCrash;
+    protected StackTrace targetCrash;
 
     public IntegrationTestingFF(StackTrace crash){
         fitnessCalculator = new CrashCoverageFitnessCalculator(crash);
