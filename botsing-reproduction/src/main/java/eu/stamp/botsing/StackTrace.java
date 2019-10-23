@@ -105,7 +105,13 @@ public class StackTrace {
                 Properties.TARGET_ARRAY_LINE = frames.get(0).getLineNumber();
                 // Set the fitness function for this crash to be the customized one.
                 CrashProperties.fitnessFunctions[CrashProperties.getInstance().getCrashesSize() - 1] =
-                        CrashProperties.FitnessFunction.IntegrationArrayIndex;
+                        CrashProperties.FitnessFunction.IntegrationIndexedAccess;
+            } else if (exceptionType.equals(StringIndexOutOfBoundsException.class.getName())) {
+                // Tell EvoSuite to instrument indexed string accesses.
+                Properties.INSTRUMENT_INDEXED_STRING_ACCESS = true;
+                // Set the fitness function for this crash to be the customized one.
+                CrashProperties.fitnessFunctions[CrashProperties.getInstance().getCrashesSize() - 1] =
+                        CrashProperties.FitnessFunction.IntegrationIndexedAccess;
             }
         } catch (FileNotFoundException e) {
             LOG.debug("Stack trace file not found!", e);

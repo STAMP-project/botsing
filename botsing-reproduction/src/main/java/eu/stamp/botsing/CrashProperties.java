@@ -67,8 +67,7 @@ public class CrashProperties {
 
     public enum FitnessFunction {
         WeightedSum,
-        SimpleSum,
-        IntegrationArrayIndex,
+        SimpleSum, IntegrationIndexedAccess,
         IntegrationSingleObjective;
         FitnessFunction() {
         }

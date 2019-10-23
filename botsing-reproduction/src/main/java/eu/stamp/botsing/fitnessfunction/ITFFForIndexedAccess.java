@@ -7,10 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class ITFFForArrayIndex extends IntegrationTestingFF {
-    private static final Logger logger = LoggerFactory.getLogger(ITFFForArrayIndex.class);
+public class ITFFForIndexedAccess extends IntegrationTestingFF {
+    private static final Logger logger = LoggerFactory.getLogger(ITFFForIndexedAccess.class);
 
-    public ITFFForArrayIndex(StackTrace crash) {
+    public ITFFForIndexedAccess(StackTrace crash) {
         super(crash);
     }
 
@@ -19,7 +19,7 @@ public class ITFFForArrayIndex extends IntegrationTestingFF {
         if (super.exceptionCoverage(executionResult) == 0) {
             return 0;
         }
-        Map<Integer, int[]> arrayAccessInfo = executionResult.getTrace().getArrayAccessInfo();
+        Map<Integer, int[]> arrayAccessInfo = executionResult.getTrace().getIndexedAccessInfo();
         if (arrayAccessInfo.isEmpty()) {
             return 1;
         }
