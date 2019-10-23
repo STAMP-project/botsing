@@ -1,7 +1,6 @@
 package eu.stamp.botsing.fitnessfunction;
 
 import eu.stamp.botsing.StackTrace;
-import javafx.util.Pair;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.ExecutionTraceImpl;
 import org.junit.Assert;
@@ -54,7 +53,7 @@ public class ITFFForArrayIndexTest extends IntegrationTestingFFTest {
 
         ExecutionTraceImpl executionTrace = new ExecutionTraceImpl();
         executionTrace.arrayIndexAndLength = new HashMap<>();
-        executionTrace.arrayIndexAndLength.put(0, new Pair<>(index, arrayLength));
+        executionTrace.arrayIndexAndLength.put(0, new int[]{index, arrayLength});
 
         doReturn(executionTrace).when(executionResult).getTrace();
 
@@ -67,8 +66,8 @@ public class ITFFForArrayIndexTest extends IntegrationTestingFFTest {
         Mockito.doReturn(trace).when(resultException).getStackTrace();
         Mockito.doReturn(resultException).when(executionResult).getExceptionThrownAtPosition(1);
 
-        BufferedReader obj = new BufferedReader(new StringReader("java.lang.ArrayIndexOutOfBounds:\n" + "\tat eu" +
-                ".stamp" + ".ClassC.method2(ClassA.java:10)\n" + "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
+        BufferedReader obj = new BufferedReader(new StringReader("java.lang.ArrayIndexOutOfBounds:\n\tat eu.stamp" +
+                ".ClassC.method2(ClassA.java:10)\n\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
 
         StackTrace target = Mockito.spy(new StackTrace());
         Mockito.doReturn(obj).when(target).readFromFile(anyString());

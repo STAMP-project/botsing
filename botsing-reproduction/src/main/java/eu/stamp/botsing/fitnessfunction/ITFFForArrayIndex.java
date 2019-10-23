@@ -1,7 +1,6 @@
 package eu.stamp.botsing.fitnessfunction;
 
 import eu.stamp.botsing.StackTrace;
-import javafx.util.Pair;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +16,17 @@ public class ITFFForArrayIndex extends IntegrationTestingFF {
 
     @Override
     protected double exceptionCoverage(ExecutionResult executionResult) {
-        if (super.exceptionCoverage(executionResult) == 0)
+        if (super.exceptionCoverage(executionResult) == 0) {
             return 0;
-        Map<Integer, Pair<Integer, Integer>> arrayAccessInfo = executionResult.getTrace().getArrayAccessInfo();
-        if (arrayAccessInfo.isEmpty())
+        }
+        Map<Integer, int[]> arrayAccessInfo = executionResult.getTrace().getArrayAccessInfo();
+        if (arrayAccessInfo.isEmpty()) {
             return 1;
+        }
         double exceptionCoverage = 0;
-        for (Map.Entry<Integer, Pair<Integer, Integer>> entry : arrayAccessInfo.entrySet()) {
-            Pair<Integer, Integer> pair = entry.getValue();
-            exceptionCoverage += distance(pair.getKey(), pair.getValue());
+        for (Map.Entry<Integer, int[]> entry : arrayAccessInfo.entrySet()) {
+            int[] indexAndLength = entry.getValue();
+            exceptionCoverage += distance(indexAndLength[0], indexAndLength[1]);
         }
         return exceptionCoverage / arrayAccessInfo.size();
     }
@@ -34,8 +35,9 @@ public class ITFFForArrayIndex extends IntegrationTestingFF {
      * Calculate the distance of a specific index being out of bounds given the length of the array.
      *
      * @param length the length of the array.
-     * @return If the index is negative or greater or equal to the length of the array, it is out of bounds and 0 will be returned.
-     * Otherwise, return the ratio of index-to-bounds over mid-to-bounds.
+     *
+     * @return If the index is negative or greater or equal to the length of the array, it is out of bounds and 0 will
+     * be returned. Otherwise, return the ratio of index-to-bounds over mid-to-bounds.
      */
     private static double distance(int index, int length) {
         if (index < 0 || index >= length) {
