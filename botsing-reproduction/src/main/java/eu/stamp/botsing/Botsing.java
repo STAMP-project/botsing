@@ -76,15 +76,15 @@ public class Botsing {
             }
             // Enable integration testing in the crash reproduction process if it is necessary.
             if(commands.hasOption(INTEGRATION_TESTING)){
-                crashProperties.integrationTesting = true;
+                CrashProperties.integrationTesting = true;
             }
             // Estimating the missing lines in the stack trace
             if(commands.hasOption(DISABLE_LINE_ESTIMATION)){
-                crashProperties.lineEstimation = false;
+                CrashProperties.lineEstimation = false;
             }
             // Add I/O Diversity as goals to MOSA
             if(commands.hasOption(IO_DIVERSITY)){
-                crashProperties.IODiversity = true;
+                CrashProperties.IODiversity = true;
             }
             // Use model seeding
             if(commands.hasOption(MODEL_PATH_OPT)){
