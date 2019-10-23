@@ -49,7 +49,7 @@ Thumbs.db
 # local test directory
 **/test/**/botsing/local/
 **/test/**/botsing/model/generation/local/
-**/test/**/botsing/integration/local/
+**/test/**/cling/local/
 **/test/**/botsing/coupling/analyze/local/
 
 
