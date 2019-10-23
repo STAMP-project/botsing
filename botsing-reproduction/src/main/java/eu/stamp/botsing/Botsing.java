@@ -25,6 +25,7 @@ import eu.stamp.botsing.reproduction.CrashReproduction;
 import static eu.stamp.botsing.CommandLineParameters.*;
 import static eu.stamp.botsing.commons.SetupUtility.*;
 
+
 import org.apache.commons.cli.*;
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
@@ -36,6 +37,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
 
 
 public class Botsing {
@@ -128,7 +130,7 @@ public class Botsing {
     public void setupStackTrace(CrashProperties crashProperties, CommandLine commands){
         // Setup given stack trace
         Path log_dir = new File(commands.getOptionValue(CRASH_LOG_OPT)).toPath();
-        if(Files.isDirectory(log_dir)){
+        if (Files.isDirectory(log_dir)) {
             // We need to setup multiple crashes
             File directory = new File(commands.getOptionValue(CRASH_LOG_OPT));
             File[] directoryListing = directory.listFiles();
@@ -142,10 +144,10 @@ public class Botsing {
                     crashProperties.setupStackTrace(logPath,
                             Integer.parseInt(commands.getOptionValue(TARGET_FRAME_OPT)));
                 }
-            }else{
+            } else {
                 throw new IllegalArgumentException("Log directory is empty!");
             }
-        }else {
+        } else {
             // We need to setup only one crash
             crashProperties.clearStackTraceList();
             crashProperties.setupStackTrace(commands.getOptionValue(CRASH_LOG_OPT),

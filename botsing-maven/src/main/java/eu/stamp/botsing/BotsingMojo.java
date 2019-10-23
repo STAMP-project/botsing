@@ -39,6 +39,9 @@ import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResolutionException;
 import org.eclipse.aether.resolution.VersionRangeResult;
 
+import eu.stamp.botsing.setup.BotsingConfiguration;
+import eu.stamp.botsing.setup.FileUtility;
+
 /**
  * Mojo class to run Botsing
  *

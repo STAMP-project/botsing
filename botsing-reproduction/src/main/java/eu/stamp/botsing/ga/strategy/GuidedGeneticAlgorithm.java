@@ -29,6 +29,7 @@ import org.evosuite.Properties;
 import org.evosuite.ga.*;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
+import org.evosuite.testcase.TestChromosome;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
 
     public GuidedGeneticAlgorithm(ChromosomeFactory<T> factory) {
         super(factory);
+        this.stoppingConditions.clear();
         this.crossoverFunction = new GuidedSinglePointCrossover();
         ((GuidedSinglePointCrossover)this.crossoverFunction).updatePublicCalls(((StackTraceChromosomeFactory) chromosomeFactory).getPublicCalls());
         this.mutation = new GuidedMutation<>();
@@ -109,6 +111,19 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
 
             generationCounter++;
             bestFitness = getBestFitness();
+            TestChromosome bestTest = (TestChromosome) getBestIndividual();
+
+            LOG.debug("*  The best generated test is: "+bestTest.getTestCase().toCode());
+            LOG.debug("{} thrown exception(s) are detected in the best test case: ",bestTest.getLastExecutionResult().getAllThrownExceptions().size());
+            for(Throwable t: bestTest.getLastExecutionResult().getAllThrownExceptions()){
+                LOG.debug(t.toString());
+
+                for(StackTraceElement frame:t.getStackTrace()){
+                    LOG.debug(frame.toString());
+                }
+
+            }
+
             LOG.info("Best fitness in the current population: {} | {}", bestFitness,Properties.POPULATION *generationCounter);
 
             // Check for starvation

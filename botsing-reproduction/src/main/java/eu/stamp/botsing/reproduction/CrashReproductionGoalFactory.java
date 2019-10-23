@@ -38,18 +38,17 @@ public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFit
 
     private static Map<String, TestFitnessFunction> goals = new LinkedHashMap<>();
 
-    public CrashReproductionGoalFactory(){
+    public CrashReproductionGoalFactory() {
         fitnessFunctionHelper = new FitnessFunctionHelper();
         goals.clear();
-        if(CrashProperties.getInstance().getCrashesSize() > 1 || CrashProperties.fitnessFunctions.length > 1){
+        if (CrashProperties.getInstance().getCrashesSize() > 1 || CrashProperties.fitnessFunctions.length > 1) {
             // multi-objectives
             TestFitnessFunction[] fetchedGoals = fitnessFunctionHelper.getMultiObjectives();
-            for(TestFitnessFunction goal: fetchedGoals){
+            for (TestFitnessFunction goal : fetchedGoals) {
                 String key = getKey(goal);
                 goals.put(key, goal);
             }
-
-        }else{
+        } else {
             // single Objective
             TestFitnessFunction goal = fitnessFunctionHelper.getSingleObjective();
             String key = getKey(goal);
@@ -61,23 +60,17 @@ public class CrashReproductionGoalFactory extends AbstractFitnessFactory<TestFit
 
     @Override
     public List<TestFitnessFunction> getCoverageGoals() {
-        return  new ArrayList<TestFitnessFunction>(goals.values());
+        return new ArrayList<>(goals.values());
     }
 
-
-
-
-
-
-    public String getKey(TestFitnessFunction goal){
-        String classMethodName = goal.getTargetClass()+"_"+goal.getTargetMethod();
+    public String getKey(TestFitnessFunction goal) {
+        String classMethodName = goal.getTargetClass() + "_" + goal.getTargetMethod();
         int counter = 1;
-        for (String key: goals.keySet()){
-            if(key.startsWith(classMethodName)){
+        for (String key : goals.keySet()) {
+            if (key.startsWith(classMethodName)) {
                 counter++;
             }
         }
-        return goal.getTargetClass()+"_"+goal.getTargetMethod()+counter;
-
+        return goal.getTargetClass() + "_" + goal.getTargetMethod() + counter;
     }
 }

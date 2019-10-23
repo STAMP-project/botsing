@@ -63,12 +63,24 @@ public class ClassPathsTest {
         List<String> entries = Lists.newArrayList(tmpFolder.newFolder("oneentry").getAbsolutePath(),
                 tmpFolder.newFile("twoentry.jar").getAbsolutePath(),
                 tmpFolder.newFolder("threeentry").getAbsolutePath());
-        entries.set(1, entries.get(1).replace("/twoentry.jar", "")); // remove jar file from the name
+        entries.set(1, entries.get(1).replace(File.separator + "twoentry.jar", "")); // remove jar file from the name
         String rawEntry = String.join(File.pathSeparator, entries);
         //Correct oracle
-        entries.add(entries.get(1) + "/twoentry.jar"); // remove jar file from the name
+        entries.add(entries.get(1) + File.separator + "twoentry.jar"); // remove jar file from the name
         List<String> classPathEntries = ClassPaths.getClassPathEntries(rawEntry);
         assertThat(classPathEntries, containsInAnyOrder(entries.toArray(new String[entries.size()])));
+    }
+
+    @Test
+    public void testUnexistingFile() throws IOException {
+        List<String> entries = Lists.newArrayList(tmpFolder.newFolder("oneentry").getAbsolutePath(),
+                tmpFolder.newFile("twoentry.jar").getAbsolutePath(),
+                tmpFolder.newFolder("threeentry").getAbsolutePath());
+        String nonExisting = tmpFolder.newFolder("fourthentry").getAbsolutePath() + File.separator + "nonexisting.jar";
+        String rawEntry = String.join(File.pathSeparator, entries) + File.pathSeparator + nonExisting;
+        List<String> classPathEntries = ClassPaths.getClassPathEntries(rawEntry);
+        assertThat(classPathEntries, containsInAnyOrder(entries.toArray(new String[entries.size()])));
+        assertThat(classPathEntries, not(contains(nonExisting)));
     }
 
 }

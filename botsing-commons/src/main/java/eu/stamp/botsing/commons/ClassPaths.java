@@ -1,5 +1,8 @@
 package eu.stamp.botsing.commons;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +12,7 @@ import java.util.List;
  */
 public class ClassPaths {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ClassPaths.class);
 
     /**
      * Converts a given custom Botsing classpath to a standard classpath, compatible with EvoSuite (i.e., containing
@@ -27,15 +31,20 @@ public class ClassPaths {
         // Else process entries
         for(String rawEntry : classPath.split(File.pathSeparator)) {
             File file = new File(rawEntry);
-            // If the entry is a folder, check for '.jar' files
-            if(file.isDirectory()) {
-                // Add jar files to the classpath entries
-                for(File jarFile : file.listFiles((File f) -> f.isFile() && f.getName().endsWith(".jar"))) {
-                    entries.add(jarFile.getAbsolutePath());
+            // Check that the entry exists, otherwise skip it
+            if(file.exists()) {
+                // If the entry is a folder, check for '.jar' files
+                if(file.isDirectory()) {
+                    // Add jar files to the classpath entries
+                    for(File jarFile : file.listFiles((File f) -> f.isFile() && f.getName().endsWith(".jar"))) {
+                        entries.add(jarFile.getAbsolutePath());
+                    }
                 }
+                // Add the entry itself
+                entries.add(file.getAbsolutePath());
+            } else {
+                LOG.warn("ClassPath entry {} not found, will skip it.", rawEntry);
             }
-            // Add the entry itself
-            entries.add(file.getAbsolutePath());
         }
         return entries;
     }
