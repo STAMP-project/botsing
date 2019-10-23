@@ -27,6 +27,7 @@
         <!-- See http://checkstyle.sf.net/config_naming.html -->
         <module name="PackageName">
             <property name="format" value="^eu\.stamp\.botsing(\.[a-z][a-z0-9]*)*$"/>
+            <property name="format" value="^eu\.stamp\.cling(\.[a-z][a-z0-9]*)*$"/>
         </module>
 
         <!-- Checks for imports                              -->
