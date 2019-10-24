@@ -83,6 +83,9 @@ public class ClassesInSameHierarchyTreeAnalyzer extends Analyzer {
         GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
         Map<String,RawControlFlowGraph> subClassCFGs = graphPool.getRawCFGs(subClass);
         ClassCallGraph subClassCallGraph = new ClassCallGraph(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT(),subClass);
+        if(!superClassesMap.keySet().contains(subClass)){
+            return;
+        }
         for(String superClass : superClassesMap.get(subClass).keySet()){
             // If evosuite can not instrument a class, we will skip it.
             if(graphPool.getRawCFGs(superClass) == null){
