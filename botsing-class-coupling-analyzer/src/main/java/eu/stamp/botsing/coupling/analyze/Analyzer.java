@@ -7,7 +7,6 @@ import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
-import org.evosuite.junit.CoverageAnalysis;
 import org.evosuite.setup.InheritanceTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
