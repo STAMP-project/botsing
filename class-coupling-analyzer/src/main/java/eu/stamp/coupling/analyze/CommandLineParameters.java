@@ -1,4 +1,4 @@
-package eu.stamp.botsing.coupling.analyze;
+package eu.stamp.coupling.analyze;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;

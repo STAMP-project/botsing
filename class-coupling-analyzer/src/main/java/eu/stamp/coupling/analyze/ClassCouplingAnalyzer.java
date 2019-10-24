@@ -1,16 +1,16 @@
-package eu.stamp.botsing.coupling.analyze;
+package eu.stamp.coupling.analyze;
 
 import eu.stamp.botsing.commons.ClassPaths;
-import eu.stamp.botsing.coupling.analyze.calls.MethodCallAnalyzer;
-import eu.stamp.botsing.coupling.analyze.hierarchy.ClassesInSameHierarchyTreeAnalyzer;
-import eu.stamp.botsing.coupling.analyze.report.ReportSaver;
+import eu.stamp.coupling.analyze.calls.MethodCallAnalyzer;
+import eu.stamp.coupling.analyze.hierarchy.ClassesInSameHierarchyTreeAnalyzer;
+import eu.stamp.coupling.analyze.report.ReportSaver;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static eu.stamp.botsing.coupling.analyze.CommandLineParameters.*;
+import static eu.stamp.coupling.analyze.CommandLineParameters.*;
 
 public class ClassCouplingAnalyzer {
 

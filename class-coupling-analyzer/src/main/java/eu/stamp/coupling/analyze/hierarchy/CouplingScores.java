@@ -1,4 +1,4 @@
-package eu.stamp.botsing.coupling.analyze.hierarchy;
+package eu.stamp.coupling.analyze.hierarchy;
 
 public class CouplingScores {
 

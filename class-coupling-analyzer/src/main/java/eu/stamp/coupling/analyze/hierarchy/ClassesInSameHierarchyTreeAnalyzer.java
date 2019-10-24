@@ -1,8 +1,8 @@
-package eu.stamp.botsing.coupling.analyze.hierarchy;
+package eu.stamp.coupling.analyze.hierarchy;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
-import eu.stamp.botsing.coupling.analyze.Analyzer;
-import eu.stamp.botsing.coupling.analyze.calls.ClassPair;
+import eu.stamp.coupling.analyze.Analyzer;
+import eu.stamp.coupling.analyze.calls.ClassPair;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.ccg.ClassCallGraph;
 import org.evosuite.graphs.cfg.BytecodeInstruction;

@@ -1,4 +1,4 @@
-package eu.stamp.botsing.coupling.analyze;
+package eu.stamp.coupling.analyze;
 
 public class Main {
 

@@ -1,7 +1,7 @@
-package eu.stamp.botsing.coupling.analyze.calls;
+package eu.stamp.coupling.analyze.calls;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
-import eu.stamp.botsing.coupling.analyze.Analyzer;
+import eu.stamp.coupling.analyze.Analyzer;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.setup.InheritanceTree;

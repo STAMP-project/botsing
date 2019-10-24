@@ -1,4 +1,4 @@
-package eu.stamp.botsing.coupling.analyze.calls;
+package eu.stamp.coupling.analyze.calls;
 
 import java.util.Arrays;
 import java.util.List;

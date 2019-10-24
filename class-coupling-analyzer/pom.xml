@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>botsing-class-coupling-analyzer</artifactId>
+    <artifactId>class-coupling-analyzer</artifactId>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -40,7 +40,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>eu.stamp.botsing.coupling.analyze.Main</mainClass>
+                            <mainClass>eu.stamp.coupling.analyze.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -73,7 +73,7 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                         <manifestEntries>
-                            <Main-Class>eu.stamp.botsing.coupling.analyze.Main</Main-Class>
+                            <Main-Class>eu.stamp.coupling.analyze.Main</Main-Class>
                             <Premain-Class>org.evosuite.runtime.agent.InstrumentingAgent</Premain-Class>
                             <Agent-Class>org.evosuite.runtime.agent.InstrumentingAgent</Agent-Class>
                             <Can-Redefine-Classes>true</Can-Redefine-Classes>

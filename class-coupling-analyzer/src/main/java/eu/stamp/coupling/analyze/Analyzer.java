@@ -1,8 +1,8 @@
-package eu.stamp.botsing.coupling.analyze;
+package eu.stamp.coupling.analyze;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.analysis.classpath.CPAnalyzer;
-import eu.stamp.botsing.coupling.analyze.calls.ClassPair;
+import eu.stamp.coupling.analyze.calls.ClassPair;
 import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.graphs.GraphPool;

@@ -1,6 +1,6 @@
-package eu.stamp.botsing.coupling.analyze.report;
+package eu.stamp.coupling.analyze.report;
 
-import eu.stamp.botsing.coupling.analyze.calls.ClassPair;
+import eu.stamp.coupling.analyze.calls.ClassPair;
 
 import java.io.File;
 import java.io.FileWriter;
