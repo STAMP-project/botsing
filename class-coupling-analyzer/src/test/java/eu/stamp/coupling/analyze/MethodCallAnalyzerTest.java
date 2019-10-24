@@ -38,7 +38,7 @@ public class MethodCallAnalyzerTest {
 
         ClassPair pair1 = finalResult.get(0);
         ClassPair pair2 = finalResult.get(1);
-        if(pair1.getClass1()== "eu.stamp.botsing.coupling.Caller" || pair1.getClass2() == "eu.stamp.botsing.coupling.Caller"){
+        if(pair1.getClass1().equals("eu.stamp.botsing.coupling.Caller")  || pair1.getClass2().equals("eu.stamp.botsing.coupling.Caller")){
             Assert.assertEquals(6, pair1.getNumberOfBranchesInClass1()+pair1.getNumberOfBranchesInClass2());
             Assert.assertEquals(2, pair2.getNumberOfBranchesInClass1()+pair2.getNumberOfBranchesInClass2());
         }else {
