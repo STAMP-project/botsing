@@ -101,6 +101,9 @@ public class ClassPair implements Comparable<ClassPair> {
     }
 
     public void addTonumberOfBranches(String className, int value){
+        if(value <= 0 ){
+            return;
+        }
         if(className.equals(class1)){
             numberOfBranchesInClass1+=value;
         }else if (className.equals(class2)){

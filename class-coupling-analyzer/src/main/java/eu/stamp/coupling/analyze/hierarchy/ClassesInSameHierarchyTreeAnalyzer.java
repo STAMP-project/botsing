@@ -71,8 +71,6 @@ public class ClassesInSameHierarchyTreeAnalyzer extends Analyzer {
         createFinalList();
 
         LOG.info("Sorting the final list ...");
-//        Collections.sort(finalList);
-//        Collections.reverse(finalList);
         List<ClassPair> paretoFront = collectParetoFront();
         finalList.clear();
         finalList.addAll(paretoFront);

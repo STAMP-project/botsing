@@ -45,9 +45,6 @@ public abstract class Analyzer {
     public abstract void execute(String targetClass);
 
 
-    public void setTargetClass(String targetClass) {
-        this.targetClass = targetClass;
-    }
 
     protected List<String> detectInterestingClasses() {
         List<String> interestingClasses = new ArrayList<String>();
@@ -84,10 +81,6 @@ public abstract class Analyzer {
             try {
                 // instrument clazz
                 Class<?> cls = Class.forName(clazz, false, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                // remove it from interesting classes if it is a test.
-//                if(CoverageAnalysis.isTest(cls)) {
-//                    classesIterator.remove();
-//                }
 
             } catch(ClassNotFoundException | NoClassDefFoundError e) {
                 //                e.printStackTrace();

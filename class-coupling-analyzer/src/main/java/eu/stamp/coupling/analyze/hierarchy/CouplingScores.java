@@ -2,8 +2,8 @@ package eu.stamp.coupling.analyze.hierarchy;
 
 public class CouplingScores {
 
-    public int superClassScore = 0;
-    public int subClassScore = 0;
+    public int superClassScore;
+    public int subClassScore;
 
     public CouplingScores(int superClassScore, int subClassScore){
         this.subClassScore = subClassScore;
