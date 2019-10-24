@@ -34,8 +34,8 @@ public class MethodCallAnalyzerTest {
         methodCallAnalyzer.execute();
         List<ClassPair> finalResult = methodCallAnalyzer.getFinalList();
 
-        Assert.assertEquals(1, finalResult.size());
-        ClassPair pair = finalResult.get(0);
+        Assert.assertEquals(2, finalResult.size());
+        ClassPair pair = finalResult.get(1);
         Assert.assertEquals(2, pair.getTotalScore());
         Assert.assertEquals(6, pair.getNumberOfBranchesInClass1()+pair.getNumberOfBranchesInClass2());
     }
@@ -52,8 +52,8 @@ public class MethodCallAnalyzerTest {
 
         methodCallAnalyzer.execute("eu.stamp.botsing.coupling.Callee");
         List<ClassPair> finalResult = methodCallAnalyzer.getFinalList();
-        Assert.assertEquals(1, finalResult.size());
-        ClassPair pair = finalResult.get(0);
+        Assert.assertEquals(2, finalResult.size());
+        ClassPair pair = finalResult.get(1);
         Assert.assertEquals(2, pair.getTotalScore());
         Assert.assertEquals(6, pair.getNumberOfBranchesInClass1()+pair.getNumberOfBranchesInClass2());
 
