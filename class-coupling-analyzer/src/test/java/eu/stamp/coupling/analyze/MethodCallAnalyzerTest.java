@@ -45,7 +45,7 @@ public class MethodCallAnalyzerTest {
         Analyzer methodCallAnalyzer = new MethodCallAnalyzer(cps,"eu.stamp.botsing.coupling");
         try{
             methodCallAnalyzer.execute("IllegalClass");
-            Assert.fail("IllegalArgumentException is exoected!");
+            Assert.fail("IllegalArgumentException is expected!");
         }catch (IllegalArgumentException e){
             Assert.assertTrue(e.getMessage().contains("Target class is not valid"));
         }
