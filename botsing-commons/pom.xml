@@ -27,6 +27,12 @@
             <artifactId>evosuite-client-botsing</artifactId>
             <version>${evosuite-client.version}</version>
         </dependency>
+        <dependency>
+            <groupId>eu.stamp-project</groupId>
+            <artifactId>botsing-examples</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
