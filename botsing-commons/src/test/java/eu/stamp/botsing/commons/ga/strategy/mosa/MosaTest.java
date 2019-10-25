@@ -19,7 +19,7 @@ public class MosaTest {
 
 
     @Test
-    public void testFullFillAllGoals() throws ConstructionFailedException {
+    public void testFullFillAllGoals() {
 
         // Mock chromosome factory
         ChromosomeFactory factory = Mockito.mock(ChromosomeFactory.class);
@@ -77,7 +77,7 @@ public class MosaTest {
     }
 
     @Test
-    public void testFullFillOneGoal() throws ConstructionFailedException {
+    public void testFullFillOneGoal() {
         // Mock chromosome factory
         ChromosomeFactory factory = Mockito.mock(ChromosomeFactory.class);
         TestChromosome ch1 = Mockito.mock(TestChromosome.class,  Mockito.RETURNS_DEEP_STUBS);
