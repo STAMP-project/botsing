@@ -1,16 +1,13 @@
 package eu.stamp.botsing.commons.analysis.classpath;
 
-import org.evosuite.classpath.ClassPathHacker;
 import org.evosuite.classpath.ClassPathHandler;
 import org.evosuite.setup.InheritanceTree;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CPAnalyzerTest {
