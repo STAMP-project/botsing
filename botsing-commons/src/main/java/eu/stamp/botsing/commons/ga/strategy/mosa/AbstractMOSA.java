@@ -126,14 +126,10 @@ public class AbstractMOSA<T extends Chromosome> extends org.evosuite.ga.metaheur
     }
 
     @Override
-    protected void evolve() {
-
-    }
+    protected void evolve() {}
 
     @Override
-    public void generateSolution() {
-
-    }
+    public void generateSolution() {}
 
 
 
