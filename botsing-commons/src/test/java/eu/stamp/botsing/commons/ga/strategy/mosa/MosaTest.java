@@ -3,7 +3,6 @@ package eu.stamp.botsing.commons.ga.strategy.mosa;
 import eu.stamp.botsing.commons.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import org.evosuite.ga.ChromosomeFactory;
-import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
