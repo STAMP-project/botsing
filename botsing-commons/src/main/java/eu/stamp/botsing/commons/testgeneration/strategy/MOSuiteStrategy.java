@@ -55,7 +55,7 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
         // Add stopping conditions
         StoppingCondition stoppingCondition = getStoppingCondition();
 
-            stoppingCondition.setLimit(Properties.SEARCH_BUDGET);
+        stoppingCondition.setLimit(Properties.SEARCH_BUDGET);
 
         if (Properties.STOP_ZERO) {
             ga.addStoppingCondition(new ZeroFitnessStoppingCondition());
