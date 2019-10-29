@@ -5,7 +5,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.evosuite.TestGenerationContext;
-import org.evosuite.classpath.ClassPathHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -81,8 +80,6 @@ public class SetupUtilityTest {
 
         SetupUtility.setupProjectClasspath(cps);
 
-        assert (ClassPathHandler.getInstance().getEvoSuiteClassPath().contains("botsing/botsing-examples/target/classes"));
-
         cps[0]="";
 
         SetupUtility.setupProjectClasspath(cps);
@@ -109,8 +106,6 @@ public class SetupUtilityTest {
         SetupUtility.analyzeClassDependencies(targetClass);
 
         Assert.assertTrue(TestGenerationContext.getInstance().getClassLoaderForSUT().getLoadedClasses().contains(targetClass));
-
-
 
     }
 }
