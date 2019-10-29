@@ -100,15 +100,9 @@ public class StackTrace {
             LOG.info("Target Class is set to: " + targetClass);
 
             // If the target exception is ArrayIndexOutOfBoundsException
-            if (exceptionType.equals(ArrayIndexOutOfBoundsException.class.getName())) {
+            if (exceptionType.equals(ArrayIndexOutOfBoundsException.class.getName()) || exceptionType.equals(StringIndexOutOfBoundsException.class.getName())) {
                 // Set the line number where the array access call is located at.
-                Properties.TARGET_ARRAY_LINE = frames.get(0).getLineNumber();
-                // Set the fitness function for this crash to be the customized one.
-                CrashProperties.fitnessFunctions[CrashProperties.getInstance().getCrashesSize() - 1] =
-                        CrashProperties.FitnessFunction.IntegrationIndexedAccess;
-            } else if (exceptionType.equals(StringIndexOutOfBoundsException.class.getName())) {
-                // Tell EvoSuite to instrument indexed string accesses.
-                Properties.INSTRUMENT_INDEXED_STRING_ACCESS = true;
+                Properties.TARGET_INDEXED_ACCESS_LINE = frames.get(0).getLineNumber();
                 // Set the fitness function for this crash to be the customized one.
                 CrashProperties.fitnessFunctions[CrashProperties.getInstance().getCrashesSize() - 1] =
                         CrashProperties.FitnessFunction.IntegrationIndexedAccess;

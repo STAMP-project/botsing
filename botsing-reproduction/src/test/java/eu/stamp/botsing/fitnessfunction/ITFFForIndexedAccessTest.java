@@ -53,7 +53,9 @@ public class ITFFForIndexedAccessTest extends IntegrationTestingFFTest {
 
         ExecutionTraceImpl executionTrace = new ExecutionTraceImpl();
         executionTrace.indexAndLengthMap = new HashMap<>();
-        executionTrace.indexAndLengthMap.put(0, new int[]{index, arrayLength});
+        executionTrace.indexAndLengthMap.put("eu.stamp.ClassB", new HashMap<>());
+        executionTrace.indexAndLengthMap.get("eu.stamp.ClassB").put("method1", new HashMap<>());
+        executionTrace.indexAndLengthMap.get("eu.stamp.ClassB").get("method1").put(0, new int[]{index, arrayLength});
 
         doReturn(executionTrace).when(executionResult).getTrace();
 
