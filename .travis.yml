@@ -9,7 +9,7 @@ before_script:
   - mvn clean
 
 before_install:
-  - mvn install:install-file -Dfile=botsing-reproduction/evosuite-client-botsing-1.0.7.jar -DgroupId=org.evosuite -DartifactId=evosuite-client-botsing -Dversion=1.0.7 -Dpackaging=jar
+  - mvn install:install-file -Dfile=botsing-reproduction/evosuite-client-botsing-1.1.0.jar -DgroupId=org.evosuite -DartifactId=evosuite-client-botsing -Dversion=1.1.0 -Dpackaging=jar
 
 after_success:
   - mvn clean test jacoco:report coveralls:report
