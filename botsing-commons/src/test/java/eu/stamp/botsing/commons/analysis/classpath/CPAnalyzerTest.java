@@ -12,7 +12,7 @@ import java.util.List;
 
 public class CPAnalyzerTest {
 
-    List<String> cps = new ArrayList();;
+    List<String> cps = new ArrayList();
 
     @Before
     public void before(){
