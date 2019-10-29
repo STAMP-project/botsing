@@ -23,15 +23,21 @@ public class BranchPairPool {
         return instance;
     }
 
+    private void addPair(BranchPair branchPair){
+        if (pool.contains(branchPair)){
+            return;
+        }
+        pool.add(branchPair);
+    }
 
     public void addPair(Branch firstBranch, Branch secondBranch,  BytecodeInstruction callSite){
         BranchPair branchPair = new BranchPair(firstBranch,secondBranch, callSite);
-        pool.add(branchPair);
+        addPair(branchPair);
     }
 
     public void addPair(Branch firstBranch, Branch secondBranch,  BytecodeInstruction callSite, boolean expression){
         BranchPair branchPair = new BranchPair(firstBranch,secondBranch, callSite,expression);
-        pool.add(branchPair);
+        addPair(branchPair);
     }
 
     public Set<String> getSetOfMethodsWithCallSite(){
