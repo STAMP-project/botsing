@@ -50,14 +50,14 @@ public class Botsing {
 
         // Parse commands according to the defined options
         Options options = CommandLineParameters.getCommandLineOptions();
-        CommandLine commands = parseCommands(args, options);
+        CommandLine commands = parseCommands(args, options, false);
 
         // If help option is provided
         if (commands.hasOption(HELP_OPT)) {
-            printHelpMessage(options);
+            printHelpMessage(options, false);
         } else if(!(commands.hasOption(PROJECT_CP_OPT) && commands.hasOption(CRASH_LOG_OPT) && commands.hasOption(TARGET_FRAME_OPT))) { // Check the required options are there
             LOG.error("A mandatory option -{} -{} -{} is missing!", PROJECT_CP_OPT, CRASH_LOG_OPT, TARGET_FRAME_OPT);
-            printHelpMessage(options);
+            printHelpMessage(options, false);
         } else {// Otherwise, proceed to crash reproduction
 
             // Update EvoSuite's properties
