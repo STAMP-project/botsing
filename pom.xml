@@ -262,11 +262,11 @@
                         </goals>
                     </execution>
                 </executions>
-                <!--<configuration>
+                <configuration>
                     <excludes>
-                        <exclude>**/eu/stamp_project/dspot/amplifier/ObjectGenerator.*</exclude>
+                        <exclude>**/eu/stamp/cling/coverage/defuse/*</exclude>
                     </excludes>
-                </configuration>-->
+                </configuration>
             </plugin>
             <!-- Report code coverage trough coveralls -->
             <plugin>
