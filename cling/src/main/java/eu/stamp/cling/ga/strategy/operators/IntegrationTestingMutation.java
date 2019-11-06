@@ -40,10 +40,4 @@ public class IntegrationTestingMutation<T extends Chromosome> extends Mutation<T
         }
     }
 
-//    @Override
-//    public void mutateOffspring(Chromosome offspring) {
-//        offspring.mutate();
-//        offspring.setChanged(true);
-//        offspring.updateAge(offspring.getAge() + 1);
-//    }
 }
