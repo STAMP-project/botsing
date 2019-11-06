@@ -2,6 +2,7 @@ package eu.stamp.botsing.commons.instrumentation;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.Properties;
+import org.evosuite.setup.DependencyAnalysis;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.TestCaseExecutor;
@@ -15,19 +16,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ClassInstrumentation {
     private static final Logger LOG = LoggerFactory.getLogger(ClassInstrumentation.class);
-    public List<Class> instrumentClasses(List<String> interestingClasses){
+    public List<Class> instrumentClasses(List<String> interestingClasses, String testingClassName){
         List<Class> instrumentedClasses = new ArrayList<>();
         List<String> instrumentedClassesName = new ArrayList<>();
-        String targetClassName = interestingClasses.get(interestingClasses.size()-1);
+        List<String> nonDuplicatedClasses = interestingClasses.stream().distinct().collect(Collectors.toList());
 
-        for(String clazz: interestingClasses){
+        try{
+                for(String clazz : nonDuplicatedClasses){
+                    if (clazz.equals(testingClassName)){
+                        continue;
+                    }
+                    Properties.TARGET_CLASS=clazz;
+                    DependencyAnalysis.addNewTargetClass(clazz);
+                }
+
+
+            Properties.TARGET_CLASS=testingClassName;
+            instrumentClassByTestExecution(testingClassName);
+        }catch (Exception e){
+            LOG.warn("Could not instrument the target class!");
+        }
+
+
+        for(String clazz: nonDuplicatedClasses ){
             if(instrumentedClassesName.contains(clazz)){
                 continue;
             }
@@ -35,9 +51,9 @@ public class ClassInstrumentation {
             Class<?> cls;
             try {
                 Properties.TARGET_CLASS=clazz;
-                cls = Class.forName(clazz,false, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-                if(!clazz.contains(targetClassName)){
-                    instrumentClassByTestExecution(Properties.TARGET_CLASS);
+                cls = Class.forName(clazz,true, BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+                if(clazz != testingClassName){
+                    instrumentClassByTestExecution(clazz);
                 }
                 instrumentedClasses.add(cls);
                 instrumentedClassesName.add(clazz);

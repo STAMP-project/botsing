@@ -1,6 +1,7 @@
 package eu.stamp.botsing.testgeneration.strategy;
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.commons.testgeneration.strategy.AbstractTestGenerationUtility;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
@@ -14,7 +15,7 @@ import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.testcase.TestChromosome;
 
 
-public class TestGenerationUtility {
+public class TestGenerationUtility extends AbstractTestGenerationUtility {
 
 
     public GeneticAlgorithm getGA(){
@@ -42,7 +43,7 @@ public class TestGenerationUtility {
     }
 
 
-    private ChromosomeFactory<TestChromosome> getChromosomeFactory() {
+    protected ChromosomeFactory<TestChromosome> getChromosomeFactory() {
         return new StackTraceChromosomeFactory(CrashProperties.getInstance().getStackTrace(0), new GuidedSearchUtility());
     }
 

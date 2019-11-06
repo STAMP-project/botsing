@@ -1,7 +1,7 @@
 package eu.stamp.botsing.model.generation.callsequence;
 
 
-import eu.stamp.botsing.model.generation.analysis.classpath.CPAnalysor;
+import eu.stamp.botsing.commons.analysis.classpath.CPAnalyzer;
 import eu.stamp.botsing.model.generation.analysis.sourcecode.StaticAnalyser;
 import eu.stamp.botsing.model.generation.analysis.testcases.DynamicAnalyser;
 import eu.stamp.botsing.model.generation.testusage.TestUsagePoolManager;
@@ -73,13 +73,13 @@ public class CallSequenceCollector {
                 e.printStackTrace();
             }
         }
-        CPAnalysor.analyzeClass(cpList);
+        CPAnalyzer.analyzeClass(cpList);
     }
 
 
     private List<String> detectInterestingClasses(String targetClassIndicator, Boolean isPrefix) {
         List<String> interestingClasses = new ArrayList<String>();
-        InheritanceTree projectTree = CPAnalysor.getInheritanceTree();
+        InheritanceTree projectTree = CPAnalyzer.getInheritanceTree();
         if(isPrefix) {
             for(String clazz : projectTree.getAllClasses()) {
                 if(clazz.startsWith(targetClassIndicator)) {
