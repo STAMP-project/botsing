@@ -49,6 +49,8 @@ Thumbs.db
 # local test directory
 **/test/**/botsing/local/
 **/test/**/botsing/model/generation/local/
+**/test/**/cling/local/
+**/test/**/coupling/analyze/local/
 
 
 # Generated website

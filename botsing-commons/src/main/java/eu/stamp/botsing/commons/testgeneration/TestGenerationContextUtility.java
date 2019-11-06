@@ -11,6 +11,7 @@ import java.util.List;
 
 public class TestGenerationContextUtility {
     private static final Logger LOG = LoggerFactory.getLogger(TestGenerationContextUtility.class);
+
     public static ClassLoader getTestGenerationContextClassLoader(boolean isIntegration){
         if(isIntegration){
             return BotsingTestGenerationContext.getInstance().getClassLoaderForSUT();
@@ -29,10 +30,9 @@ public class TestGenerationContextUtility {
                         String bytecodeMethodName = ins.getMethodName();
                         return bytecodeMethodName;
                     }
-                } else {
-                    LOG.error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this line number " + lineNumber+" was null!");
                 }
             }
+                LOG.error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this line number " + lineNumber+" does not found!");
         } else {
             LOG.error("CrashCoverageTestfitness.derivingMethodFromBytecode: instruction for this class " + className +" was null!");
         }

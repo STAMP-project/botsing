@@ -39,7 +39,15 @@ public class GuidedMutation<T extends Chromosome> extends Mutation<T> {
     }
 
     protected void doRandomMutation(Chromosome offspring) {
-        offspring.mutate();
+        boolean mutated = false;
+        while (!mutated){
+            try{
+                offspring.mutate();
+                mutated=true;
+            }catch (Exception e){
+                LOG.debug("Mutation was unsuccessful!");
+            }
+        }
     }
 
     protected void insertRandomStatement(Chromosome chromosome) {

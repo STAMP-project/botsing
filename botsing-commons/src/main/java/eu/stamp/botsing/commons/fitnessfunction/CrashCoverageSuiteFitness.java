@@ -63,4 +63,9 @@ public class CrashCoverageSuiteFitness extends TestSuiteFitnessFunction {
         totalFitnessValue = fitnessValue;
         return (coveredGoals/totalGoals);
     }
+
+    @Override
+    public List<ExecutionResult> runTestSuite(AbstractTestSuiteChromosome<? extends ExecutableChromosome> suite){
+        return super.runTestSuite(suite);
+    }
 }

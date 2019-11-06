@@ -11,6 +11,7 @@ import java.util.*;
 import org.evosuite.ga.comparators.OnlyCrowdingComparator;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
+import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testsuite.TestSuiteChromosome;
@@ -97,10 +98,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         }
 
         try{
-//            LOG.info(""+this.rankingFunction.getSubfront(0).get(0).getFitnessValues());
-            for(FitnessFunction<T> g: this.archive.keySet()){
-                LOG.info(""+g);
-            }
+
 
 
             Map<FitnessFunction<?>, Double> front0= this.rankingFunction.getSubfront(0).get(0).getFitnessValues();
@@ -141,11 +139,19 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 
         while (!this.isFinished() && this.getNumberOfCoveredGoals()<this.fitnessFunctions.size() && ! fitnessCollector.isCriticalGoalsAreCovered(this.uncoveredGoals)) {
+            LOG.info("Number of covered goals are {}/{}",this.getNumberOfCoveredGoals(),this.fitnessFunctions.size());
             this.evolve();
             LOG.info("generation #{} is created.",this.currentIteration);
-            LOG.info("Number of covered goals are {}/{}",this.getNumberOfCoveredGoals(),this.fitnessFunctions.size());
-
             this.notifyIteration();
+        }
+
+        if(this.isFinished()){
+            for(StoppingCondition stoppingCondition : this.stoppingConditions){
+                if(stoppingCondition.isFinished()){
+                    LOG.info("Stopping reason: {}", stoppingCondition.toString());
+                }
+
+            }
         }
     }
 
@@ -204,6 +210,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         } else {
             archive.put(covered, solution);
             this.uncoveredGoals.remove(covered);
+            LOG.debug("New covered goal: {}",covered);
         }
     }
 

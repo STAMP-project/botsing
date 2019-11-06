@@ -10,7 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class InstrumentingClassLoader extends ClassLoader {
     private static final Logger LOG = LoggerFactory.getLogger(InstrumentingClassLoader.class);
@@ -104,5 +106,10 @@ public class InstrumentingClassLoader extends ClassLoader {
                 LOG.debug("Defined package (3): "+getPackage(packageName)+", "+getPackage(packageName).hashCode());
             }
         }
+    }
+
+    public Set<String> getLoadedClasses() {
+        HashSet<String> loadedClasses = new HashSet<String>(this.visitedClasses.keySet());
+        return loadedClasses;
     }
 }

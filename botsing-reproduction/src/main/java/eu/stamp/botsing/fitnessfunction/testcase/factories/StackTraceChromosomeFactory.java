@@ -206,7 +206,7 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
         BytecodeInstruction publicCallInStackTrace =  utility.collectPublicCalls(targetTrace);
         Class targetClass = null;
         try {
-            targetClass = Class.forName(publicCallInStackTrace.getClassName(),false,TestGenerationContextUtility.getTestGenerationContextClassLoader(CrashProperties.integrationTesting));
+            targetClass = Class.forName(publicCallInStackTrace.getClassName(),false,TestGenerationContextUtility.getTestGenerationContextClassLoader(false));
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

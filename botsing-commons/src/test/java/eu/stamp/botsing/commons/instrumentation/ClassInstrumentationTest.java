@@ -19,7 +19,7 @@ public class ClassInstrumentationTest {
         interestingClasses.add(className);
         interestingClasses.add(className);
 
-        List<Class> instrumentedClasses = instrumentation.instrumentClasses(interestingClasses);
+        List<Class> instrumentedClasses = instrumentation.instrumentClasses(interestingClasses,className);
         assert (instrumentedClasses.size() == 1);
         assertEquals(instrumentedClasses.get(0),Integer.class);
     }
@@ -28,7 +28,7 @@ public class ClassInstrumentationTest {
     public void testUnknownClass(){
         interestingClasses.clear();
         interestingClasses.add("unknown.class.Unknown");
-        List<Class> instrumentedClasses = instrumentation.instrumentClasses(interestingClasses);
+        List<Class> instrumentedClasses = instrumentation.instrumentClasses(interestingClasses,"unknown.class.Unknown");
         assert (instrumentedClasses.size() == 0);
     }
 
@@ -41,7 +41,7 @@ public class ClassInstrumentationTest {
         className = String.class.getName();
         interestingClasses.add(className);
 
-        List<Class> instrumentedClasses = instrumentation.instrumentClasses(interestingClasses);
+        List<Class> instrumentedClasses = instrumentation.instrumentClasses(interestingClasses,className);
         assert (instrumentedClasses.size() == 2);
         assertEquals(instrumentedClasses.get(0),Integer.class);
         assertEquals(instrumentedClasses.get(1),String.class);
@@ -53,6 +53,6 @@ public class ClassInstrumentationTest {
         interestingClasses.clear();
         interestingClasses.add(Callables.class.getName());
         ClassPathHandler.getInstance().changeTargetCPtoTheSameAsEvoSuite();
-        List<Class> instrumentedClasses = instrumentation.instrumentClasses(interestingClasses);
+        List<Class> instrumentedClasses = instrumentation.instrumentClasses(interestingClasses,Callables.class.getName());
     }
 }

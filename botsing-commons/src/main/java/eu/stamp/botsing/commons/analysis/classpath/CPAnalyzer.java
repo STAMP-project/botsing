@@ -1,4 +1,4 @@
-package eu.stamp.botsing.model.generation.analysis.classpath;
+package eu.stamp.botsing.commons.analysis.classpath;
 
 
 import org.evosuite.setup.InheritanceTree;
@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 
-public class CPAnalysor {
-    private static final Logger LOG = LoggerFactory.getLogger(CPAnalysor.class);
+public class CPAnalyzer {
+    private static final Logger LOG = LoggerFactory.getLogger(CPAnalyzer.class);
 
     private static InheritanceTree inheritanceTree = null;
 
