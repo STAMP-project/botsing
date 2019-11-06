@@ -5,12 +5,12 @@ import org.evosuite.testcase.execution.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import java.util.Set;
 
-public class ITFFForArrayIndex extends IntegrationTestingFF {
-    private static final Logger logger = LoggerFactory.getLogger(ITFFForArrayIndex.class);
+public class ITFFForIndexedAccess extends IntegrationTestingFF {
+    private static final Logger logger = LoggerFactory.getLogger(ITFFForIndexedAccess.class);
 
-    public ITFFForArrayIndex(StackTrace crash) {
+    public ITFFForIndexedAccess(StackTrace crash) {
         super(crash);
     }
 
@@ -19,16 +19,17 @@ public class ITFFForArrayIndex extends IntegrationTestingFF {
         if (super.exceptionCoverage(executionResult) == 0) {
             return 0;
         }
-        Map<Integer, int[]> arrayAccessInfo = executionResult.getTrace().getArrayAccessInfo();
-        if (arrayAccessInfo.isEmpty()) {
-            return 1;
+        double exceptionCoverage = 1;
+        Set<int[]> indexedAccessInfo = executionResult.getTrace().getIndexedAccessInfo();
+        if (indexedAccessInfo.isEmpty()) {
+            return exceptionCoverage;
         }
-        double exceptionCoverage = 0;
-        for (Map.Entry<Integer, int[]> entry : arrayAccessInfo.entrySet()) {
-            int[] indexAndLength = entry.getValue();
-            exceptionCoverage += distance(indexAndLength[0], indexAndLength[1]);
+
+        for (int[] pair : indexedAccessInfo) {
+            double distance = distance(pair[0], pair[1]);
+            exceptionCoverage = Math.min(distance, exceptionCoverage);
         }
-        return exceptionCoverage / arrayAccessInfo.size();
+        return exceptionCoverage;
     }
 
     /**

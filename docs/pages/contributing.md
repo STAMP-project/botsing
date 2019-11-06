@@ -12,7 +12,7 @@ Currently, Botsing using a customized version of the `evoSuite-client`. Hence, t
 
 1. Installing the customized version of EvoSuite-client:
 ```Bash
-mvn install:install-file -Dfile=botsing-reproduction/evosuite-client-botsing-1.0.7.jar -DgroupId=org.evosuite -DartifactId=evosuite-client-botsing -Dversion=1.0.7 -Dpackaging=jar
+mvn install:install-file -Dfile=botsing-reproduction/evosuite-client-botsing-1.1.0.jar -DgroupId=org.evosuite -DartifactId=evosuite-client-botsing -Dversion=1.1.0 -Dpackaging=jar
 ```
 
 2. Build the Botsing project:

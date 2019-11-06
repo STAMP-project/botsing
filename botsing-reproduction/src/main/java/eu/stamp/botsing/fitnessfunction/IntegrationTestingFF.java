@@ -66,7 +66,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
             do {
                 crashingClass = resultException.getStackTrace()[++frame].getClassName();
             }
-            while (frame < resultException.getStackTrace().length && (crashingClass.startsWith("java") || crashingClass.startsWith("javax")));
+            while (frame < resultException.getStackTrace().length && (crashingClass.startsWith("java.") || crashingClass.startsWith("javax.")));
             if (frame == resultException.getStackTrace().length) {
                 continue;
             }

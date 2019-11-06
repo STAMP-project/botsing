@@ -20,9 +20,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 @RunWith(Parameterized.class)
-public class ITFFForArrayIndexTest extends IntegrationTestingFFTest {
+public class ITFFForIndexedAccessTest extends IntegrationTestingFFTest {
 
-    @Parameterized.Parameters(name = "index:{0}, arrayLength:{1}, expectedDistance:{2}")
+    @Parameterized.Parameters(name = "index:{0}, length:{1}, expectedDistance:{2}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {-1, 1, 0},
@@ -52,8 +52,10 @@ public class ITFFForArrayIndexTest extends IntegrationTestingFFTest {
         doReturn(exceptionLocators).when(executionResult).getPositionsWhereExceptionsWereThrown();
 
         ExecutionTraceImpl executionTrace = new ExecutionTraceImpl();
-        executionTrace.arrayIndexAndLength = new HashMap<>();
-        executionTrace.arrayIndexAndLength.put(0, new int[]{index, arrayLength});
+        executionTrace.indexAndLengthMap = new HashMap<>();
+        executionTrace.indexAndLengthMap.put("eu.stamp.ClassB", new HashMap<>());
+        executionTrace.indexAndLengthMap.get("eu.stamp.ClassB").put("method1", new HashMap<>());
+        executionTrace.indexAndLengthMap.get("eu.stamp.ClassB").get("method1").put(0, new int[]{index, arrayLength});
 
         doReturn(executionTrace).when(executionResult).getTrace();
 
@@ -73,7 +75,7 @@ public class ITFFForArrayIndexTest extends IntegrationTestingFFTest {
         Mockito.doReturn(obj).when(target).readFromFile(anyString());
         target.setup("", 2);
 
-        ITFFForArrayIndex itffForArrayIndex = new ITFFForArrayIndex(target);
-        Assert.assertEquals(expectedDistance, itffForArrayIndex.exceptionCoverage(executionResult), 0.00000001);
+        ITFFForIndexedAccess itffForIndexedAccess = new ITFFForIndexedAccess(target);
+        Assert.assertEquals(expectedDistance, itffForIndexedAccess.exceptionCoverage(executionResult), 0.00000001);
     }
 }
