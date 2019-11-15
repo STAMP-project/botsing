@@ -1,4 +1,4 @@
-package eu.stamp.botsing.ga.strategy;
+package eu.stamp.botsing.ga.strategy.metaheuristics;
 
 /*-
  * #%L
@@ -40,9 +40,9 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorithm<T> {
+public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GuidedGeneticAlgorithm.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GuidedSingleObjectiveGA.class);
 
     protected ReplacementFunction replacementFunction = new FitnessReplacementFunction();
 
@@ -52,7 +52,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
 
     private int eliteSize;
 
-    public GuidedGeneticAlgorithm(ChromosomeFactory<T> factory) {
+    public GuidedSingleObjectiveGA(ChromosomeFactory<T> factory) {
         super(factory);
         this.stoppingConditions.clear();
         this.crossoverFunction = new GuidedSinglePointCrossover();

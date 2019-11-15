@@ -4,7 +4,7 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.testgeneration.strategy.AbstractTestGenerationUtility;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
-import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
+import eu.stamp.botsing.ga.strategy.metaheuristics.GuidedSingleObjectiveGA;
 import eu.stamp.botsing.ga.strategy.mosa.DynaMOSA;
 import eu.stamp.botsing.commons.ga.strategy.mosa.MOSA;
 import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
@@ -24,7 +24,7 @@ public class TestGenerationUtility extends AbstractTestGenerationUtility {
                 if(CrashProperties.getInstance().getCrashesSize() > 1){
                     throw new IllegalArgumentException("The number of crashes should be one in single objective GGA");
                 }
-                return new GuidedGeneticAlgorithm(getChromosomeFactory());
+                return new GuidedSingleObjectiveGA(getChromosomeFactory());
             case Guided_MOSA:
                 // Create chromosome factory
                 ChromosomeFactory<TestChromosome> chromosomeFactory = getChromosomeFactory();
@@ -38,7 +38,7 @@ public class TestGenerationUtility extends AbstractTestGenerationUtility {
             case DynaMOSA:
                 return new DynaMOSA(getChromosomeFactory(),new GuidedSinglePointCrossover(),new GuidedMutation());
             default:
-                return new GuidedGeneticAlgorithm(getChromosomeFactory());
+                return new GuidedSingleObjectiveGA(getChromosomeFactory());
         }
     }
 

@@ -1,6 +1,6 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
-import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
+import eu.stamp.botsing.ga.strategy.metaheuristics.GuidedSingleObjectiveGA;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ConstructionFailedException;
@@ -17,7 +17,7 @@ public class GuidedSinglePointCrossover extends CrossOverFunction {
 
     private static final long serialVersionUID = 2881387570766261795L;
 
-    private static final Logger LOG = LoggerFactory.getLogger(GuidedGeneticAlgorithm.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GuidedSingleObjectiveGA.class);
 
     private static GuidedSearchUtility utility =  new GuidedSearchUtility();
 
