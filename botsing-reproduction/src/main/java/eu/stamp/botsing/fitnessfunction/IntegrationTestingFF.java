@@ -71,7 +71,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
                 continue;
             }
 
-            int crashingLine = resultException.getStackTrace()[0].getLineNumber();
+            int crashingLine = resultException.getStackTrace()[frame].getLineNumber();
             if(targetCrash.getFrame(1).getLineNumber() != crashingLine || !targetCrash.getFrame(1).getClassName().equals(crashingClass)){
                 continue;
             }

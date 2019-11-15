@@ -59,7 +59,7 @@ public class BotsingRawControlFlowGraph extends RawControlFlowGraph {
             }
         }
         if(!alreadyRedirected){
-            throw new IllegalArgumentException("method "+target.getMethodName()+" does not have any exit point");
+            LOG.warn("method "+target.getMethodName()+" does not have any exit point");
         }
         this.addEdge(src, target, false);
     }
