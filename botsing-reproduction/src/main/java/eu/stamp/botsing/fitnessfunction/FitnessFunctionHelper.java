@@ -75,6 +75,8 @@ public class FitnessFunctionHelper {
                 return new IntegrationTestingFF(crash);
             case IntegrationIndexedAccess:
                 return new ITFFForIndexedAccess(crash);
+            case TestLen:
+                return new TestLenFF();
             default:
                 return new WeightedSum(crash);
         }
