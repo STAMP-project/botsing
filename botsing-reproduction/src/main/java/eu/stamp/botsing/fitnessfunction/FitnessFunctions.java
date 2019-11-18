@@ -19,11 +19,9 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
     private static final Logger LOG = LoggerFactory.getLogger(FitnessFunctions.class);
 
     public List<TestFitnessFunction> getFitnessFunctionList(){
-        List<TestFitnessFunction> goalsList = new ArrayList<>();
-
         // crash coverage goals
         CrashReproductionGoalFactory goalFactory = new CrashReproductionGoalFactory();
-        goalsList.addAll(goalFactory.getCoverageGoals());
+        List<TestFitnessFunction> goalsList = new ArrayList<>(goalFactory.getCoverageGoals());
 
         if(CrashProperties.IODiversity){
             // input coverage goals
@@ -33,6 +31,10 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
             // output coverage goals
             OutputCoverageFactory outputFactory = new OutputCoverageFactory();
             goalsList.addAll(outputFactory.getCoverageGoals());
+        }
+
+        if (CrashProperties.branchingVariableDiversity) {
+            // todo add a new factory for goals
         }
 
         return goalsList;

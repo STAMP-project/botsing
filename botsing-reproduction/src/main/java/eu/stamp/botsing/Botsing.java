@@ -88,6 +88,11 @@ public class Botsing {
             if(commands.hasOption(IO_DIVERSITY)){
                 CrashProperties.IODiversity = true;
             }
+            // Add Branching Diversity as goals to MOSA
+            if (commands.hasOption(BRANCHING_VARIABLE_DIVERSITY)) {
+                Properties.INSTRUMENT_BRANCHING_VARIABLES = true;
+                CrashProperties.branchingVariableDiversity = true;
+            }
             // Use model seeding
             if(commands.hasOption(MODEL_PATH_OPT)){
                 setupModelSeedingRelatedProperties(commands);
