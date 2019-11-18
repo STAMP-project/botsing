@@ -235,9 +235,10 @@ public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgori
         }
 
         // Generate Initial Population
+        LOG.debug("Initializing the population.");
         generatePopulation(this.populationSize);
 
-        LOG.debug("Initializing the population.");
+
         // Calculate fitness functions
         calculateFitness();
         // Sort individuals
@@ -272,7 +273,7 @@ public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgori
     protected void calculateFitness(T chromosome){
         for (FitnessFunction<T> fitnessFunction : fitnessFunctions) {
             notifyEvaluation(chromosome);
-            double value = fitnessFunction.getFitness(chromosome);
+            fitnessFunction.getFitness(chromosome);
         }
     }
 

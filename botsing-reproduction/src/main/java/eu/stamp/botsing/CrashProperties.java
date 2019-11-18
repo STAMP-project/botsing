@@ -68,6 +68,7 @@ public class CrashProperties {
     public enum FitnessFunction {
         WeightedSum,
         SimpleSum,
+        TestLen,
         IntegrationIndexedAccess,
         IntegrationSingleObjective;
         FitnessFunction() {
@@ -77,6 +78,7 @@ public class CrashProperties {
     public enum SearchAlgorithm {
         Single_Objective_GGA,
         Guided_MOSA,
+        NSGA_II,
         DynaMOSA;
 
         SearchAlgorithm() {
