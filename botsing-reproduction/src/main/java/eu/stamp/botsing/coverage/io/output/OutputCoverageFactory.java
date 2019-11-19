@@ -1,6 +1,6 @@
 package eu.stamp.botsing.coverage.io.output;
 
-import eu.stamp.botsing.coverage.io.IOCoverageUtility;
+import eu.stamp.botsing.coverage.CoverageUtility;
 import org.apache.commons.lang3.ClassUtils;
 import org.evosuite.assertion.Inspector;
 import org.evosuite.assertion.InspectorManager;
@@ -16,13 +16,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.evosuite.coverage.io.IOCoverageConstants.*;
-import static org.evosuite.coverage.io.IOCoverageConstants.NUM_POSITIVE;
-import static org.evosuite.coverage.io.IOCoverageConstants.REF_NONNULL;
 
 public class OutputCoverageFactory extends org.evosuite.coverage.io.output.OutputCoverageFactory {
     private static final Logger LOG = LoggerFactory.getLogger(OutputCoverageFactory.class);
     @Resource
-    IOCoverageUtility utility = new IOCoverageUtility();
+    CoverageUtility utility = new CoverageUtility();
 
     @Override
     public List<OutputCoverageTestFitness> getCoverageGoals() {

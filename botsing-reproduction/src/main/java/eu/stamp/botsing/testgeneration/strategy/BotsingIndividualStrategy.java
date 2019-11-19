@@ -87,7 +87,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         ga.addListener(new ResourceController());
 
 
-        // Add fitnes function(s)
+        // Add fitness function(s)
         List<TestFitnessFunction> fitnessFunctions = fitnessFunctionCollector.getFitnessFunctionList();
 //        for(TestFitnessFunction ff : fitnessFunctions){
         ga.addFitnessFunctions(fitnessFunctions);

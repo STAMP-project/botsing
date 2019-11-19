@@ -1,6 +1,6 @@
 package eu.stamp.botsing.coverage.io.input;
 
-import eu.stamp.botsing.coverage.io.IOCoverageUtility;
+import eu.stamp.botsing.coverage.CoverageUtility;
 import org.apache.commons.lang3.ClassUtils;
 import org.evosuite.assertion.Inspector;
 import org.evosuite.assertion.InspectorManager;
@@ -15,49 +15,47 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.evosuite.coverage.io.IOCoverageConstants.*;
-import static org.evosuite.coverage.io.IOCoverageConstants.NUM_POSITIVE;
-import static org.evosuite.coverage.io.IOCoverageConstants.REF_NONNULL;
 
 public class InputCoverageFactory extends org.evosuite.coverage.io.input.InputCoverageFactory {
     private static final Logger LOG = LoggerFactory.getLogger(InputCoverageFactory.class);
+
     @Resource
-    protected IOCoverageUtility utility= new IOCoverageUtility();
+    protected CoverageUtility utility = new CoverageUtility();
+
     @Override
     public List<InputCoverageTestFitness> getCoverageGoals() {
         List<InputCoverageTestFitness> goals = new ArrayList<>();
         List<Method> stackTraceMethods = utility.getStackTraceMethods();
         List<Constructor> stackTraceConstructors = utility.getStackTraceConstructors();
 
-        for(Constructor constructor: stackTraceConstructors){
+        for (Constructor constructor : stackTraceConstructors) {
             String className = constructor.getDeclaringClass().getName();
-            String methodName = "<init>"+Type.getConstructorDescriptor(constructor);
-            Type[] argumentTypes = utility.getConstructorArgumentTypes(constructor);
+            String methodName = "<init>" + Type.getConstructorDescriptor(constructor);
             Class<?>[] argumentClasses = constructor.getParameterTypes();
-            LOG.info("Adding input goals for constructor " + className + "." + methodName);
-            detectGoals(className,methodName,argumentClasses,argumentTypes,goals);
+            LOG.info("Adding input goals for constructor {}.{}", className, methodName);
+            detectGoals(className, methodName, argumentClasses, goals);
         }
 
-
-        for(Method method: stackTraceMethods){
+        for (Method method : stackTraceMethods) {
             String className = method.getDeclaringClass().getName();
-            String methodName = method.getName()+Type.getMethodDescriptor(method);
-            Type[] argumentTypes = Type.getArgumentTypes(method);
+            String methodName = method.getName() + Type.getMethodDescriptor(method);
             Class<?>[] argumentClasses = method.getParameterTypes();
-            LOG.info("Adding input goals for method " + className + "." + methodName);
-            detectGoals(className,methodName,argumentClasses,argumentTypes,goals);
+            LOG.info("Adding input goals for method {}.{}", className, methodName);
+            detectGoals(className, methodName, argumentClasses, goals);
         }
 
         return goals;
     }
 
-    protected void detectGoals(String className, String methodName, Class<?>[] argumentClasses ,Type[] argumentTypes, List<InputCoverageTestFitness> goals){
-        for (int i=0; i<argumentTypes.length;i++){
-            Type argType = argumentTypes[i];
+    protected void detectGoals(String className, String methodName, Class<?>[] argumentClasses,
+                               List<InputCoverageTestFitness> goals) {
+        for (int i = 0; i < argumentClasses.length; i++) {
+            Type argType = Type.getType(argumentClasses[i]);
 
             int typeSort = argType.getSort();
-            if(typeSort == Type.OBJECT) {
+            if (typeSort == Type.OBJECT) {
                 Class<?> typeClass = argumentClasses[i];
-                if(ClassUtils.isPrimitiveWrapper(typeClass)) {
+                if (ClassUtils.isPrimitiveWrapper(typeClass)) {
                     typeSort = Type.getType(ClassUtils.wrapperToPrimitive(typeClass)).getSort();
                     goals.add(createGoal(className, methodName, i, argType, REF_NULL));
                 }
@@ -93,22 +91,20 @@ public class InputCoverageFactory extends org.evosuite.coverage.io.input.InputCo
                     if (argType.getClassName().equals("java.lang.String")) {
                         goals.add(createGoal(className, methodName, i, argType, STRING_EMPTY));
                         goals.add(createGoal(className, methodName, i, argType, STRING_NONEMPTY));
-                    } else if(List.class.isAssignableFrom(argumentClasses[i])) {
+                    } else if (List.class.isAssignableFrom(argumentClasses[i])) {
                         goals.add(createGoal(className, methodName, i, argType, LIST_EMPTY));
                         goals.add(createGoal(className, methodName, i, argType, LIST_NONEMPTY));
-
-                    } else if(Set.class.isAssignableFrom(argumentClasses[i])) {
+                    } else if (Set.class.isAssignableFrom(argumentClasses[i])) {
                         goals.add(createGoal(className, methodName, i, argType, SET_EMPTY));
                         goals.add(createGoal(className, methodName, i, argType, SET_NONEMPTY));
-
-                    } else if(Map.class.isAssignableFrom(argumentClasses[i])) {
+                    } else if (Map.class.isAssignableFrom(argumentClasses[i])) {
                         goals.add(createGoal(className, methodName, i, argType, MAP_EMPTY));
                         goals.add(createGoal(className, methodName, i, argType, MAP_NONEMPTY));
                         // TODO: Collection.class?
                     } else {
                         boolean observerGoalsAdded = false;
                         Class<?> paramClazz = argumentClasses[i];
-                        for(Inspector inspector : InspectorManager.getInstance().getInspectors(paramClazz)) {
+                        for (Inspector inspector : InspectorManager.getInstance().getInspectors(paramClazz)) {
                             String insp = inspector.getMethodCall() + Type.getMethodDescriptor(inspector.getMethod());
                             Type t = Type.getReturnType(inspector.getMethod());
                             if (t.getSort() == Type.BOOLEAN) {
@@ -122,8 +118,8 @@ public class InputCoverageFactory extends org.evosuite.coverage.io.input.InputCo
                                 observerGoalsAdded = true;
                             }
                         }
-                        if (!observerGoalsAdded){
-                            goals.add(createGoal(className, methodName, i, argType, REF_NONNULL));                                goals.add(createGoal(className, methodName, i, argType, REF_NONNULL));
+                        if (!observerGoalsAdded) {
+                            goals.add(createGoal(className, methodName, i, argType, REF_NONNULL));
                         }
                     }
                     break;
@@ -132,5 +128,4 @@ public class InputCoverageFactory extends org.evosuite.coverage.io.input.InputCo
             }
         }
     }
-
 }
