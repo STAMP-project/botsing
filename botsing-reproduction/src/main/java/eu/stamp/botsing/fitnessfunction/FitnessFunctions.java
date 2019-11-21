@@ -3,6 +3,7 @@ package eu.stamp.botsing.fitnessfunction;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.coverage.io.input.InputCoverageFactory;
 import eu.stamp.botsing.coverage.io.output.OutputCoverageFactory;
+import eu.stamp.botsing.coverage.variable.BranchingVariableCoverageFactory;
 import eu.stamp.botsing.reproduction.CrashReproductionGoalFactory;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
@@ -18,12 +19,12 @@ import java.util.Set;
 public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.FitnessFunctions {
     private static final Logger LOG = LoggerFactory.getLogger(FitnessFunctions.class);
 
-    public List<TestFitnessFunction> getFitnessFunctionList(){
+    public List<TestFitnessFunction> getFitnessFunctionList() {
         // crash coverage goals
         CrashReproductionGoalFactory goalFactory = new CrashReproductionGoalFactory();
         List<TestFitnessFunction> goalsList = new ArrayList<>(goalFactory.getCoverageGoals());
 
-        if(CrashProperties.IODiversity){
+        if (CrashProperties.IODiversity) {
             // input coverage goals
             InputCoverageFactory inputFactory = new InputCoverageFactory();
             goalsList.addAll(inputFactory.getCoverageGoals());
@@ -33,8 +34,10 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
             goalsList.addAll(outputFactory.getCoverageGoals());
         }
 
+        // branching variable diversity goals
         if (CrashProperties.branchingVariableDiversity) {
-            // todo add a new factory for goals
+            BranchingVariableCoverageFactory branchingVariableFactory = new BranchingVariableCoverageFactory();
+            goalsList.addAll(branchingVariableFactory.getCoverageGoals());
         }
 
         return goalsList;
@@ -42,8 +45,8 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
 
     @Override
     public <T extends Chromosome> boolean isCriticalGoalsAreCovered(Set<FitnessFunction<T>> uncoveredGoals) {
-        for (FitnessFunction<T> goal: uncoveredGoals){
-            if(goal instanceof IntegrationTestingFF || goal instanceof WeightedSum){
+        for (FitnessFunction<T> goal : uncoveredGoals) {
+            if (goal instanceof IntegrationTestingFF || goal instanceof WeightedSum) {
                 return false;
             }
         }
@@ -52,11 +55,10 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
 
     @Override
     public void printCriticalTargets(Map<FitnessFunction<?>, Double> front0) {
-        for(FitnessFunction<?> g: front0.keySet()){
-            if(g instanceof IntegrationTestingFF ){
-                LOG.info(""+g+": "+front0.get(g));
+        for (FitnessFunction<?> g : front0.keySet()) {
+            if (g instanceof IntegrationTestingFF) {
+                LOG.info("" + g + ": " + front0.get(g));
             }
         }
     }
-
 }
