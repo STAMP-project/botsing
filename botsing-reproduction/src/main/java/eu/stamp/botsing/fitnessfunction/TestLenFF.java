@@ -7,7 +7,9 @@ import org.evosuite.testcase.execution.ExecutionResult;
 public class TestLenFF extends TestFitnessFunction {
     @Override
     public double getFitness(TestChromosome testChromosome, ExecutionResult executionResult) {
-        return testChromosome.getTestCase().size();
+        double testLen = testChromosome.getTestCase().size();
+        // 1 - Normalize(len)
+        return (1 - FitnessFunctionHelper.normalize(testLen));
     }
 
     @Override

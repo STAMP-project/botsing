@@ -34,6 +34,7 @@ import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.MethodCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper.normalize;
 
 import java.util.*;
 
@@ -257,19 +258,5 @@ public class CrashCoverageFitnessCalculator {
 
         return branchCoverages;
     }
-
-
-    private double normalize(double value) throws IllegalArgumentException {
-        if (value < 0d) {
-            throw new IllegalArgumentException("Values to normalize cannot be negative");
-        }
-        if (Double.isInfinite(value)) {
-            return 1.0;
-        }
-        return value / (1.0 + value);
-    }
-
-
-
 
 }

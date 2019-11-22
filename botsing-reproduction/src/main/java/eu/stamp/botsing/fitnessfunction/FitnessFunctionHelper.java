@@ -81,4 +81,15 @@ public class FitnessFunctionHelper {
                 return new WeightedSum(crash);
         }
     }
+
+
+    public static double normalize(double value) throws IllegalArgumentException {
+        if (value < 0d) {
+            throw new IllegalArgumentException("Values to normalize cannot be negative");
+        }
+        if (Double.isInfinite(value)) {
+            return 1.0;
+        }
+        return value / (1.0 + value);
+    }
 }
