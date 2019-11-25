@@ -7,6 +7,7 @@ import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.objectweb.asm.Type;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
 
@@ -164,9 +165,9 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
                 assert variable instanceof Boolean;
                 return ((Boolean) variable) ? 1 : 0;
             case ARRAY_EMPTY:
-                return getArrayLength(variable);
+                return Array.getLength(variable);
             case ARRAY_NONEMPTY:
-                return getArrayLength(variable) == 0 ? 1 : 0;
+                return Array.getLength(variable) == 0 ? 1 : 0;
             case STRING_EMPTY:
                 return ((String) variable).length();
             case STRING_NONEMPTY:
@@ -190,34 +191,6 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
         }
     }
 
-    /**
-     * @param array An Object, but we know for sure it is an array.
-     *
-     * @return The length of the array.
-     */
-    private int getArrayLength(Object array) {
-        switch (getVariableType().getClassName()) {
-            case "boolean[]":
-                return ((boolean[]) array).length;
-            case "byte[]":
-                return ((byte[]) array).length;
-            case "char[]":
-                return ((char[]) array).length;
-            case "double[]":
-                return ((double[]) array).length;
-            case "float[]":
-                return ((float[]) array).length;
-            case "int[]":
-                return ((int[]) array).length;
-            case "long[]":
-                return ((long[]) array).length;
-            case "short[]":
-                return ((short[]) array).length;
-            default:
-                return ((Object[]) array).length;
-        }
-    }
-
     @Override
     public String toString() {
         return className + " @L" + lineNumber + " : " + variableName + " : " + condition;
@@ -234,10 +207,10 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
 
         BranchingVariableCoverageTestFitness that = (BranchingVariableCoverageTestFitness) o;
 
-        if (lineNumber != that.lineNumber) {
+        if (!className.equals(that.className)) {
             return false;
         }
-        if (!className.equals(that.className)) {
+        if (lineNumber != that.lineNumber) {
             return false;
         }
         if (!variableName.equals(that.variableName)) {

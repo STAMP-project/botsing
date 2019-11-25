@@ -15,6 +15,7 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static eu.stamp.botsing.coverage.variable.BranchingVariableCoverageTestFitness.getTestFitness;
 import static eu.stamp.botsing.coverage.variable.VariableCondition.*;
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
@@ -32,19 +33,17 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
     public List<BranchingVariableCoverageTestFitness> getCoverageGoals() {
         List<BranchingVariableCoverageTestFitness> goals = new ArrayList<>();
         List<Executable> executables = utility.getStackTraceExecutables();
-        ClassLoader contextClassLoader =
-                TestGenerationContextUtility.getTestGenerationContextClassLoader(CrashProperties.integrationTesting);
+        BytecodeInstructionPool instructionPool =
+                BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader(CrashProperties.integrationTesting));
         for (Executable executable : executables) {
             String className = executable.getDeclaringClass().getName();
             String methodName = executable instanceof Constructor ?
                     "<init>" + Type.getConstructorDescriptor((Constructor<?>) executable) : executable
                     .getName() + Type.getMethodDescriptor((Method) executable);
-            MethodNode methodNode = BytecodeInstructionPool.getInstance(contextClassLoader)
-                    .getMethodNode(className, methodName);
+            MethodNode methodNode = instructionPool.getMethodNode(className, methodName);
             List<LocalVariableNode> localVariables = methodNode.localVariables;
             localVariables.sort(Comparator.comparingInt(o -> o.index));
-            List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(contextClassLoader)
-                    .getInstructionsIn(className, methodName);
+            List<BytecodeInstruction> instructions = instructionPool.getInstructionsIn(className, methodName);
             goals.addAll(detectGoals(className, methodName, instructions, localVariables));
         }
         return goals;
@@ -61,20 +60,24 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
      * @param localVariables The {@link List} of {@link LocalVariableNode}s of the method, sorted according to their
      *                       {@link LocalVariableNode#index indexes}.
      */
-    private Set<BranchingVariableCoverageTestFitness> detectGoals(String className, String methodName,
-                                                                  List<BytecodeInstruction> instructions,
-                                                                  List<LocalVariableNode> localVariables) {
+    Set<BranchingVariableCoverageTestFitness> detectGoals(String className, String methodName,
+                                                          List<BytecodeInstruction> instructions,
+                                                          List<LocalVariableNode> localVariables) {
         Set<BranchingVariableCoverageTestFitness> goals = new HashSet<>();
         int currentLine = 0;
         for (int i = 0; i < instructions.size(); i++) {
             AbstractInsnNode instruction = instructions.get(i).getASMNode();
-            int opcode = instruction.getOpcode();
             if (instruction instanceof LineNumberNode) {
                 currentLine = ((LineNumberNode) instruction).line;
-            } else if (opcode == DCMPL || opcode == DCMPG || opcode == FCMPL || opcode == FCMPG || opcode == LCMP || opcode >= IF_ICMPEQ && opcode <= IF_ICMPLE || opcode == IF_ACMPEQ || opcode == IF_ACMPNE) {
-                goals.addAll(detectVariables(className, methodName, currentLine, instructions, localVariables, i, 2));
-            } else if (opcode >= IFEQ && opcode <= IFLE || opcode == IFNULL || opcode == IFNONNULL) {
-                goals.addAll(detectVariables(className, methodName, currentLine, instructions, localVariables, i, 1));
+            } else {
+                int opcode = instruction.getOpcode();
+                if (opcode == DCMPL || opcode == DCMPG || opcode == FCMPL || opcode == FCMPG || opcode == LCMP || opcode >= IF_ICMPEQ && opcode <= IF_ICMPLE || opcode == IF_ACMPEQ || opcode == IF_ACMPNE) {
+                    goals.addAll(detectVariables(className, methodName, currentLine, instructions, localVariables, i,
+                            2));
+                } else if (opcode >= IFEQ && opcode <= IFLE || opcode == IFNULL || opcode == IFNONNULL) {
+                    goals.addAll(detectVariables(className, methodName, currentLine, instructions, localVariables, i,
+                            1));
+                }
             }
         }
         return goals;
@@ -94,11 +97,10 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
      * @param index          The index of the branching instruction in the instruction list.
      * @param numOfVariables The number of variables compared with the instruction.
      */
-    private Set<BranchingVariableCoverageTestFitness> detectVariables(String className, String methodName,
-                                                                      int lineNumber,
-                                                                      List<BytecodeInstruction> instructions,
-                                                                      List<LocalVariableNode> localVariables,
-                                                                      int index, int numOfVariables) {
+    Set<BranchingVariableCoverageTestFitness> detectVariables(String className, String methodName, int lineNumber,
+                                                              List<BytecodeInstruction> instructions,
+                                                              List<LocalVariableNode> localVariables, int index,
+                                                              int numOfVariables) {
         Set<BranchingVariableCoverageTestFitness> goals = new HashSet<>();
         int count = 0;
         while (count < numOfVariables) {
@@ -113,7 +115,7 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
                     LocalVariableNode variable = localVariables.get(((VarInsnNode) current).var);
                     if (!isRegistered(className, lineNumber, variable.name)) {
                         goals.addAll(createGoals(className, methodName, lineNumber, variable));
-                        registeredVariable(className, lineNumber, variable.name);
+                        registerVariable(className, lineNumber, variable.name);
                     }
                     // endregion
                     // region The variable is a field of the object or a static field of the class
@@ -171,8 +173,8 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
         return goals;
     }
 
-    private Set<BranchingVariableCoverageTestFitness> createGoals(String className, String methodName, int lineNumber
-            , LocalVariableNode variable) {
+    Set<BranchingVariableCoverageTestFitness> createGoals(String className, String methodName, int lineNumber,
+                                                          LocalVariableNode variable) {
         Set<BranchingVariableCoverageTestFitness> goals = new HashSet<>();
         String variableName = variable.name;
         String variableDesc = variable.desc;
@@ -180,13 +182,11 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
         int variableSort = variableType.getSort();
 
         if (variableSort == OBJECT) {
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, REF_NULL));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, REF_NULL));
             if (variableType.equals(Type.getType(String.class))) {
-                goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                        variableType, STRING_EMPTY));
-                goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                        variableType, STRING_NONEMPTY));
+                goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, STRING_EMPTY));
+                goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType,
+                        STRING_NONEMPTY));
             } else if (variableType.equals(Type.getType(Boolean.class))) {
                 variableSort = BOOLEAN;
             } else if (variableType.equals(Type.getType(Character.class))) {
@@ -207,23 +207,23 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
                 try {
                     String dotClassName = variableDesc.substring(1, variableDesc.length() - 1).replace('/', '.');
                     if (List.class.isAssignableFrom(Class.forName(dotClassName))) {
-                        goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber,
-                                variableName, variableType, LIST_EMPTY));
-                        goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber,
-                                variableName, variableType, LIST_NONEMPTY));
+                        goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType,
+                                LIST_EMPTY));
+                        goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType,
+                                LIST_NONEMPTY));
                     } else if (Set.class.isAssignableFrom(Class.forName(dotClassName))) {
-                        goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber,
-                                variableName, variableType, SET_EMPTY));
-                        goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber,
-                                variableName, variableType, SET_NONEMPTY));
+                        goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType,
+                                SET_EMPTY));
+                        goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType,
+                                SET_NONEMPTY));
                     } else if (Map.class.isAssignableFrom(Class.forName(dotClassName))) {
-                        goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber,
-                                variableName, variableType, MAP_EMPTY));
-                        goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber,
-                                variableName, variableType, MAP_NONEMPTY));
+                        goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType,
+                                MAP_EMPTY));
+                        goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType,
+                                MAP_NONEMPTY));
                     } else {
-                        goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber,
-                                variableName, variableType, REF_NONNULL));
+                        goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType,
+                                REF_NONNULL));
                     }
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
@@ -232,36 +232,25 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
         }
 
         if (variableSort == ARRAY) {
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, REF_NULL));
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, ARRAY_EMPTY));
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, ARRAY_NONEMPTY));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, REF_NULL));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, ARRAY_EMPTY));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, ARRAY_NONEMPTY));
         } else if (variableSort >= BYTE && variableSort <= DOUBLE) {
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, NUM_NEGATIVE));
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, NUM_ZERO));
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, NUM_POSITIVE));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, NUM_NEGATIVE));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, NUM_ZERO));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, NUM_POSITIVE));
         } else if (variableSort == BOOLEAN) {
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, BOOL_TRUE));
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, BOOL_FALSE));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, BOOL_TRUE));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, BOOL_FALSE));
         } else if (variableSort == CHAR) {
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, CHAR_ALPHA));
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, CHAR_DIGIT));
-            goals.add(new BranchingVariableCoverageTestFitness(className, methodName, lineNumber, variableName,
-                    variableType, CHAR_OTHER));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, CHAR_ALPHA));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, CHAR_DIGIT));
+            goals.add(getTestFitness(className, methodName, lineNumber, variableName, variableType, CHAR_OTHER));
         }
         return goals;
     }
 
-    private void registeredVariable(String className, int lineNumber, String variableName) {
+    void registerVariable(String className, int lineNumber, String variableName) {
         if (!loggedVariables.containsKey(className)) {
             loggedVariables.put(className, new HashMap<>());
         }
@@ -271,7 +260,7 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
         loggedVariables.get(className).get(lineNumber).add(variableName);
     }
 
-    private boolean isRegistered(String className, int lineNumber, String variableName) {
+    boolean isRegistered(String className, int lineNumber, String variableName) {
         if (loggedVariables.containsKey(className)) {
             if (loggedVariables.get(className).containsKey(lineNumber)) {
                 return loggedVariables.get(className).get(lineNumber).contains(variableName);
