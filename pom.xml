@@ -421,6 +421,7 @@
         <module>botsing-parsers</module>
         <module>cling</module>
         <module>class-coupling-analyzer</module>
+        <module>cbc</module>
     </modules>
 
 </project>
