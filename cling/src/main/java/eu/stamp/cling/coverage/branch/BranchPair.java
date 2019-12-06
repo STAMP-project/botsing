@@ -38,7 +38,29 @@ public class BranchPair {
         }
 
         if(obj instanceof BranchPair){
-            return (((BranchPair) obj).getFirstBranch().equals(this.firstBranch) && ((BranchPair) obj).getSecondBranch().equals(this.secondBranch));
+            BranchPair otherBranchPair = (BranchPair) obj;
+
+            if(otherBranchPair.getFirstBranch() == null){
+                if(this.firstBranch != null){
+                    return false;
+                }
+            }else{
+                if(!otherBranchPair.getFirstBranch().equals(this.firstBranch)){
+                    return false;
+                }
+            }
+
+
+            if(otherBranchPair.getSecondBranch() == null){
+                if(this.secondBranch != null){
+                    return false;
+                }
+            }else {
+                if(!otherBranchPair.getSecondBranch().equals(this.secondBranch)){
+                    return false;
+                }
+            }
+            return true;
         }
 
         return false;
