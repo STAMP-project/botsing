@@ -28,6 +28,8 @@ public class CommandLineParameters {
     public static final String D_OPT = "D";
     public static final String PROJECT_CP_OPT = "project_cp";
     public static final String TEST_SUITE = "test_suite";
+    public static final String CALLER = "caller";
+    public static final String CALLEE = "callee";
     public static final String HELP_OPT = "help";
 
     public static Options getCommandLineOptions() {
@@ -43,6 +45,16 @@ public class CommandLineParameters {
         options.addOption(Option.builder(PROJECT_CP_OPT)
                 .hasArg()
                 .desc("classpath of the project under test and all its dependencies")
+                .build());
+        // caller
+        options.addOption(Option.builder(CALLER)
+                .hasArg()
+                .desc("caller class")
+                .build());
+        // callee
+        options.addOption(Option.builder(CALLEE)
+                .hasArg()
+                .desc("callee class")
                 .build());
         // Test directory
         options.addOption(Option.builder(TEST_SUITE)

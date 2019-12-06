@@ -26,8 +26,8 @@ public class CoupledBranchesCalculator {
         // If help option is provided
         if (commands.hasOption(HELP_OPT)) {
             printHelpMessage(options);
-        } else if(!(commands.hasOption(PROJECT_CP_OPT) && commands.hasOption(TEST_SUITE))) { // Check the required options are there
-            LOG.error("A mandatory option -{} -{} is missing!", PROJECT_CP_OPT, TEST_SUITE);
+        } else if(!(commands.hasOption(PROJECT_CP_OPT) && commands.hasOption(TEST_SUITE) && commands.hasOption(CALLER) && commands.hasOption(CALLEE))) { // Check the required options are there
+            LOG.error("A mandatory option -{} -{} -{} -{} is missing!", PROJECT_CP_OPT, TEST_SUITE, CALLER, CALLEE);
             printHelpMessage(options);
         }else {// Calculate CBC
             // Update EvoSuite's properties
@@ -39,7 +39,10 @@ public class CoupledBranchesCalculator {
             // Get test Dir
             String givenTest = commands.getOptionValue(TEST_SUITE);
 
-            CoupledBranches.calculate(givenTest);
+            // Get Caller and Callee
+            String caller = commands.getOptionValue(CALLER);
+            String callee = commands.getOptionValue(CALLEE);
+            CoupledBranches.calculate(givenTest,caller,callee);
 
         }
     }
