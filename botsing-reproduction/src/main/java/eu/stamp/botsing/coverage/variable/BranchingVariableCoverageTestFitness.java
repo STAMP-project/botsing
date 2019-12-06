@@ -14,21 +14,24 @@ import java.util.Map;
 public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
     private static final long serialVersionUID = -8943148780270724898L;
 
-    private final String className;
-    private final String methodName;
-    private final int lineNumber;
-    private final String variableName;
-    private final Type variableType;
-    private final VariableCondition condition;
+    String className;
+    private String methodName;
+    int lineNumber;
+    String variableName;
+    Type variableType;
+    VariableCondition condition;
 
-    public BranchingVariableCoverageTestFitness(String className, String methodName, int lineNumber,
-                                                String variableName, Type variableType, VariableCondition condition) {
-        this.className = className;
-        this.methodName = methodName;
-        this.lineNumber = lineNumber;
-        this.variableName = variableName;
-        this.variableType = variableType;
-        this.condition = condition;
+    static BranchingVariableCoverageTestFitness getTestFitness(String className, String methodName, int lineNumber,
+                                                               String variableName, Type variableType,
+                                                               VariableCondition condition) {
+        BranchingVariableCoverageTestFitness testFitness = new BranchingVariableCoverageTestFitness();
+        testFitness.className = className;
+        testFitness.methodName = methodName;
+        testFitness.lineNumber = lineNumber;
+        testFitness.variableName = variableName;
+        testFitness.variableType = variableType;
+        testFitness.condition = condition;
+        return testFitness;
     }
 
     @Override
@@ -45,15 +48,15 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
         return lineNumber;
     }
 
-    public String getVariableName() {
+    String getVariableName() {
         return variableName;
     }
 
-    public Type getVariableType() {
+    Type getVariableType() {
         return variableType;
     }
 
-    public VariableCondition getCondition() {
+    VariableCondition getCondition() {
         return condition;
     }
 
@@ -92,7 +95,7 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
         return fitness;
     }
 
-    private double calculateDistance(Object variable) {
+    double calculateDistance(Object variable) {
         switch (getCondition()) {
             case REF_NULL:
                 return variable == null ? 0 : 1;
@@ -105,23 +108,11 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
                 double doubleValue = ((Number) variable).doubleValue();
                 switch (getCondition()) {
                     case NUM_NEGATIVE:
-                        if (doubleValue < 0) {
-                            return 0;
-                        } else {
-                            return doubleValue + 1;
-                        }
+                        return doubleValue < 0 ? 0 : doubleValue + 1;
                     case NUM_ZERO:
-                        if (doubleValue == 0) {
-                            return 0;
-                        } else {
-                            return Math.abs(doubleValue);
-                        }
+                        return Math.abs(doubleValue);
                     case NUM_POSITIVE:
-                        if (doubleValue <= 0) {
-                            return Math.abs(doubleValue) + 1;
-                        } else {
-                            return 0;
-                        }
+                        return doubleValue > 0 ? 0 : 1 - doubleValue;
                 }
             case CHAR_ALPHA:
             case CHAR_DIGIT:
@@ -148,12 +139,12 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
                             return 0;
                         }
                     case CHAR_OTHER:
-                        if (charValue > '0' && charValue < '9') {
-                            return Math.min(charValue - '0', '9' - charValue);
-                        } else if (charValue > 'A' && charValue < 'Z') {
-                            return Math.min(charValue - 'A', 'Z' - charValue);
-                        } else if (charValue > 'a' && charValue < 'z') {
-                            return Math.min(charValue - 'a', 'z' - charValue);
+                        if (charValue >= '0' && charValue <= '9') {
+                            return Math.min(charValue - '0', '9' - charValue) + 1;
+                        } else if (charValue >= 'A' && charValue <= 'Z') {
+                            return Math.min(charValue - 'A', 'Z' - charValue) + 1;
+                        } else if (charValue >= 'a' && charValue <= 'z') {
+                            return Math.min(charValue - 'a', 'z' - charValue) + 1;
                         } else {
                             return 0;
                         }

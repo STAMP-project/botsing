@@ -22,7 +22,6 @@ package eu.stamp.botsing;
  */
 
 import org.evosuite.Properties;
-import org.jboss.logging.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
