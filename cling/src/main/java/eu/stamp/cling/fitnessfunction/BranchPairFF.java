@@ -124,4 +124,11 @@ public class BranchPairFF extends TestFitnessFunction {
 
         throw new IllegalStateException("Both pairs are null!");
     }
+    public BranchCoverageTestFitness getFirstBranchFF(){
+        return firstBranchFF;
+    }
+
+    public BranchCoverageTestFitness getSecondBranchFF(){
+        return firstBranchFF;
+    }
 }

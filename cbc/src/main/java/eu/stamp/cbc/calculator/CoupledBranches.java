@@ -1,14 +1,24 @@
 package eu.stamp.cbc.calculator;
 
 
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
+import eu.stamp.cbc.extraction.ExecutionTracePool;
 import eu.stamp.cbc.testsuite.execution.Executor;
 import eu.stamp.cling.IntegrationTestingProperties;
 import eu.stamp.cling.coverage.branch.BranchPair;
 import eu.stamp.cling.coverage.branch.BranchPairPool;
+import eu.stamp.cling.fitnessfunction.BranchPairFF;
 import eu.stamp.cling.graphs.cfg.CFGGenerator;
 import eu.stamp.cling.integrationtesting.IntegrationTestingGoalFactory;
+import org.evosuite.TestGenerationContext;
+import org.evosuite.coverage.branch.Branch;
+import org.evosuite.coverage.branch.BranchCoverageTestFitness;
+import org.evosuite.coverage.branch.BranchPool;
+import org.evosuite.graphs.GraphPool;
 import org.evosuite.testcase.TestFitnessFunction;
+import org.evosuite.testcase.execution.ExecutionTrace;
+import org.evosuite.testcase.execution.ExecutionTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,11 +29,6 @@ public class CoupledBranches {
 
 
     public static void calculate(String givenTest, String caller, String callee){
-        Executor executor = new Executor(givenTest,caller,callee);
-        // execute the test for calculating the coverages
-        executor.execute();
-
-        // Here, we have the coverage data in a dedicated pool
 
         // Let's calculate Coupled Branches
         setClingProperties(caller,callee);
@@ -31,14 +36,78 @@ public class CoupledBranches {
 
         generateCFGs(instrumentedClasses.get(1),instrumentedClasses.get(0));
         IntegrationTestingGoalFactory integrationTestingGoalFactory = new IntegrationTestingGoalFactory();
-        List<BranchPair> branchPairs = BranchPairPool.getInstance().getBranchPairs();
+//        List<BranchPair> branchPairs = BranchPairPool.getInstance().getBranchPairs();
         Set<TestFitnessFunction> goalsSet = new HashSet<>(integrationTestingGoalFactory.getCoverageGoals());
+        LOG.info("Total number of coupled branches goals: {}",goalsSet.size());
 
-        // Here, we have the coverage data and coupled branches. We just need to compare them to find the number of covered coupled branches
+        // Here, we have the list of coupled branches in BranchPairPool.
+        // Now, it is the time to execute the give test
 
-        for (BranchPair pair : branchPairs){
+        Executor executor = new Executor(givenTest,caller,callee);
+        // execute the test for calculating the coverages
+        executor.execute();
+        // Here, we have the execution traces in a dedicated pool (ExecutionTracePool)
 
+
+
+
+        // Here, we have the coverage data and coupled branches.
+        // We just need to compare them to find the number of covered coupled branches.
+
+
+
+//        int totalPairs = BranchPairPool.getInstance().getBranchPairs().size();
+        int coveredPairs = getCoveredPairs(goalsSet).size();
+        LOG.info("Number of covered coupled branches: {}", coveredPairs);
+
+    }
+
+    private static List<BranchPairFF> getCoveredPairs( Set<TestFitnessFunction> goalsSet){
+
+        List<BranchPairFF> result = new ArrayList<>();
+        for (TestFitnessFunction testFF: goalsSet){
+            BranchPairFF branchPairFF = (BranchPairFF) testFF;
+            BranchCoverageTestFitness firstBranchFF = branchPairFF.getFirstBranchFF();
+            BranchCoverageTestFitness secondBranchFF = branchPairFF.getSecondBranchFF();
+            // check both of the branches
+            if(isBranchCovered(firstBranchFF) && isBranchCovered(secondBranchFF)){
+                // The current branch pair is covered.
+                // Add it to covered goals
+                result.add(branchPairFF);
+            }
         }
+
+        return result;
+    }
+
+    private static boolean isBranchCovered(BranchCoverageTestFitness branchFF){
+        if (branchFF == null){
+            return true;
+        }
+        BranchPool branchPool = BranchPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
+        Collection<ExecutionTrace> traces = ExecutionTracePool.getInstance().getExecutionTraces();
+        boolean branchExpressionValue = branchFF.getBranchExpressionValue();
+        Branch targetBranch = branchFF.getBranch();
+
+        for (ExecutionTrace trace : traces){
+            // Find branch ids for checking
+            Set<Integer> branchIDsToCheck;
+            if (branchExpressionValue){
+                // check covered true
+                branchIDsToCheck = trace.getCoveredFalseBranches();
+            }else{
+                // check covered false
+                branchIDsToCheck = trace.getCoveredTrueBranches();
+            }
+            for(Integer id: branchIDsToCheck){
+                Branch currentBranch = branchPool.getBranch(id);
+                if(currentBranch.equals(targetBranch)){
+                    return true;
+                }
+            }
+        }
+        return false;
+
     }
 
     private static void generateCFGs(Class caller, Class callee) {
