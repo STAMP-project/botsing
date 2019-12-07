@@ -1,5 +1,6 @@
 package eu.stamp.cbc.extraction;
 
+import org.evosuite.testcase.execution.ExecutionTrace;
 import org.evosuite.testcase.execution.ExecutionTracer;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunListener;
@@ -22,9 +23,8 @@ public class TestCaseRunListener extends RunListener {
     public void testFinished(Description description){
         String testName = description.getClassName()+"."+description.getMethodName();
         LOG.info("Collecting traces of test {}",testName);
-        Map<String, Map<String, Map<Integer, Integer>>> capturedCoverageData = ExecutionTracer.getExecutionTracer().getTrace().getCoverageData();
+        ExecutionTrace capturedTrace = ExecutionTracer.getExecutionTracer().getTrace();
 
-        CoverageDataPool.getInstance().registerNewCoverageData(testName,capturedCoverageData);
-//        ExecutionTracer.getExecutionTracer().disable();
+        ExecutionTracePool.getInstance().registerNewCoverageData(testName,capturedTrace);
     }
 }

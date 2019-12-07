@@ -1,8 +1,7 @@
 package eu.stamp.cbc.testsuite.execution;
 
-import eu.stamp.cbc.extraction.ClassLoader;
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.cbc.extraction.TestCaseRunListener;
-import org.evosuite.Properties;
 import org.evosuite.testcase.execution.ExecutionTracer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -14,16 +13,19 @@ public class Executor {
     private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
 
     private String givenTestSuite;
-    final ClassLoader classLoader = new ClassLoader();
+    final ClassLoader classLoader = BotsingTestGenerationContext.getInstance().getClassLoaderForSUT();
     final JUnitCore runner= new JUnitCore();
 
 
     public Executor(String givenTest, String caller, String callee){
-        Properties.SELECTED_JUNIT = givenTest;
         this.givenTestSuite = givenTest;
+//        Properties.SELECTED_JUNIT = givenTest;
+
+        // set thread checker in execution tracer
+        ExecutionTracer.setCheckCallerThread(false);
+
+        // Add listener
         prepareJUnitRunner();
-
-
 
         try {
             // instrument target classes
@@ -37,7 +39,9 @@ public class Executor {
     public void execute(){
         ExecutionTracer.enable();
         try {
+            // load the given test
         final Class<?> junitClass = classLoader.loadClass(givenTestSuite);
+        // Run ...
         Result result = runner.run(junitClass);
         LOG.info("Result: {}/{} failure", result.getFailureCount(), result.getRunCount());
         } catch (final ClassNotFoundException e) {
