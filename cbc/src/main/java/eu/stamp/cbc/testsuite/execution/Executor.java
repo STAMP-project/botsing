@@ -19,7 +19,6 @@ public class Executor {
 
     public Executor(String givenTest, String caller, String callee){
         this.givenTestSuite = givenTest;
-//        Properties.SELECTED_JUNIT = givenTest;
 
         // set thread checker in execution tracer
         ExecutionTracer.setCheckCallerThread(false);
