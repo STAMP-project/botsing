@@ -317,6 +317,10 @@
                                         <shadedPattern>org.evosuite.shaded.org.apache.commons.logging</shadedPattern>
                                     </relocation>
                                     <relocation>
+                                        <pattern>org.apache.commons.lang3</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.apache.commons.lang3</shadedPattern>
+                                    </relocation>
+                                    <relocation>
                                         <pattern>javassist</pattern>
                                         <shadedPattern>org.evosuite.shaded.javassist</shadedPattern>
                                     </relocation>
