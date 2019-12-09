@@ -23,7 +23,7 @@ public class CoupledBranches {
     private static final Logger LOG = LoggerFactory.getLogger(CoupledBranches.class);
 
 
-    public static void calculate(String givenTest, String caller, String callee){
+    public static void calculate(String givenTestCaller, String givenTestCallee, String caller, String callee){
 
         // Let's calculate Coupled Branches
         setClingProperties(caller,callee);
@@ -31,33 +31,30 @@ public class CoupledBranches {
 
         generateCFGs(instrumentedClasses.get(1),instrumentedClasses.get(0));
         IntegrationTestingGoalFactory integrationTestingGoalFactory = new IntegrationTestingGoalFactory();
-//        List<BranchPair> branchPairs = BranchPairPool.getInstance().getBranchPairs();
         Set<TestFitnessFunction> goalsSet = new HashSet<>(integrationTestingGoalFactory.getCoverageGoals());
         LOG.info("Total number of coupled branches goals: {}",goalsSet.size());
 
         // Here, we have the list of coupled branches in BranchPairPool.
-        // Now, it is the time to execute the give test
+        // Now, it is the time to execute the give tests
 
-        Executor executor = new Executor(givenTest,caller,callee);
-        // execute the test for calculating the coverages
+        // execute the callee test for calculating the coverages
+        Executor executor = new Executor(givenTestCallee,caller,callee);
         executor.execute();
+        // execute the caller test for calculating the coverages
+        executor = new Executor(givenTestCaller,caller,callee);
+        executor.execute();
+
         // Here, we have the execution traces in a dedicated pool (ExecutionTracePool)
-
-
-
-
-        // Here, we have the coverage data and coupled branches.
-        // We just need to compare them to find the number of covered coupled branches.
-
-
-
-//        int totalPairs = BranchPairPool.getInstance().getBranchPairs().size();
-        int coveredPairs = getCoveredPairs(goalsSet).size();
-        LOG.info("Number of covered coupled branches: {}", coveredPairs);
-
+        // We just need to compare them to find the number of covered coupled branches by test suites.
+        List<BranchPairFF> coveredPairsByE = getCoveredPairs(goalsSet, caller);
+        LOG.info("Number of covered coupled branches by test suite E: {}", coveredPairsByE.size());
+        List<BranchPairFF> coveredPairsByR = getCoveredPairs(goalsSet, callee);
+        LOG.info("Number of covered coupled branches by test suite R: {}", coveredPairsByR.size());
+        List<BranchPairFF> coveredByBoth = union(coveredPairsByE, coveredPairsByR);
+        LOG.info("Number of covered coupled branches by both: {}", coveredByBoth.size());
     }
 
-    private static List<BranchPairFF> getCoveredPairs( Set<TestFitnessFunction> goalsSet){
+    private static List<BranchPairFF> getCoveredPairs( Set<TestFitnessFunction> goalsSet, String className){
 
         List<BranchPairFF> result = new ArrayList<>();
         for (TestFitnessFunction testFF: goalsSet){
@@ -65,7 +62,7 @@ public class CoupledBranches {
             BranchCoverageTestFitness firstBranchFF = branchPairFF.getFirstBranchFF();
             BranchCoverageTestFitness secondBranchFF = branchPairFF.getSecondBranchFF();
             // check both of the branches
-            if(isBranchCovered(firstBranchFF) && isBranchCovered(secondBranchFF)){
+            if(isBranchCovered(firstBranchFF, className) && isBranchCovered(secondBranchFF, className)){
                 // The current branch pair is covered.
                 // Add it to covered goals
                 result.add(branchPairFF);
@@ -75,12 +72,12 @@ public class CoupledBranches {
         return result;
     }
 
-    private static boolean isBranchCovered(BranchCoverageTestFitness branchFF){
+    private static boolean isBranchCovered(BranchCoverageTestFitness branchFF, String className){
         if (branchFF == null){
             return true;
         }
         BranchPool branchPool = BranchPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-        Collection<ExecutionTrace> traces = ExecutionTracePool.getInstance().getExecutionTraces();
+        Collection<ExecutionTrace> traces = ExecutionTracePool.getInstance().getExecutionTraces(className);
         boolean branchExpressionValue = branchFF.getBranchExpressionValue();
         Branch targetBranch = branchFF.getBranch();
 
@@ -123,4 +120,14 @@ public class CoupledBranches {
         IntegrationTestingProperties.fitnessFunctions = new IntegrationTestingProperties.FitnessFunction[]{IntegrationTestingProperties.FitnessFunction.Branch_Pairs};
         IntegrationTestingProperties.TARGET_CLASSES = new String[]{caller, callee};
     }
+
+    private static  <T> List<T> union(List<T> list1, List<T> list2) {
+        Set<T> set = new HashSet<T>();
+
+        set.addAll(list1);
+        set.addAll(list2);
+
+        return new ArrayList<T>(set);
+    }
+
 }

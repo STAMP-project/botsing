@@ -2,10 +2,7 @@ package eu.stamp.cbc.extraction;
 
 import org.evosuite.testcase.execution.ExecutionTrace;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ExecutionTracePool {
     // Main pool <test, ExecutionTrace>
@@ -50,6 +47,18 @@ public class ExecutionTracePool {
 
     public Collection<ExecutionTrace> getExecutionTraces(){
         return this.pool.values();
+    }
+
+
+    public Collection<ExecutionTrace> getExecutionTraces(String className){
+        Collection<ExecutionTrace> result = new HashSet<>();
+
+        for (String key : pool.keySet()) {
+            if (key.startsWith(className+"_ESTest.")){
+                result.add(pool.get(key));
+            }
+        }
+        return result;
     }
 
 

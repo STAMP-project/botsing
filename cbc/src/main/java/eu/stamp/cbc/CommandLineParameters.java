@@ -27,7 +27,8 @@ public class CommandLineParameters {
 
     public static final String D_OPT = "D";
     public static final String PROJECT_CP_OPT = "project_cp";
-    public static final String TEST_SUITE = "test_suite";
+    public static final String TEST_SUITE_E = "test_suite_e";
+    public static final String TEST_SUITE_R = "test_suite_r";
     public static final String CALLER = "caller";
     public static final String CALLEE = "callee";
     public static final String HELP_OPT = "help";
@@ -56,11 +57,17 @@ public class CommandLineParameters {
                 .hasArg()
                 .desc("callee class")
                 .build());
-        // Test directory
-        options.addOption(Option.builder(TEST_SUITE)
+        // Tests directories
+        options.addOption(Option.builder(TEST_SUITE_E)
                 .hasArg()
-                .desc("test suite for calculating CBC")
+                .desc("Callee test suite for calculating CBC")
                 .build());
+
+        options.addOption(Option.builder(TEST_SUITE_R)
+                .hasArg()
+                .desc("Caller test suite for calculating CBC")
+                .build());
+
 
         // Help message
         options.addOption(Option.builder(HELP_OPT)
