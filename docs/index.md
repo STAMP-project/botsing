@@ -52,3 +52,7 @@ To generate test cases able to reproduce a given stack trace, Botsing relies on 
   2. gradually refine those test using *guided operators* that will modify the tests. At each iteration of the algorithm, the different tests are evaluated using a *fitness function* assessing how close each test is to reproduce the crash stack trace.
 
 Eventually, Botsing produced a test able to reproduce the crash or exhausts the allocated **search time budget**.
+
+# Botsing Demo
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/k6XaQjHqe48" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
