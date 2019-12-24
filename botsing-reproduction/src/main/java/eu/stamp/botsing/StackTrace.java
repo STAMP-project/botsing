@@ -99,13 +99,10 @@ public class StackTrace {
             Properties.TARGET_CLASS = targetClass;
             LOG.info("Target Class is set to: " + targetClass);
 
-            // If the target exception is ArrayIndexOutOfBoundsException
+//             If the target exception is ArrayIndexOutOfBoundsException
             if (exceptionType.equals(ArrayIndexOutOfBoundsException.class.getName()) || exceptionType.equals(StringIndexOutOfBoundsException.class.getName())) {
                 // Set the line number where the array access call is located at.
                 Properties.TARGET_INDEXED_ACCESS_LINE = frames.get(0).getLineNumber();
-                // Set the fitness function for this crash to be the customized one.
-                CrashProperties.fitnessFunctions[CrashProperties.getInstance().getCrashesSize() - 1] =
-                        CrashProperties.FitnessFunction.IntegrationIndexedAccess;
             }
         } catch (FileNotFoundException e) {
             LOG.debug("Stack trace file not found!", e);
