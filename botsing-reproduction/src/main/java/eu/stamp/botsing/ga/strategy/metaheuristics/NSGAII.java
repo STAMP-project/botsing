@@ -2,7 +2,7 @@ package eu.stamp.botsing.ga.strategy.metaheuristics;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
-import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingCondition;
+import eu.stamp.botsing.ga.GAUtil;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
@@ -10,8 +10,6 @@ import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.comparators.RankAndCrowdingDistanceComparator;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
-import org.evosuite.ga.stoppingconditions.StoppingCondition;
-import org.evosuite.ga.stoppingconditions.ZeroFitnessStoppingCondition;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +47,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
     protected void evolve() {
         List<T> offspringPopulation = new ArrayList<T>(population.size());
 
-        // create a offspring population
+        // create an offspring population
         for (int i = 0; i < (population.size() / 2); i++) {
             // Selection
             T parent1 = selectionFunction.select(population);
@@ -142,7 +140,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
             return;
         }
 
-// Generate Initial Population
+        // Generate Initial Population
         LOG.debug("Initializing the population.");
         generatePopulation(this.populationSize);
 
@@ -172,21 +170,15 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
     @Override
     public void generateSolution() {
         // Check if only zero value of only one objective  is important for us
-        boolean containsSinglecObjectiveZeroSC = false;
-        for (StoppingCondition condition: stoppingConditions){
-            if (condition instanceof ZeroFitnessStoppingCondition){
-                containsSinglecObjectiveZeroSC = true;
-                break;
-            }
-        }
+        boolean containsSinglecObjectiveZeroSC = GAUtil.getSinglecObjectiveZeroSC(stoppingConditions);
 
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
-        Boolean initilized = false;
-        while (!initilized){
+        Boolean initialized = false;
+        while (!initialized){
             try {
                 initializePopulation();
-                initilized=true;
+                initialized=true;
             }catch (Exception |Error e){
                 LOG.warn("Botsing was unsuccessful in generating the initial population. cause: {}",e.getMessage());
             }
@@ -196,7 +188,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
             LOG.info("Number of generations: {}",currentIteration+1);
 
             if(containsSinglecObjectiveZeroSC){
-                reportBestFF();
+                GAUtil.reportBestFF(stoppingConditions);
             }
 
             evolve();
@@ -206,14 +198,5 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         }
     }
 
-    private void reportBestFF() {
 
-        for (StoppingCondition condition: stoppingConditions){
-            if (condition instanceof ZeroFitnessStoppingCondition){
-                SingleObjectiveZeroStoppingCondition selectedCondition = (SingleObjectiveZeroStoppingCondition) condition;
-                LOG.info("The best FF for {} is {}",selectedCondition.getNameOfObjective(),selectedCondition.getCurrentValue());
-                break;
-            }
-        }
-    }
 }

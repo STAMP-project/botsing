@@ -35,6 +35,10 @@ public class SingleObjectiveZeroStoppingCondition extends StoppingConditionImpl 
         return (long) this.lastFitness;
     }
 
+    public double getCurrentDoubleValue() {
+        return  this.lastFitness;
+    }
+
     @Override
     public long getLimit() {
         return 0;
