@@ -79,6 +79,7 @@ public class CrashProperties {
         Single_Objective_GGA,
         Guided_MOSA,
         NSGA_II,
+        SPEA2,
         DynaMOSA;
 
         SearchAlgorithm() {
