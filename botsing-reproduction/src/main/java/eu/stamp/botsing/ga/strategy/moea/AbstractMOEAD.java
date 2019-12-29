@@ -147,7 +147,7 @@ public abstract class AbstractMOEAD<T extends Chromosome> extends GeneticAlgorit
                 for (int objectiveIndex=0; objectiveIndex < CrashProperties.fitnessFunctions.length;objectiveIndex++){
                     CrashProperties.FitnessFunction objective = CrashProperties.fitnessFunctions[objectiveIndex];
                     double fitnessValue = FitnessFunctionHelper.getFitnessValue(individual,objective);
-                    double diff = Math.abs(fitnessValue - idealPoint.getValue(objectiveIndex));
+                    double diff = Math.abs(fitnessValue - idealPoint.getValue(objectiveIndex)-CrashProperties.idealPointShift);
                     double currentValue;
                     if (lambdas[objectiveIndex] == 0) {
                         currentValue = 0.0001 * diff;
@@ -246,6 +246,33 @@ public abstract class AbstractMOEAD<T extends Chromosome> extends GeneticAlgorit
         parents.add(population.get(parentsIndexList.get(1)));
 
         return parents;
+    }
+
+    @Override
+    public T getBestIndividual() {
+        if(this.population.isEmpty()){
+            return this.chromosomeFactory.getChromosome();
+        }
+
+        // for one main FF
+        CrashProperties.FitnessFunction mainObjective;
+        if(CrashProperties.fitnessFunctions.length == 2){
+            if (CrashProperties.fitnessFunctions[0] == CrashProperties.FitnessFunction.TestLen){
+                mainObjective = CrashProperties.fitnessFunctions[1];
+            }else {
+                mainObjective = CrashProperties.fitnessFunctions[0];
+            }
+        }else {
+            return this.population.get(0);
+        }
+
+        for(T individual: this.population){
+            double currentFitness = FitnessFunctionHelper.getFitnessValue(individual,mainObjective);
+            if (currentFitness == 0){
+                return individual;
+            }
+        }
+        return this.population.get(0);
     }
 
 }

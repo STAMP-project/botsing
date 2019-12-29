@@ -93,7 +93,7 @@ public class CrashProperties {
 
 
     @Properties.Parameter(key = "SearchAlgorithm", group = "Crash reproduction", description = "Which search algorithm to use for crash reproduction")
-    public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.NSGA_II;
+    public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.MOEAD;
 
 
     @Properties.Parameter(key = "FitnessFunctions", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
@@ -120,8 +120,12 @@ public class CrashProperties {
     @Parameter(key = "neighborhood_selection_probability", group = "MOEAD", description = "neighborhood Selection Probability")
     public static double neighborhoodSelectionProbability = 0.2;
 
-    @Parameter(key = "maximum_number_of_replaced_solutions", group = "MOEAD", description = "neighborhood Selection Probability")
+    @Parameter(key = "maximum_number_of_replaced_solutions", group = "MOEAD", description = "Maximum Number Of Replaced Solutions")
     public static int maximumNumberOfReplacedSolutions = 100;
+
+    @Parameter(key = "ideal_point_shift", group = "MOEAD", description = "Shift objectives of ideal point to a better situation (to avoid local optimum)")
+    public static double idealPointShift = 0.2;
+
 
     public enum DistanceCalculator {
         WS, // Weighted Sum
