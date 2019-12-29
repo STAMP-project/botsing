@@ -2,6 +2,7 @@ package eu.stamp.botsing.ga.strategy.metaheuristics;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import eu.stamp.botsing.ga.GAUtil;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
@@ -197,6 +198,34 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
             this.writeIndividuals(this.population);
         }
     }
+
+    @Override
+    public T getBestIndividual() {
+        if(this.population.isEmpty()){
+            return this.chromosomeFactory.getChromosome();
+        }
+
+        // for one main FF
+        CrashProperties.FitnessFunction mainObjective;
+        if(CrashProperties.fitnessFunctions.length == 2){
+            if (CrashProperties.fitnessFunctions[0] == CrashProperties.FitnessFunction.TestLen){
+                mainObjective = CrashProperties.fitnessFunctions[1];
+            }else {
+                mainObjective = CrashProperties.fitnessFunctions[0];
+            }
+        }else {
+            return this.population.get(0);
+        }
+
+        for(T individual: this.population){
+            double currentFitness = FitnessFunctionHelper.getFitnessValue(individual,mainObjective);
+            if (currentFitness == 0){
+                return individual;
+            }
+        }
+        return this.population.get(0);
+    }
+
 
 
 }
