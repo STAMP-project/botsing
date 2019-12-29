@@ -23,10 +23,40 @@ package eu.stamp.botsing.fitnessfunction;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
+import org.evosuite.ga.Chromosome;
+import org.evosuite.ga.FitnessFunction;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.testcase.TestFitnessFunction;
 
 public class FitnessFunctionHelper {
+
+    public static double getFitnessValue(Chromosome individual,
+                                         CrashProperties.FitnessFunction objective) {
+        Class ffClass;
+
+        switch (objective) {
+            case WeightedSum:
+                ffClass = WeightedSum.class;
+                break;
+            case IntegrationSingleObjective:
+                ffClass = IntegrationTestingFF.class;
+                break;
+            case IntegrationIndexedAccess:
+                ffClass = ITFFForIndexedAccess.class;
+                break;
+            case TestLen:
+                ffClass = TestLenFF.class;
+                break;
+            default:
+                throw new IllegalArgumentException("Objective is not defined");
+        }
+        for (FitnessFunction<?> ff : individual.getFitnessValues().keySet()){
+            if (ff.getClass().equals(ffClass)){
+                return individual.getFitnessValues().get(ff).doubleValue();
+            }
+        }
+        throw new IllegalArgumentException("Objective is not available in the given fitness functions");
+    }
 
     public boolean isConstructor(BytecodeInstruction targetInstruction) {
         String methodName = targetInstruction.getMethodName();

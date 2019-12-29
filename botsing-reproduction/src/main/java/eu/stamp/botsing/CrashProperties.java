@@ -80,6 +80,7 @@ public class CrashProperties {
         Guided_MOSA,
         NSGA_II,
         SPEA2,
+        MOEAD,
         DynaMOSA;
 
         SearchAlgorithm() {
@@ -92,11 +93,11 @@ public class CrashProperties {
 
 
     @Properties.Parameter(key = "SearchAlgorithm", group = "Crash reproduction", description = "Which search algorithm to use for crash reproduction")
-    public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.Single_Objective_GGA;
+    public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.NSGA_II;
 
 
     @Properties.Parameter(key = "FitnessFunctions", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
-    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.WeightedSum};
+    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.WeightedSum, FitnessFunction.TestLen};
 
 
 
@@ -116,6 +117,20 @@ public class CrashProperties {
     @Parameter(key = "io_diversity", group = "Crash reproduction", description = "Enables I/O diversity as extra goals to MOSA")
     public static boolean IODiversity = false;
 
+    @Parameter(key = "neighborhood_selection_probability", group = "MOEAD", description = "neighborhood Selection Probability")
+    public static double neighborhoodSelectionProbability = 0.2;
+
+    @Parameter(key = "maximum_number_of_replaced_solutions", group = "MOEAD", description = "neighborhood Selection Probability")
+    public static int maximumNumberOfReplacedSolutions = 100;
+
+    public enum DistanceCalculator {
+        WS, // Weighted Sum
+        TE, // Tchebycheff (default)
+        PBI, // Penalty-based boundary intersection
+    }
+
+    @Parameter(key = "distance_calculator", group = "MOEAD", description = "neighborhood Selection Probability")
+    public static CrashProperties.DistanceCalculator distanceCalculator = DistanceCalculator.TE;
 
     static java.util.Properties configFile = new java.util.Properties();
 
