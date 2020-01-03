@@ -47,7 +47,7 @@ public class Grid<T extends Chromosome> {
         objectivesBoundaries.clear();
         for (CrashProperties.FitnessFunction ff: CrashProperties.fitnessFunctions){
             // two doubles: min and max
-            objectivesBoundaries.put(ff,new Double[]{Double.MIN_VALUE,Double.MAX_VALUE});
+            objectivesBoundaries.put(ff,new Double[]{Double.MAX_VALUE,Double.MIN_VALUE});
         }
     }
 
@@ -151,9 +151,9 @@ public class Grid<T extends Chromosome> {
 
     private void updateNonEmptyHyperCubes() {
         nonEmptyHyperCubes.clear();
-        for (int hc: hypercubes){
-            if (hc > 0){
-                nonEmptyHyperCubes.add(new Integer(hc));
+        for (int i = 0; i < hypercubes.length; i++) {
+            if (hypercubes[i] > 0) {
+                nonEmptyHyperCubes.add(new Integer(i));
             }
         }
     }
@@ -253,13 +253,13 @@ public class Grid<T extends Chromosome> {
 
     public int getRandomHyperCube(boolean countEmpty){
         if (countEmpty){
-            int randomHyperCube = Randomness.nextInt(0,hypercubes.length-1);
+            int randomHyperCube = Randomness.nextInt(0,hypercubes.length);
             return randomHyperCube;
         }else {
             if(nonEmptyHyperCubes.size() == 1){
                 return nonEmptyHyperCubes.get(0);
             }
-            int randomNonEmptyHyperCubeIndex = Randomness.nextInt(0,nonEmptyHyperCubes.size()-1);
+            int randomNonEmptyHyperCubeIndex = Randomness.nextInt(0,nonEmptyHyperCubes.size());
             return nonEmptyHyperCubes.get(randomNonEmptyHyperCubeIndex);
         }
     }

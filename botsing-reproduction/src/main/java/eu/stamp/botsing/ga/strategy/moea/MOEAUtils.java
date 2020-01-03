@@ -40,7 +40,7 @@ public class MOEAUtils {
 
         int num = 0;
         while (num < size) {
-            int start = Randomness.nextInt(0, size - 1);
+            int start = Randomness.nextInt(0, size);
             while (true) {
                 if (flag[start]) {
                     perm[num] = index[start];

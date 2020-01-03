@@ -44,6 +44,12 @@ public class GridArchive<T extends Chromosome> {
                     // Individual in the current popluation dominates archiveIndividual.
                     // So, we will remove archiveIndividual from archive.
                     iterator.remove();
+                    int hyperCubeIndex = grid.getHyperCube(archiveIndividual);
+                    if (grid.getDensity(hyperCubeIndex) > 1) {//The hypercube contains
+                        grid.removeIndividual(archiveIndividual);            //more than one individual
+                    } else {
+                        grid.updateGrid(archive);
+                    }
 
                 } else if (dominanceComparisonResult == 1){
                     isDominated = true;
@@ -86,7 +92,7 @@ public class GridArchive<T extends Chromosome> {
             }
 
             // else,
-            // we remove an individual from the mosy crowded hyper cube
+            // we remove an individual from the most crowded hyper cube
             boolean successfulPrune = prune();
             if(successfulPrune){
                 //, and insert our new solution
