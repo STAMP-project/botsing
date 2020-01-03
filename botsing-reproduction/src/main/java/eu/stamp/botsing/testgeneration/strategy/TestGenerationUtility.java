@@ -6,6 +6,7 @@ import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.ga.strategy.metaheuristics.GuidedSingleObjectiveGA;
 import eu.stamp.botsing.ga.strategy.metaheuristics.NSGAII;
+import eu.stamp.botsing.ga.strategy.metaheuristics.PESAII;
 import eu.stamp.botsing.ga.strategy.metaheuristics.SPEA2;
 import eu.stamp.botsing.ga.strategy.moea.MOEAD;
 import eu.stamp.botsing.ga.strategy.mosa.DynaMOSA;
@@ -57,6 +58,11 @@ public class TestGenerationUtility extends AbstractTestGenerationUtility {
                 guidedSinglePointCrossover.updatePublicCalls(((StackTraceChromosomeFactory) chromosomeFactory).getPublicCalls());
                 guidedMutation.updatePublicCalls(((StackTraceChromosomeFactory) chromosomeFactory).getPublicCalls());
                 return new MOEAD(chromosomeFactory,guidedSinglePointCrossover,guidedMutation);
+
+            case PESA_II:
+                guidedSinglePointCrossover.updatePublicCalls(((StackTraceChromosomeFactory) chromosomeFactory).getPublicCalls());
+                guidedMutation.updatePublicCalls(((StackTraceChromosomeFactory) chromosomeFactory).getPublicCalls());
+                return new PESAII(chromosomeFactory,guidedSinglePointCrossover,guidedMutation);
             default:
                 return new GuidedSingleObjectiveGA(getChromosomeFactory());
         }

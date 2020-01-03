@@ -81,6 +81,7 @@ public class CrashProperties {
         NSGA_II,
         SPEA2,
         MOEAD,
+        PESA_II,
         DynaMOSA;
 
         SearchAlgorithm() {
@@ -93,7 +94,7 @@ public class CrashProperties {
 
 
     @Properties.Parameter(key = "SearchAlgorithm", group = "Crash reproduction", description = "Which search algorithm to use for crash reproduction")
-    public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.MOEAD;
+    public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.PESA_II;
 
 
     @Properties.Parameter(key = "FitnessFunctions", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
@@ -135,6 +136,12 @@ public class CrashProperties {
 
     @Parameter(key = "distance_calculator", group = "MOEAD", description = "neighborhood Selection Probability")
     public static CrashProperties.DistanceCalculator distanceCalculator = DistanceCalculator.TE;
+
+    @Parameter(key = "archive_bisections", group = "PESA", description = "Number of bisections for each objective for archive's grids creation")
+    public static int archiveBisections = 5;
+
+    @Parameter(key = "archive_size", group = "PESA", description = "Size of archive")
+    public static int archiveSize = 50;
 
     static java.util.Properties configFile = new java.util.Properties();
 
