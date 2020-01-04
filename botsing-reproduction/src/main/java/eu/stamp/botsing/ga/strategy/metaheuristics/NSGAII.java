@@ -190,11 +190,13 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
 
             if(containsSinglecObjectiveZeroSC){
                 GAUtil.reportBestFF(stoppingConditions);
+            }else{
+                GAUtil.reportNonDominatedFF((List<Chromosome>) this.rankingFunction.getSubfront(0));
             }
 
             evolve();
             this.notifyIteration();
-            LOG.info("Value of fitness functions");
+//            LOG.info("Value of fitness functions");
             this.writeIndividuals(this.population);
         }
     }

@@ -23,6 +23,9 @@ package eu.stamp.botsing.fitnessfunction;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.fitnessfunction.multiobjectivization.ExceptionTypeFF;
+import eu.stamp.botsing.fitnessfunction.multiobjectivization.LineCoverageFF;
+import eu.stamp.botsing.fitnessfunction.multiobjectivization.StackTraceSimilarityFF;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
@@ -46,6 +49,15 @@ public class FitnessFunctionHelper {
                 break;
             case TestLen:
                 ffClass = TestLenFF.class;
+                break;
+            case LineCoverage:
+                ffClass = LineCoverageFF.class;
+                break;
+            case ExceptionType:
+                ffClass = ExceptionTypeFF.class;
+                break;
+            case StackTraceSimilarity:
+                ffClass = StackTraceSimilarityFF.class;
                 break;
             default:
                 throw new IllegalArgumentException("Objective is not defined");
@@ -107,6 +119,12 @@ public class FitnessFunctionHelper {
                 return new ITFFForIndexedAccess(crash);
             case TestLen:
                 return new TestLenFF();
+            case LineCoverage:
+                return new LineCoverageFF(crash);
+            case ExceptionType:
+                return new ExceptionTypeFF(crash);
+            case StackTraceSimilarity:
+                return new StackTraceSimilarityFF(crash);
             default:
                 return new WeightedSum(crash);
         }

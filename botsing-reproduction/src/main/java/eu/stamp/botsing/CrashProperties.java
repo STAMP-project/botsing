@@ -70,7 +70,10 @@ public class CrashProperties {
         SimpleSum,
         TestLen,
         IntegrationIndexedAccess,
-        IntegrationSingleObjective;
+        IntegrationSingleObjective,
+        LineCoverage,
+        ExceptionType,
+        StackTraceSimilarity;
         FitnessFunction() {
         }
     }
@@ -94,11 +97,11 @@ public class CrashProperties {
 
 
     @Properties.Parameter(key = "SearchAlgorithm", group = "Crash reproduction", description = "Which search algorithm to use for crash reproduction")
-    public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.PESA_II;
+    public static CrashProperties.SearchAlgorithm searchAlgorithm = SearchAlgorithm.NSGA_II;
 
 
     @Properties.Parameter(key = "FitnessFunctions", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
-    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.WeightedSum, FitnessFunction.TestLen};
+    public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.LineCoverage, FitnessFunction.ExceptionType, FitnessFunction.StackTraceSimilarity};
 
 
 
@@ -142,6 +145,9 @@ public class CrashProperties {
 
     @Parameter(key = "archive_size", group = "PESA", description = "Size of archive")
     public static int archiveSize = 50;
+
+//    @Parameter(key = "multi_objectivization", group = "Multi Objectivization", description = "Size of archive")
+//    public static boolean multiObjectivization = false;
 
     static java.util.Properties configFile = new java.util.Properties();
 
