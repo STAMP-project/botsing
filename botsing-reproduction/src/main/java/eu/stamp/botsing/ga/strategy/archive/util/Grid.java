@@ -9,7 +9,7 @@ import java.util.*;
 
 public class Grid<T extends Chromosome> {
 
-    private Integer[] hypercubes;
+    private int[] hypercubes;
 
     int numberOfObjectives;
 
@@ -28,7 +28,7 @@ public class Grid<T extends Chromosome> {
     }
 
     private void initializeHyperCubes() {
-        hypercubes = new Integer[(int) Math.pow(2.0, CrashProperties.archiveBisections * CrashProperties.fitnessFunctions.length)];
+        hypercubes = new int[(int) Math.pow(2.0, CrashProperties.archiveBisections * CrashProperties.fitnessFunctions.length)];
         Arrays.fill(hypercubes, 0);
 
         nonEmptyHyperCubes = new ArrayList<>();
@@ -83,7 +83,7 @@ public class Grid<T extends Chromosome> {
             double fitnessValue = FitnessFunctionHelper.getFitnessValue(individual,ff);
 
             if (!inBoundary(ff,fitnessValue)){
-                throw new IllegalArgumentException("Fitness value of the the given individual is not in the detected rang!");
+                throw new IllegalArgumentException("Fitness value of the the given individual is not in the detected range!");
             }
 
             if (objectivesBoundaries.get(ff)[0] == fitnessValue){
@@ -268,6 +268,6 @@ public class Grid<T extends Chromosome> {
         if (hyperCubeIndex >= hypercubes.length){
             throw new IllegalArgumentException("The given hyperCubeIndex ("+hyperCubeIndex+") is not available in hyper cubes");
         }
-        return this.hypercubes[hyperCubeIndex].intValue();
+        return this.hypercubes[hyperCubeIndex];
     }
 }
