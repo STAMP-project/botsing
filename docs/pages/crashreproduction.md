@@ -37,6 +37,15 @@ usage: java -jar botsing-reproduction.jar -crash_log stacktrace.log -target_fram
 java -jar botsing-reproduction.jar -crash_log LANG-1b.log -target_frame 2 -project_cp ~/bin
 ```
 
+## Multi-objectivization
+
+To apply Multi-Objectivization search for crash reproduction, you need to set `search_algorithm` and `fitness functions` to **NSGA_II** and three objectives (`LineCoverage`, `ExceptionType`, and `StackTraceSimilarity`), respectively.
+### Example
+To apply Botsing with Multi-Objectivization on the stack trace used in previous example, run the following command:
+```Bash
+java -jar botsing-reproduction.jar -crash_log LANG-1b.log -target_frame 2 -project_cp ~/bin -search_algorithm NSGA_II -fitness LineCoverage:ExceptionType:StackTraceSimilarity
+```
+
 ## Maven plugin
 
 See the [documentation for the Maven plugin](https://github.com/STAMP-project/botsing/tree/master/botsing-maven) for more information.
