@@ -83,52 +83,48 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
             offspringPopulation.add(offspring2);
         }
 
+        // *** Merge
         // Create the population union of Population and offSpring
         List<T> union = union(population, offspringPopulation);
 
-        // Ranking the union
+        // *** Sort
+        // Ranking the union according to non-dominance
         this.rankingFunction.computeRankingAssignment(union, new LinkedHashSet(this.getFitnessFunctions()));
 
-
-        int remain = population.size();
+        // *** Truncate
+        // Empty next population
+        List<T> nextPopulation = new ArrayList<>();
+        //Starting from the first front F0
         int index = 0;
         List<T> front;
-        population.clear();
 
-        // Obtain the next front
-        front = this.rankingFunction.getSubfront(index);
-
-        while ((remain > 0) && (remain >= front.size())) {
+        while (nextPopulation.size() < Properties.POPULATION){
+            // obtaining the next front
+            front=this.rankingFunction.getSubfront(index);
+            // the remaining capacity of the next population
+            int capacity = Properties.POPULATION - nextPopulation.size();
             // Assign crowding distance to individuals
             this.crowdingDistance.crowdingDistanceAssignment(front, this.getFitnessFunctions());
-            // Add the individuals of this front
-            for (int k = 0; k < front.size(); k++){
-                population.add(front.get(k));
+            // Check if the next poplation has the capacity to add all of the individuals of the current front
+            if(capacity >= front.size()){
+                // Add all of the individuals in the current front to the next population
+                nextPopulation.addAll(front);
+            }else{
+                // Add the best ones according to the crowding distance
+                // Sort the current front according to the crowding distance
+                Collections.sort(front, new RankAndCrowdingDistanceComparator<T>(true));
+                // add the first capacity individuals and add them to the next population
+                for (int i = 0; i < capacity; i++){
+                    nextPopulation.add(front.get(i));
+                }
             }
-
-            // Decrement remain
-            remain = remain - front.size();
-
-            // Obtain the next front
+            // increase the index for obtaining the next front
             index++;
-            if (remain > 0){
-                front = this.rankingFunction.getSubfront(index);
-            }
         }
 
-        // Remain is less than front(index).size, insert only the best one
-        if (remain > 0) {
-            // front contains individuals to insert
-            this.crowdingDistance.crowdingDistanceAssignment(front, this.getFitnessFunctions());
-
-            Collections.sort(front, new RankAndCrowdingDistanceComparator<T>(true));
-
-            for (int k = 0; k < remain; k++){
-                population.add(front.get(k));
-            }
-
-//            remain = 0;
-        }
+        // Next population is ready. We can proceed to the next iteration.
+        population.clear();
+        population.addAll(nextPopulation);
 
         currentIteration++;
     }
