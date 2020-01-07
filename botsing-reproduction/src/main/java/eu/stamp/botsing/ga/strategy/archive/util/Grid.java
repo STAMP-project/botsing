@@ -229,7 +229,9 @@ public class Grid<T extends Chromosome> {
         return false;
     }
 
-    public int getMostPopulatedHypercube(){return this.mostPopulatedHypercube;}
+    public int getMostPopulatedHypercube() {
+        return this.mostPopulatedHypercube;
+    }
 
     public void removeIndividual(T individual) {
         int individualsHyperCube = this.getHyperCube(individual);

@@ -174,7 +174,9 @@ public class GridArchive<T extends Chromosome> {
         return 1;
     }
 
-    public List<T> getSolutions(){return archive;}
+    public List<T> getSolutions() {
+        return archive;
+    }
 
     public Grid<T> getGrid() {
         return grid;
