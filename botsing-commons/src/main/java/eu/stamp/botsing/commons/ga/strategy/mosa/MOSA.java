@@ -37,11 +37,20 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
     private List<T> offspringPopulation = new ArrayList<>();
 
+    private TestFitnessFunction criticalObjective;
 
-    public MOSA(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator, FitnessFunctions fitnessCollector) {
+    public MOSA(ChromosomeFactory<T> factory, CrossOverFunction crossOverOperator, Mutation<T> mutationOperator, FitnessFunctions fitnessCollector) {
         super(factory, fitnessCollector);
         mutation = mutationOperator;
         this.crossoverFunction = crossOverOperator;
+
+        for (TestFitnessFunction ff : fitnessCollector.getFitnessFunctionList()) {
+            String ffClassName = ff.getClass().getName();
+            if (ffClassName.equals("eu.stamp.botsing.fitnessfunction.WeightedSum") || ffClassName.equals("eu" +
+                    ".stamp.botsing.fitnessfunction.IntegrationTestingFF")) {
+                criticalObjective = ff;
+            }
+        }
     }
 
 
@@ -94,23 +103,13 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
             for (int k = 0; k < remain; k++) {
                 this.population.add(front.get(k));
             }
-
-            remain = 0;
         }
 
-        try{
-
-
-
-            Map<FitnessFunction<?>, Double> front0= this.rankingFunction.getSubfront(0).get(0).getFitnessValues();
-            this.fitnessCollector.printCriticalTargets(front0);
-
-        }catch (Exception e){
+        try {
+            LOG.info(criticalObjective + ": " + fitnessTracker.get(criticalObjective));
+        } catch (Exception e) {
             LOG.info("SubFront is empty!");
-
         }
-
-
 
         this.currentIteration++;
     }

@@ -56,7 +56,7 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
     @Override
     public void printCriticalTargets(Map<FitnessFunction<?>, Double> front0) {
         for (FitnessFunction<?> g : front0.keySet()) {
-            if (g instanceof IntegrationTestingFF) {
+            if (g instanceof IntegrationTestingFF || g instanceof WeightedSum) {
                 LOG.info("" + g + ": " + front0.get(g));
             }
         }

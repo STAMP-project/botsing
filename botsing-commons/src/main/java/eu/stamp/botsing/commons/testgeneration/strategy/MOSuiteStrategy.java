@@ -3,6 +3,7 @@ package eu.stamp.botsing.commons.testgeneration.strategy;
 
 import eu.stamp.botsing.commons.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.commons.ga.strategy.mosa.AbstractMOSA;
+import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingCondition;
 import org.evosuite.Properties;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.GlobalTimeStoppingCondition;
@@ -57,6 +58,21 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
 
         stoppingCondition.setLimit(Properties.SEARCH_BUDGET);
 
+        List<TestFitnessFunction> fitnessFunctions = fitnessFunctionCollector.getFitnessFunctionList();
+        boolean containsMainFF = false;
+        if (fitnessFunctions.size() > 1) {
+            for (TestFitnessFunction ff : fitnessFunctions) {
+                String ffClassName = ff.getClass().getName();
+                if (ffClassName.equals("eu.stamp.botsing.fitnessfunction.WeightedSum") || ffClassName.equals("eu" +
+                        ".stamp.botsing.fitnessfunction.IntegrationTestingFF")) {
+                    containsMainFF = true;
+                    ga.addStoppingCondition(new SingleObjectiveZeroStoppingCondition(ff));
+                }
+            }
+            if (!containsMainFF) {
+                ga.addStoppingCondition(new ZeroFitnessStoppingCondition());
+            }
+        }
         if (Properties.STOP_ZERO) {
             ga.addStoppingCondition(new ZeroFitnessStoppingCondition());
         }
@@ -84,7 +100,6 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
 
 
         // Add fitnes functions
-        List<TestFitnessFunction> fitnessFunctions = fitnessFunctionCollector.getFitnessFunctionList();
         LOG.info("The number of goals are {}: ",fitnessFunctions.size());
 
         ga.addFitnessFunctions((List)fitnessFunctions);
@@ -92,7 +107,7 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
         // Start the search process
         ga.generateSolution();
 
-        List<TestSuiteChromosome> bestSuites = (List<TestSuiteChromosome>) ga.getBestIndividuals();
+        List<TestSuiteChromosome> bestSuites = ga.getBestIndividuals();
         if (bestSuites.isEmpty()) {
             LOG.warn("Could not find any suitable chromosome");
             return new TestSuiteChromosome();
