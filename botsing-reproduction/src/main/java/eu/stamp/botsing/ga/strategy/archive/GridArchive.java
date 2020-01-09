@@ -29,6 +29,7 @@ public class GridArchive<T extends Chromosome> {
             // add to archive if it is empty
             if (archive.isEmpty()){
                 archive.add(individual);
+                grid.updateGrid(archive);
                 continue;
             }
 
