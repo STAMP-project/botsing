@@ -97,6 +97,8 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         //Starting from the first front F0
         int index = 0;
         List<T> front;
+        List<T> f0 = this.rankingFunction.getSubfront(index);
+        LOG.info("* Front0 Size: {}",f0.size());
 
         while (nextPopulation.size() < Properties.POPULATION){
             // obtaining the next front
