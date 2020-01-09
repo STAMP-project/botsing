@@ -128,7 +128,7 @@ public class CrashProperties {
     public static int maximumNumberOfReplacedSolutions = 100;
 
     @Parameter(key = "ideal_point_shift", group = "MOEAD", description = "Shift objectives of ideal point to a better situation (to avoid local optimum)")
-    public static double idealPointShift = 0.2;
+    public static double idealPointShift = 0.1;
 
 
     public enum DistanceCalculator {
