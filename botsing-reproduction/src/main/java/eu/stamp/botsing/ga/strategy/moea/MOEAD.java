@@ -45,7 +45,7 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
                     LOG.error("Crossover failed: " + e.getMessage());
                 }
             }
-            // ToDo: In the current implementation of JMetal, we always use the first offspirng for mutation. Maybe we can use the dominated one!
+            // ToDo: In the current implementation of JMetal, we always use the first offspring for mutation. Maybe we can use the dominated one!
 
             // Mutation
             if (Randomness.nextDouble() <= Properties.MUTATION_RATE) {
