@@ -3,7 +3,7 @@ package eu.stamp.botsing.fitnessfunction;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.coverage.io.input.InputCoverageFactory;
 import eu.stamp.botsing.coverage.io.output.OutputCoverageFactory;
-import eu.stamp.botsing.coverage.variable.BranchingVariableCoverageFactory;
+import eu.stamp.botsing.coverage.variable.BranchingVariableDiversityFactory;
 import eu.stamp.botsing.reproduction.CrashReproductionGoalFactory;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
@@ -36,8 +36,9 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
 
         // branching variable diversity goals
         if (CrashProperties.branchingVariableDiversity) {
-            BranchingVariableCoverageFactory branchingVariableFactory = new BranchingVariableCoverageFactory();
-            goalsList.addAll(branchingVariableFactory.getCoverageGoals());
+            BranchingVariableDiversityFactory branchingVariableDiversityFactory =
+                    new BranchingVariableDiversityFactory();
+            goalsList.addAll(branchingVariableDiversityFactory.getCoverageGoals());
         }
 
         return goalsList;

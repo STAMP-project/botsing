@@ -11,7 +11,7 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
 
-public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
+public class BranchingVariableDiversityObjective extends TestFitnessFunction {
     private static final long serialVersionUID = -8943148780270724898L;
 
     String className;
@@ -19,12 +19,12 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
     int lineNumber;
     String variableName;
     Type variableType;
-    VariableCondition condition;
+    DiversityObjective condition;
 
-    static BranchingVariableCoverageTestFitness getTestFitness(String className, String methodName, int lineNumber,
-                                                               String variableName, Type variableType,
-                                                               VariableCondition condition) {
-        BranchingVariableCoverageTestFitness testFitness = new BranchingVariableCoverageTestFitness();
+    static BranchingVariableDiversityObjective getTestFitness(String className, String methodName, int lineNumber,
+                                                              String variableName, Type variableType,
+                                                              DiversityObjective condition) {
+        BranchingVariableDiversityObjective testFitness = new BranchingVariableDiversityObjective();
         testFitness.className = className;
         testFitness.methodName = methodName;
         testFitness.lineNumber = lineNumber;
@@ -56,7 +56,7 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
         return variableType;
     }
 
-    VariableCondition getCondition() {
+    DiversityObjective getCondition() {
         return condition;
     }
 
@@ -196,7 +196,7 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
             return false;
         }
 
-        BranchingVariableCoverageTestFitness that = (BranchingVariableCoverageTestFitness) o;
+        BranchingVariableDiversityObjective that = (BranchingVariableDiversityObjective) o;
 
         if (!className.equals(that.className)) {
             return false;
@@ -222,8 +222,8 @@ public class BranchingVariableCoverageTestFitness extends TestFitnessFunction {
     public int compareTo(TestFitnessFunction testFitnessFunction) {
         int classCompare = className.compareTo(testFitnessFunction.getTargetClass());
         if (classCompare == 0) {
-            if (testFitnessFunction instanceof BranchingVariableCoverageTestFitness) {
-                BranchingVariableCoverageTestFitness other = (BranchingVariableCoverageTestFitness) testFitnessFunction;
+            if (testFitnessFunction instanceof BranchingVariableDiversityObjective) {
+                BranchingVariableDiversityObjective other = (BranchingVariableDiversityObjective) testFitnessFunction;
                 int lineCompare = Integer.compare(lineNumber, other.lineNumber);
                 if (lineCompare == 0) {
                     int nameCompare = variableName.compareTo(other.variableName);

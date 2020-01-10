@@ -17,15 +17,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static eu.stamp.botsing.coverage.variable.BranchingVariableCoverageTestFitness.getTestFitness;
-import static eu.stamp.botsing.coverage.variable.VariableCondition.*;
+import static eu.stamp.botsing.coverage.variable.BranchingVariableDiversityObjective.getTestFitness;
+import static eu.stamp.botsing.coverage.variable.DiversityObjective.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.objectweb.asm.Opcodes.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BranchingVariableCoverageFactoryTest {
+public class BranchingVariableDiversityFactoryTest {
     @Spy
     private CoverageUtility utility;
 
@@ -33,12 +33,12 @@ public class BranchingVariableCoverageFactoryTest {
     List<LocalVariableNode> variables;
 
     @InjectMocks
-    BranchingVariableCoverageFactory factory = new BranchingVariableCoverageFactory();
+    BranchingVariableDiversityFactory factory = new BranchingVariableDiversityFactory();
 
     @Test
     public void testEmptyExecutables() {
         Mockito.when(utility.getStackTraceExecutables()).thenReturn(new ArrayList<>());
-        List<BranchingVariableCoverageTestFitness> goals = factory.getCoverageGoals();
+        List<BranchingVariableDiversityObjective> goals = factory.getCoverageGoals();
         assert (goals.isEmpty());
     }
 
@@ -76,7 +76,7 @@ public class BranchingVariableCoverageFactoryTest {
         instructions.add(varInstruction);
         instructions.add(compareInstruction);
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.detectGoals("classA", "method1", instructions,
+        Set<BranchingVariableDiversityObjective> goals = factory.detectGoals("classA", "method1", instructions,
                 variables);
 
         assertThat(goals).size().isEqualTo(3);
@@ -110,7 +110,7 @@ public class BranchingVariableCoverageFactoryTest {
         instructions.add(varInstruction);
         instructions.add(compareInstruction);
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.detectGoals("classA", "method1", instructions,
+        Set<BranchingVariableDiversityObjective> goals = factory.detectGoals("classA", "method1", instructions,
                 variables);
 
         assertThat(goals).size().isEqualTo(3);
@@ -138,7 +138,7 @@ public class BranchingVariableCoverageFactoryTest {
         variableNode.desc = "I";
         when(variables.get(0)).thenReturn(variableNode);
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.detectVariables("classA", "method1", 11,
+        Set<BranchingVariableDiversityObjective> goals = factory.detectVariables("classA", "method1", 11,
                 instructions, variables, 1, 2);
 
         assertThat(goals).size().isEqualTo(3);
@@ -154,11 +154,11 @@ public class BranchingVariableCoverageFactoryTest {
         variable.name = "booleanPrimitive";
         variable.desc = "Z";
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+        Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                 variable);
 
         // Expect 2 goals:
-        Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+        Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
                 BOOL_FALSE));
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
@@ -177,11 +177,11 @@ public class BranchingVariableCoverageFactoryTest {
         variable.name = "BooleanObject";
         variable.desc = "Ljava/lang/Boolean;";
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+        Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                 variable);
 
         // Expect 3 goals
-        Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+        Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
                 REF_NULL));
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
@@ -202,11 +202,11 @@ public class BranchingVariableCoverageFactoryTest {
         variable.name = "charPrimitive";
         variable.desc = "C";
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+        Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                 variable);
 
         // Expect 3 goals:
-        Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+        Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
                 CHAR_ALPHA));
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
@@ -227,11 +227,11 @@ public class BranchingVariableCoverageFactoryTest {
         variable.name = "CharacterObject";
         variable.desc = "Ljava/lang/Character;";
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+        Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                 variable);
 
         // Expect 4 goals
-        Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+        Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
                 REF_NULL));
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
@@ -256,11 +256,11 @@ public class BranchingVariableCoverageFactoryTest {
         for (String desc : descriptions) {
             variable.desc = desc;
 
-            Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+            Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                     variable);
 
             // Expect 3 goals:
-            Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+            Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
             expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc)
                     , NUM_NEGATIVE));
             expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc)
@@ -285,11 +285,11 @@ public class BranchingVariableCoverageFactoryTest {
         for (String desc : descriptions) {
             variable.desc = desc;
 
-            Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+            Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                     variable);
 
             // Expect 4 goals:
-            Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+            Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
             expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc)
                     , REF_NULL));
             expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc)
@@ -313,11 +313,11 @@ public class BranchingVariableCoverageFactoryTest {
         variable.name = "arrayRef";
         variable.desc = "[I";
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+        Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                 variable);
 
         // Expect 3 goals
-        Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+        Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
                 REF_NULL));
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
@@ -338,11 +338,11 @@ public class BranchingVariableCoverageFactoryTest {
         variable.name = "StringRef";
         variable.desc = "Ljava/lang/String;";
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+        Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                 variable);
 
         // Expect 3 goals
-        Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+        Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
                 REF_NULL));
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
@@ -363,11 +363,11 @@ public class BranchingVariableCoverageFactoryTest {
         variable.name = "ListRef";
         variable.desc = "Ljava/util/ArrayList;";
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+        Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                 variable);
 
         // Expect 3 goals
-        Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+        Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
                 REF_NULL));
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
@@ -388,11 +388,11 @@ public class BranchingVariableCoverageFactoryTest {
         variable.name = "SetRef";
         variable.desc = "Ljava/util/HashSet;";
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+        Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                 variable);
 
         // Expect 3 goals
-        Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+        Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
                 REF_NULL));
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
@@ -413,11 +413,11 @@ public class BranchingVariableCoverageFactoryTest {
         variable.name = "MapRef";
         variable.desc = "Ljava/util/HashMap;";
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+        Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                 variable);
 
         // Expect 3 goals
-        Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+        Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
                 REF_NULL));
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
@@ -438,11 +438,11 @@ public class BranchingVariableCoverageFactoryTest {
         variable.name = "ObjectRef";
         variable.desc = "Ljava/lang/Object;";
 
-        Set<BranchingVariableCoverageTestFitness> goals = factory.createGoals(className, methodName, lineNumber,
+        Set<BranchingVariableDiversityObjective> goals = factory.createGoals(className, methodName, lineNumber,
                 variable);
 
         // Expect 2 goals
-        Set<BranchingVariableCoverageTestFitness> expected = new HashSet<>();
+        Set<BranchingVariableDiversityObjective> expected = new HashSet<>();
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),
                 REF_NULL));
         expected.add(getTestFitness(className, methodName, lineNumber, variable.name, Type.getType(variable.desc),

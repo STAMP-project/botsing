@@ -1,6 +1,6 @@
 package eu.stamp.botsing.coverage.variable;
 
-public enum VariableCondition {
+public enum DiversityObjective {
     CHAR_ALPHA,
     CHAR_DIGIT,
     CHAR_OTHER,

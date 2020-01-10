@@ -15,23 +15,23 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static eu.stamp.botsing.coverage.variable.BranchingVariableCoverageTestFitness.getTestFitness;
-import static eu.stamp.botsing.coverage.variable.VariableCondition.*;
+import static eu.stamp.botsing.coverage.variable.BranchingVariableDiversityObjective.getTestFitness;
+import static eu.stamp.botsing.coverage.variable.DiversityObjective.*;
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
 import static org.objectweb.asm.Type.DOUBLE;
 import static org.objectweb.asm.Type.FLOAT;
 import static org.objectweb.asm.Type.LONG;
 
-public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<BranchingVariableCoverageTestFitness> {
+public class BranchingVariableDiversityFactory extends AbstractFitnessFactory<BranchingVariableDiversityObjective> {
     private Map<String, Map<Integer, Set<String>>> loggedVariables = new HashMap<>();
 
     @Resource
     protected CoverageUtility utility = new CoverageUtility();
 
     @Override
-    public List<BranchingVariableCoverageTestFitness> getCoverageGoals() {
-        List<BranchingVariableCoverageTestFitness> goals = new ArrayList<>();
+    public List<BranchingVariableDiversityObjective> getCoverageGoals() {
+        List<BranchingVariableDiversityObjective> goals = new ArrayList<>();
         List<Executable> executables = utility.getStackTraceExecutables();
         BytecodeInstructionPool instructionPool =
                 BytecodeInstructionPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader(CrashProperties.integrationTesting));
@@ -60,10 +60,10 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
      * @param localVariables The {@link List} of {@link LocalVariableNode}s of the method, sorted according to their
      *                       {@link LocalVariableNode#index indexes}.
      */
-    Set<BranchingVariableCoverageTestFitness> detectGoals(String className, String methodName,
-                                                          List<BytecodeInstruction> instructions,
-                                                          List<LocalVariableNode> localVariables) {
-        Set<BranchingVariableCoverageTestFitness> goals = new HashSet<>();
+    Set<BranchingVariableDiversityObjective> detectGoals(String className, String methodName,
+                                                         List<BytecodeInstruction> instructions,
+                                                         List<LocalVariableNode> localVariables) {
+        Set<BranchingVariableDiversityObjective> goals = new HashSet<>();
         int currentLine = 0;
         for (int i = 0; i < instructions.size(); i++) {
             AbstractInsnNode instruction = instructions.get(i).getASMNode();
@@ -97,11 +97,11 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
      * @param index          The index of the branching instruction in the instruction list.
      * @param numOfVariables The number of variables compared with the instruction.
      */
-    Set<BranchingVariableCoverageTestFitness> detectVariables(String className, String methodName, int lineNumber,
-                                                              List<BytecodeInstruction> instructions,
-                                                              List<LocalVariableNode> localVariables, int index,
-                                                              int numOfVariables) {
-        Set<BranchingVariableCoverageTestFitness> goals = new HashSet<>();
+    Set<BranchingVariableDiversityObjective> detectVariables(String className, String methodName, int lineNumber,
+                                                             List<BytecodeInstruction> instructions,
+                                                             List<LocalVariableNode> localVariables, int index,
+                                                             int numOfVariables) {
+        Set<BranchingVariableDiversityObjective> goals = new HashSet<>();
         int count = 0;
         while (count < numOfVariables) {
             AbstractInsnNode current = instructions.get(index--).getASMNode();
@@ -173,9 +173,9 @@ public class BranchingVariableCoverageFactory extends AbstractFitnessFactory<Bra
         return goals;
     }
 
-    Set<BranchingVariableCoverageTestFitness> createGoals(String className, String methodName, int lineNumber,
-                                                          LocalVariableNode variable) {
-        Set<BranchingVariableCoverageTestFitness> goals = new HashSet<>();
+    Set<BranchingVariableDiversityObjective> createGoals(String className, String methodName, int lineNumber,
+                                                         LocalVariableNode variable) {
+        Set<BranchingVariableDiversityObjective> goals = new HashSet<>();
         String variableName = variable.name;
         String variableDesc = variable.desc;
         Type variableType = Type.getType(variableDesc);
