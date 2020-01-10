@@ -69,6 +69,7 @@ public class CrashProperties {
         WeightedSum,
         SimpleSum,
         TestLen,
+        CallDiversity,
         IntegrationIndexedAccess,
         IntegrationSingleObjective,
         LineCoverage,

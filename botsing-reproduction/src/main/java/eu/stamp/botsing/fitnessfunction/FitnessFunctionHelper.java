@@ -35,6 +35,25 @@ public class FitnessFunctionHelper {
 
     public static double getFitnessValue(Chromosome individual,
                                          CrashProperties.FitnessFunction objective) {
+        Class ffClass = getType(objective);
+        for (FitnessFunction<?> ff : individual.getFitnessValues().keySet()){
+            if (ff.getClass().equals(ffClass)){
+                return individual.getFitnessValues().get(ff).doubleValue();
+            }
+        }
+        throw new IllegalArgumentException("Objective is not available in the given fitness functions");
+    }
+
+    public static boolean containsFitness(CrashProperties.FitnessFunction objective) {
+        for (CrashProperties.FitnessFunction ff : CrashProperties.fitnessFunctions){
+            if(ff.equals(objective)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Class getType(CrashProperties.FitnessFunction objective){
         Class ffClass;
 
         switch (objective) {
@@ -59,15 +78,14 @@ public class FitnessFunctionHelper {
             case StackTraceSimilarity:
                 ffClass = StackTraceSimilarityFF.class;
                 break;
+            case CallDiversity:
+                ffClass = CallDiversity.class;
+                break;
             default:
                 throw new IllegalArgumentException("Objective is not defined");
         }
-        for (FitnessFunction<?> ff : individual.getFitnessValues().keySet()){
-            if (ff.getClass().equals(ffClass)){
-                return individual.getFitnessValues().get(ff).doubleValue();
-            }
-        }
-        throw new IllegalArgumentException("Objective is not available in the given fitness functions");
+
+        return ffClass;
     }
 
     public boolean isConstructor(BytecodeInstruction targetInstruction) {
@@ -125,6 +143,8 @@ public class FitnessFunctionHelper {
                 return new ExceptionTypeFF(crash);
             case StackTraceSimilarity:
                 return new StackTraceSimilarityFF(crash);
+            case CallDiversity:
+                return new CallDiversity(crash);
             default:
                 return new WeightedSum(crash);
         }
