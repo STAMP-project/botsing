@@ -1,6 +1,5 @@
 package eu.stamp.botsing.ga.strategy.metaheuristics;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
@@ -137,7 +136,34 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
 
     @Override
     public void initializePopulation(){
-        // TODO: override this to update indivuals in diversity calculator before fitness values calculation
+        this.notifySearchStarted();
+        this.currentIteration=0;
+        // Generate initial population
+        this.generateInitialPopulation(Properties.POPULATION);
+
+        // Create an empty archive
+        this. archive = new ArrayList<T>(Properties.POPULATION);
+
+        // prepare diversity calculator if needed
+        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
+            diversityCalculator.updateIndividuals(this.population,true);
+        }
+
+
+
+        // Fitness function evaluation for individuals in the initial population
+        for (T element : this.population) {
+            for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
+                ff.getFitness(element);
+                notifyEvaluation(element);
+            }
+        }
+
+        this.updateArchive();
+
+        this.writeIndividuals(this.archive);
+
+        this.notifyIteration();
     }
 
     @Override
@@ -168,7 +194,9 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
 
         // for one main FF
         CrashProperties.FitnessFunction mainObjective;
-        if(CrashProperties.fitnessFunctions.length == 2){
+        if(CrashProperties.fitnessFunctions.length > 1 &
+                (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.WeightedSum) ||
+                        FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.IntegrationSingleObjective))){
             if (CrashProperties.fitnessFunctions[0] == CrashProperties.FitnessFunction.TestLen){
                 mainObjective = CrashProperties.fitnessFunctions[1];
             }else {
