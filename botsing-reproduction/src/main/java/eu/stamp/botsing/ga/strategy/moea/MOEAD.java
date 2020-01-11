@@ -1,6 +1,9 @@
 package eu.stamp.botsing.ga.strategy.moea;
 
+import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import eu.stamp.botsing.fitnessfunction.calculator.diversity.CallDiversityFitnessCalculator;
 import eu.stamp.botsing.ga.GAUtil;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
@@ -13,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import java.util.Iterator;
 import java.util.List;
 
 public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
@@ -55,6 +59,10 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
 
 
             // Fitness Function Evaluation
+            if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
+                this.diversityCalculator.updateIndividuals(this.population,true);
+            }
+
             for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
                 ff.getFitness(offspring1);
                 notifyEvaluation(offspring1);
@@ -77,6 +85,10 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
         LOG.debug("Initializing the population.");
         generatePopulation(this.populationSize);
 
+        // Calculate diversity values for initial population
+        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
+            diversityCalculator.updateIndividuals(this.population,true);
+        }
         // Calculate fitness functions
         calculateFitness();
 
@@ -100,6 +112,8 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
         }
     }
 
+
+    @Override
     protected void calculateFitness(T chromosome){
         for (FitnessFunction<T> fitnessFunction : fitnessFunctions) {
             notifyEvaluation(chromosome);

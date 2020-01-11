@@ -1,8 +1,12 @@
 package eu.stamp.botsing.ga.strategy.moea;
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import eu.stamp.botsing.fitnessfunction.calculator.diversity.CallDiversityFitnessCalculator;
+import eu.stamp.botsing.fitnessfunction.calculator.diversity.HammingDiversity;
+import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.ga.strategy.moea.point.IdealPoint;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
@@ -43,6 +47,8 @@ public abstract class AbstractMOEAD<T extends Chromosome> extends GeneticAlgorit
 
     protected int numberOfSelectedParents = 2;
 
+    protected CallDiversityFitnessCalculator<T> diversityCalculator;
+
     public AbstractMOEAD(ChromosomeFactory<T> factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory);
         mutation = mutationOperator;
@@ -71,18 +77,32 @@ public abstract class AbstractMOEAD<T extends Chromosome> extends GeneticAlgorit
 
         neighborhood = new int[populationSize][neighborSize];
 
-
+        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
+            // initialize diversity calculator if it is needed
+            StackTrace targetTrace = ((StackTraceChromosomeFactory) this.chromosomeFactory).getTargetTrace();
+            diversityCalculator = HammingDiversity.getInstance(targetTrace);
+        }
     }
 
 
     protected void initializeUniformWeight() {
-        // Since we have two objectives here, and population size is lower than 300, our lambdas are only 0 and 1
-        //ToDo: Double check this
-        for (int n = 0; n < populationSize; n++) {
-            double a = 1.0 * n / (populationSize - 1);
-            lambda[n][0] = a;
-            lambda[n][1] = 1 - a;
+        // Since we have two or three objectives here, and population size is lower than 300, our lambdas are generated automatically
+
+        if(CrashProperties.fitnessFunctions.length == 2){
+            for (int n = 0; n < populationSize; n++) {
+                double a = 1.0 * n / (populationSize - 1);
+                lambda[n][0] = a;
+                lambda[n][1] = 1 - (a);
+            }
+        }else {
+            for (int n = 0; n < populationSize; n++) {
+                double a = 1.0 * n / (populationSize - 1);
+                lambda[n][0] = a;
+                lambda[n][1] = 1 - (a/2);
+                lambda[n][2] = 1 - (a/2);
+            }
         }
+
     }
 
 
@@ -252,7 +272,9 @@ public abstract class AbstractMOEAD<T extends Chromosome> extends GeneticAlgorit
 
         // for one main FF
         CrashProperties.FitnessFunction mainObjective;
-        if(CrashProperties.fitnessFunctions.length == 2){
+        if(CrashProperties.fitnessFunctions.length > 1 &
+                (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.WeightedSum) ||
+                        FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.IntegrationSingleObjective))){
             if (CrashProperties.fitnessFunctions[0] == CrashProperties.FitnessFunction.TestLen){
                 mainObjective = CrashProperties.fitnessFunctions[1];
             }else {
