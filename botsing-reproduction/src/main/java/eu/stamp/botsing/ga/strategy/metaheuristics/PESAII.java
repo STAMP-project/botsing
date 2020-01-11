@@ -1,8 +1,13 @@
 package eu.stamp.botsing.ga.strategy.metaheuristics;
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
+import eu.stamp.botsing.fitnessfunction.CallDiversity;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import eu.stamp.botsing.fitnessfunction.calculator.diversity.CallDiversityFitnessCalculator;
+import eu.stamp.botsing.fitnessfunction.calculator.diversity.HammingDiversity;
+import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.ga.GAUtil;
 import eu.stamp.botsing.ga.strategy.archive.GridArchive;
 import eu.stamp.botsing.ga.strategy.operators.selection.PESAIISelection;
@@ -29,6 +34,8 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
 
     protected GridArchive<T> archive;
 
+    private CallDiversityFitnessCalculator<T> diversityCalculator;
+
 
     public PESAII(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory);
@@ -46,6 +53,12 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
         }
         // initialize PESA selection
         selectionFunction = new PESAIISelection<T>();
+
+        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
+            // initialize diversity calculator if it is needed
+            StackTrace targetTrace = ((StackTraceChromosomeFactory) this.chromosomeFactory).getTargetTrace();
+            diversityCalculator = HammingDiversity.getInstance(targetTrace);
+        }
     }
 
     @Override
@@ -84,6 +97,39 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
     protected void evolve() {
         List<T> offspringPopulation = new ArrayList<T>(population.size());
         // At the beginning of each evolve, we update the archive with the new generation of individuals
+
+        // calculate diversity fitness values if it has diversity in the search objectives
+        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
+            this.diversityCalculator.updateIndividuals(this.archive.getSolutions(),true);
+            this.diversityCalculator.updateIndividuals(population,false);
+
+            // Calculate diversity fitness values in archive and the  population
+            // Diversity Fitness Function Evaluation of the population
+            for (T element : population) {
+                for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
+                    if (ff instanceof CallDiversity){
+                        ff.getFitness(element);
+                    }
+                }
+            }
+
+            // Diversity Fitness Function Evaluation of the individuals in the archive
+            for (T element : this.archive.getSolutions()) {
+                for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
+                    if (ff instanceof CallDiversity){
+                        ff.getFitness(element);
+                    }
+                }
+            }
+
+            if(isFinished()){
+                return;
+            }
+
+            // Update grid because the fitness values of tests in the archive have been changed
+            archive.getGrid().updateGrid(this.archive.getSolutions());
+        }
+
         archive.updateArchive(population);
         while (offspringPopulation.size() < population.size()) {
             // PESA-II Selection
@@ -113,13 +159,19 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
             offspringPopulation.add(offspring1);
             offspringPopulation.add(offspring2);
         }
-        // Fitness Function Evaluation
-        for (T element : offspringPopulation) {
-            for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
-                ff.getFitness(element);
-                notifyEvaluation(element);
+
+            // Fitness Function Evaluation except diversity
+            // If we have diversity search objective, we will calculate its fitness values before archive update
+            for (T element : offspringPopulation) {
+                for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
+                    if (!(ff instanceof CallDiversity)){
+                        ff.getFitness(element);
+                        notifyEvaluation(element);
+                    }
+                }
             }
-        }
+//        }
+
 
         // Replacement
         this.population.clear();
@@ -141,7 +193,16 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
         LOG.debug("Initializing the population.");
         generatePopulation(this.populationSize);
 
-        calculateFitness();
+        // Fitness Function Evaluation except diversity
+        // If we have diversity search objective, we will calculate its fitness values before archive update
+        for (T element : this.population) {
+            for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
+                if (!(ff instanceof CallDiversity)){
+                    ff.getFitness(element);
+                    notifyEvaluation(element);
+                }
+            }
+        }
 
         this.notifyIteration();
 
@@ -172,7 +233,9 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
 
         // for one main FF
         CrashProperties.FitnessFunction mainObjective;
-        if(CrashProperties.fitnessFunctions.length == 2){
+        if(CrashProperties.fitnessFunctions.length > 1 &
+                (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.WeightedSum) ||
+                        FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.IntegrationSingleObjective))){
             if (CrashProperties.fitnessFunctions[0] == CrashProperties.FitnessFunction.TestLen){
                 mainObjective = CrashProperties.fitnessFunctions[1];
             }else {
