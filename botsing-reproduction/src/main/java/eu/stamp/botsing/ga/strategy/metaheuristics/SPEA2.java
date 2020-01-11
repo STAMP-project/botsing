@@ -1,8 +1,13 @@
 package eu.stamp.botsing.ga.strategy.metaheuristics;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import eu.stamp.botsing.fitnessfunction.calculator.diversity.CallDiversityFitnessCalculator;
+import eu.stamp.botsing.fitnessfunction.calculator.diversity.HammingDiversity;
+import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.ga.GAUtil;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
@@ -24,6 +29,8 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
     Mutation mutation;
     private int populationSize;
 
+    private CallDiversityFitnessCalculator<T> diversityCalculator;
+
     public SPEA2(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory);
         mutation = mutationOperator;
@@ -35,6 +42,13 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
             e.printStackTrace();
         } catch (Properties.NoSuchParameterException e) {
             e.printStackTrace();
+        }
+
+
+        // initialize diversity calculator if it is needed
+        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)){
+            StackTrace targetTrace = ((StackTraceChromosomeFactory) this.chromosomeFactory).getTargetTrace();
+            diversityCalculator = HammingDiversity.getInstance(targetTrace);
         }
     }
 
@@ -72,10 +86,12 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
         }
 
         // Fitness Function Evaluation
-        for (T element : offspringPopulation) {
-            for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
-                ff.getFitness(element);
-                notifyEvaluation(element);
+        if (!FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
+            for (T element : offspringPopulation) {
+                for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
+                    ff.getFitness(element);
+                    notifyEvaluation(element);
+                }
             }
         }
 
@@ -117,6 +133,31 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
             this.notifyIteration();
             this.writeIndividuals(this.archive);
         }
+    }
+
+    @Override
+    public void initializePopulation(){
+        // TODO: override this to update indivuals in diversity calculator before fitness values calculation
+    }
+
+    @Override
+    protected void updateArchive() {
+        List<T> union = new ArrayList(2 * Properties.POPULATION);
+        union.addAll(this.population);
+        union.addAll(this.archive);
+        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
+            this.diversityCalculator.updateIndividuals(union,true);
+            // calculate fitness values, here
+            for (T element : union) {
+                for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
+                    ff.getFitness(element);
+                    notifyEvaluation(element);
+                }
+            }
+        }
+
+        this.computeStrength(union);
+        this.archive = this.environmentalSelection(union);
     }
 
     @Override

@@ -4,6 +4,7 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import eu.stamp.botsing.fitnessfunction.calculator.diversity.CallDiversityFitnessCalculator;
 import eu.stamp.botsing.fitnessfunction.calculator.diversity.HammingDiversity;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.ga.GAUtil;
@@ -33,6 +34,8 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
 
     private final CrowdingDistance<T> crowdingDistance;
 
+    private CallDiversityFitnessCalculator<T> diversityCalculator;
+
     public NSGAII(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory);
         mutation = mutationOperator;
@@ -45,6 +48,12 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
             e.printStackTrace();
         }
         this.crowdingDistance = new CrowdingDistance<T>();
+
+        // initialize diversity calculator if it is needed
+        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)){
+            StackTrace targetTrace = ((StackTraceChromosomeFactory) this.chromosomeFactory).getTargetTrace();
+            diversityCalculator = HammingDiversity.getInstance(targetTrace);
+        }
     }
 
     @Override
@@ -92,7 +101,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         // Create the population union of Population and offSpring
         List<T> union = union(population, offspringPopulation);
         if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)){
-            updateDiversityCalculator(union,true);
+            diversityCalculator.updateIndividuals(union,true);
             // calculate fitness every individuals
             for (T individual: union){
                 calculateFitness(individual);
@@ -164,16 +173,6 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
 
     }
 
-    private void updateDiversityCalculator(List<T> population, boolean isClear){
-        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)){
-            // We should update the population of call diversity calculator
-            StackTrace targetTrace = ((StackTraceChromosomeFactory) this.chromosomeFactory).getTargetTrace();
-            if(isClear){
-                HammingDiversity.getInstance(targetTrace).clearPopulation();
-            }
-            HammingDiversity.getInstance(targetTrace).addToPopulation(population);
-        }
-    }
 
     protected void generatePopulation(int populationSize) {
         LOG.debug("Creating random population");

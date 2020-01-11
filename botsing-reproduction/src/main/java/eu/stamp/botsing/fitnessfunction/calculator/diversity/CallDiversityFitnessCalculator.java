@@ -1,7 +1,10 @@
 package eu.stamp.botsing.fitnessfunction.calculator.diversity;
 
+import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.fitnessfunction.utils.CallDiversityUtility;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.ga.Chromosome;
@@ -30,6 +33,16 @@ public abstract class CallDiversityFitnessCalculator<T extends Chromosome> {
     }
 
     public abstract double getSimilarityValue(T testChromosome);
+
+    public void updateIndividuals(List<T> individuals, boolean isClear){
+        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)){
+            // We should update the population of call diversity calculator
+            if(isClear){
+                this.clearPopulation();
+            }
+            this.addToPopulation(individuals);
+        }
+    }
 
     public void clearPopulation(){
         population.clear();
