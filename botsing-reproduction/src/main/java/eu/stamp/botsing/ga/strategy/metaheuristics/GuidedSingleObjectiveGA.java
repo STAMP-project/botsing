@@ -76,12 +76,17 @@ public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgori
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         Boolean initilized = false;
+        this.notifySearchStarted();
         while (!initilized){
             try {
                 initializePopulation();
                 initilized=true;
             }catch (Exception |Error e){
                 LOG.warn("Botsing was unsuccessful in generating the initial population. cause: {}",e.getMessage());
+            }
+
+            if (isFinished()){
+                break;
             }
         }
 

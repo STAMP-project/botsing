@@ -125,6 +125,7 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
     public void generateSolution() {
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
+        this.notifySearchStarted();
         Boolean initialized = false;
         while (!initialized){
             try {
@@ -132,6 +133,10 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
                 initialized=true;
             }catch (Exception |Error e){
                 LOG.warn("Botsing was unsuccessful in generating the initial population. cause: {}",e.getMessage());
+            }
+
+            if (isFinished()){
+                break;
             }
         }
 

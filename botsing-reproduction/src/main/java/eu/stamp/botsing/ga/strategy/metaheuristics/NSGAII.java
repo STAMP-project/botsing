@@ -155,7 +155,6 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
 
     @Override
     public void initializePopulation() {
-        notifySearchStarted();
 
         if (!population.isEmpty()) {
             return;
@@ -200,12 +199,17 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         Boolean initialized = false;
+        notifySearchStarted();
         while (!initialized){
             try {
                 initializePopulation();
                 initialized=true;
             }catch (Exception |Error e){
                 LOG.warn("Botsing was unsuccessful in generating the initial population. cause: {}",e.getMessage());
+            }
+
+            if (isFinished()){
+                break;
             }
         }
 
