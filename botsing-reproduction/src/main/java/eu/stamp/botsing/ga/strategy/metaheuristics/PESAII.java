@@ -39,6 +39,7 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
 
     public PESAII(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory);
+        this.stoppingConditions.clear();
         this.crossoverFunction = crossOverOperator;
         mutation = mutationOperator;
         // Initialize an empty archive

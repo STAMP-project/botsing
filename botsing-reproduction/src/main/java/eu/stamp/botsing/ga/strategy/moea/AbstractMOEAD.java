@@ -51,6 +51,7 @@ public abstract class AbstractMOEAD<T extends Chromosome> extends GeneticAlgorit
 
     public AbstractMOEAD(ChromosomeFactory<T> factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory);
+        this.stoppingConditions.clear();
         mutation = mutationOperator;
         this.crossoverFunction = crossOverOperator;
         try {

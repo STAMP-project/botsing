@@ -32,6 +32,7 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
 
     public SPEA2(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory);
+        this.stoppingConditions.clear();
         mutation = mutationOperator;
         this.crossoverFunction = crossOverOperator;
 

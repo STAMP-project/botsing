@@ -38,6 +38,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
 
     public NSGAII(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory);
+        this.stoppingConditions.clear();
         mutation = mutationOperator;
         this.crossoverFunction = crossOverOperator;
         try {
