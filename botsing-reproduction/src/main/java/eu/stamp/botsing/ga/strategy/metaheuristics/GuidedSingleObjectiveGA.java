@@ -23,6 +23,7 @@ package eu.stamp.botsing.ga.strategy.metaheuristics;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
+import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
 import org.evosuite.Properties;
@@ -77,6 +78,7 @@ public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgori
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         Boolean initilized = false;
         this.notifySearchStarted();
+        WSEvolution.getInstance().setStartTime(this.listeners);
         while (!initilized){
             try {
                 initializePopulation();
