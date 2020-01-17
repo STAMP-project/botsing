@@ -26,10 +26,7 @@ import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingConditi
 import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
-import org.evosuite.ga.stoppingconditions.GlobalTimeStoppingCondition;
-import org.evosuite.ga.stoppingconditions.MaxTimeStoppingCondition;
-import org.evosuite.ga.stoppingconditions.StoppingCondition;
-import org.evosuite.ga.stoppingconditions.ZeroFitnessStoppingCondition;
+import org.evosuite.ga.stoppingconditions.*;
 import org.evosuite.seeding.ObjectPool;
 import org.evosuite.seeding.ObjectPoolManager;
 import org.evosuite.strategy.TestGenerationStrategy;
@@ -133,7 +130,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
             while (itr.hasNext()){
                 StoppingCondition condition = itr.next();
                 if(condition instanceof SingleObjectiveZeroStoppingCondition){
-                    bestFF = condition.getCurrentValue();
+                    bestFF = ((SingleObjectiveZeroStoppingCondition) condition).getCurrentDoubleValue();
                     break;
                 }
             }
@@ -156,8 +153,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
 
         }else{
-            LOG.info("* The target crash is not covered! The best solution has "+ga.getBestIndividual().getFitness()+" fitness value.");
-            LOG.info("The best test is:(non-minimized version:\n)",((TestChromosome) ga.getBestIndividual()).toString());
+            LOG.info("* The target crash is not covered! The best solution has "+bestFF+" fitness value.");
         }
 
         // after finishing the search check: ga.getBestIndividual().getFitness() == 0.0
@@ -168,5 +164,21 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
     }
 
 
-
+    @Override
+    protected StoppingCondition getStoppingCondition() {
+        switch(Properties.STOPPING_CONDITION) {
+            case MAXGENERATIONS:
+                return new MaxGenerationStoppingCondition();
+            case MAXFITNESSEVALUATIONS:
+                return new MaxFitnessEvaluationsStoppingCondition();
+            case MAXTIME:
+                return new eu.stamp.botsing.ga.stoppingconditions.MaxTimeStoppingCondition();
+            case MAXTESTS:
+                return new MaxTestsStoppingCondition();
+            case MAXSTATEMENTS:
+                return new MaxStatementsStoppingCondition();
+            default:
+                return new MaxGenerationStoppingCondition();
+        }
+    }
 }
