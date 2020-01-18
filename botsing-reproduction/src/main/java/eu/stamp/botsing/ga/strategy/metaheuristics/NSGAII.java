@@ -3,10 +3,12 @@ package eu.stamp.botsing.ga.strategy.metaheuristics;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
+import eu.stamp.botsing.fitnessfunction.CallDiversity;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import eu.stamp.botsing.fitnessfunction.calculator.diversity.CallDiversityFitnessCalculator;
 import eu.stamp.botsing.fitnessfunction.calculator.diversity.HammingDiversity;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
+import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.ga.GAUtil;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
@@ -38,6 +40,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
 
     public NSGAII(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory);
+        this.stoppingConditions.clear();
         mutation = mutationOperator;
         this.crossoverFunction = crossOverOperator;
         try {
@@ -87,10 +90,9 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
             }
 
             //calculate fitness
-            if (!FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)){
-                calculateFitness(offspring1);
-                calculateFitness(offspring2);
-            }
+
+            calculateFitness(offspring1,false);
+            calculateFitness(offspring2,false);
 
             // Add to offspring population
             offspringPopulation.add(offspring1);
@@ -102,10 +104,8 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         List<T> union = union(population, offspringPopulation);
         if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)){
             diversityCalculator.updateIndividuals(union,true);
-            // calculate fitness every individuals
-            for (T individual: union){
-                calculateFitness(individual);
-            }
+            // calculate diversity for individuals in Union
+            calculateDiversity(union);
         }
 
         // *** Sort
@@ -152,9 +152,40 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         currentIteration++;
     }
 
+    private void calculateDiversity(List<T> union) {
+        for (T chromosome : union){
+            calculateDiversity(chromosome);
+        }
+    }
+
+    private void calculateDiversity(T chromosome) {
+        for (FitnessFunction<T> fitnessFunction :fitnessFunctions){
+            if (fitnessFunction instanceof CallDiversity){
+                fitnessFunction.getFitness(chromosome);
+                this.notifyEvaluation(chromosome);
+                return;
+            }
+        }
+        // It should not be the case that a chromosome does not have a diversity fitness function
+        throw new IllegalStateException("The GA algorithm does not have call diversity fitness function.");
+    }
+
+    private void calculateFitness(T offspring, boolean calculateDiversity) {
+        if(calculateDiversity){
+            calculateFitness(offspring);
+            return;
+        }
+
+        for (FitnessFunction<T> fitnessFunction :fitnessFunctions){
+            if (!(fitnessFunction instanceof CallDiversity)){
+                fitnessFunction.getFitness(offspring);
+                this.notifyEvaluation(offspring);
+            }
+        }
+    }
+
     @Override
     public void initializePopulation() {
-        notifySearchStarted();
 
         if (!population.isEmpty()) {
             return;
@@ -164,13 +195,21 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         LOG.debug("Initializing the population.");
         generatePopulation(this.populationSize);
 
-        if (!FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)){
-            calculateFitness();
-        }
+        calculateFitness(false);
 
 
         this.notifyIteration();
 
+    }
+
+    private void calculateFitness(boolean calculateDiversity) {
+        for (T chromosome : this.population){
+            if(this.isFinished()){
+                break;
+            }
+
+            calculateFitness(chromosome,calculateDiversity);
+        }
     }
 
 
@@ -199,12 +238,18 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         Boolean initialized = false;
+        notifySearchStarted();
+        WSEvolution.getInstance().setStartTime(this.listeners);
         while (!initialized){
             try {
                 initializePopulation();
                 initialized=true;
             }catch (Exception |Error e){
                 LOG.warn("Botsing was unsuccessful in generating the initial population. cause: {}",e.getMessage());
+            }
+
+            if (isFinished()){
+                break;
             }
         }
 

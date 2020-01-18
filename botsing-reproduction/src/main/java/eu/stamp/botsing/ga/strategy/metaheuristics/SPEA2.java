@@ -32,6 +32,7 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
 
     public SPEA2(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory);
+        this.stoppingConditions.clear();
         mutation = mutationOperator;
         this.crossoverFunction = crossOverOperator;
 
@@ -111,12 +112,17 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         Boolean initialized = false;
+        this.notifySearchStarted();
         while (!initialized){
             try {
                 initializePopulation();
                 initialized=true;
             }catch (Exception |Error e){
                 LOG.warn("Botsing was unsuccessful in generating the initial population. cause: {}",e.getMessage());
+            }
+
+            if (isFinished()){
+                break;
             }
         }
         // The main iteration
@@ -136,7 +142,6 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
 
     @Override
     public void initializePopulation(){
-        this.notifySearchStarted();
         this.currentIteration=0;
         // Generate initial population
         this.generateInitialPopulation(Properties.POPULATION);
