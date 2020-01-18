@@ -3,6 +3,7 @@ package eu.stamp.botsing.ga.strategy.moea;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.ga.GAUtil;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
@@ -46,12 +47,13 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
                     LOG.error("Crossover failed: " + e.getMessage());
                 }
             }
-            // ToDo: In the current implementation of JMetal, we always use the first offspring for mutation. Maybe we can use the dominated one!
 
             // Mutation
             if (Randomness.nextDouble() <= Properties.MUTATION_RATE) {
                 this.notifyMutation(offspring1);
                 mutation.mutateOffspring(offspring1);
+                this.notifyMutation(offspring2);
+                mutation.mutateOffspring(offspring2);
             }
 
 
@@ -62,11 +64,14 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
 
             for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
                 ff.getFitness(offspring1);
+                ff.getFitness(offspring2);
                 notifyEvaluation(offspring1);
             }
 
             idealPoint.update(MOEAUtils.getPoints(offspring1));
+            idealPoint.update(MOEAUtils.getPoints(offspring2));
             updateSubProblemNeighborhood(offspring1, subProblemId, selectFromNeighbor);
+            updateSubProblemNeighborhood(offspring2, subProblemId, selectFromNeighbor);
         }
     }
 
@@ -123,6 +128,7 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         this.notifySearchStarted();
+        WSEvolution.getInstance().setStartTime(this.listeners);
         Boolean initialized = false;
         while (!initialized){
             try {
