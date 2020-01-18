@@ -3,7 +3,6 @@ package eu.stamp.botsing.ga.strategy.moea;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
-import eu.stamp.botsing.fitnessfunction.calculator.diversity.CallDiversityFitnessCalculator;
 import eu.stamp.botsing.ga.GAUtil;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
@@ -15,8 +14,6 @@ import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import java.util.Iterator;
 import java.util.List;
 
 public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {

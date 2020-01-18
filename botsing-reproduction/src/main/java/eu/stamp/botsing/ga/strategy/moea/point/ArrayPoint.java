@@ -152,15 +152,17 @@ public class ArrayPoint implements Point {
     }
 
     @Override public boolean equals(Object o) {
-        if (this == o)
+        if (this == o){
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()){
             return false;
-
+        }
         ArrayPoint that = (ArrayPoint) o;
 
-        if (!Arrays.equals(point, that.point))
+        if (!Arrays.equals(point, that.point)){
             return false;
+        }
 
         return true;
     }

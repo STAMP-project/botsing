@@ -4,8 +4,6 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
-import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
-import eu.stamp.botsing.fitnessfunction.utils.CallDiversityUtility;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSearchUtility;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
