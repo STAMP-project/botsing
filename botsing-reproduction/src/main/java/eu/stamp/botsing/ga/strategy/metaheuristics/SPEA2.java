@@ -3,10 +3,12 @@ package eu.stamp.botsing.ga.strategy.metaheuristics;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
+import eu.stamp.botsing.fitnessfunction.CallDiversity;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import eu.stamp.botsing.fitnessfunction.calculator.diversity.CallDiversityFitnessCalculator;
 import eu.stamp.botsing.fitnessfunction.calculator.diversity.HammingDiversity;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
+import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.ga.GAUtil;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
@@ -85,14 +87,10 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
             offspringPopulation.add(offspring2);
         }
 
-        // Fitness Function Evaluation
-        if (!FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
-            for (T element : offspringPopulation) {
-                for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
-                    ff.getFitness(element);
-                    notifyEvaluation(element);
-                }
-            }
+        // Fitness function evaluation (excluding callDiversity) for individuals in the initial population.
+        // CallDiversity will be calculated in updateArchive
+        for (T element : offspringPopulation) {
+            this.calculateFitness(element,false);
         }
 
 
@@ -113,6 +111,7 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         Boolean initialized = false;
         this.notifySearchStarted();
+        WSEvolution.getInstance().setStartTime(this.listeners);
         while (!initialized){
             try {
                 initializePopulation();
@@ -156,12 +155,10 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
 
 
 
-        // Fitness function evaluation for individuals in the initial population
+        // Fitness function evaluation (excluding callDiversity) for individuals in the initial population.
+        // CallDiversity will be calculated in updateArchive
         for (T element : this.population) {
-            for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
-                ff.getFitness(element);
-                notifyEvaluation(element);
-            }
+            this.calculateFitness(element,false);
         }
 
         this.updateArchive();
@@ -176,19 +173,47 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
         List<T> union = new ArrayList(2 * Properties.POPULATION);
         union.addAll(this.population);
         union.addAll(this.archive);
+        // Add individuals to diversityCalculator if we have callDiversity among search objectives
         if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
-            this.diversityCalculator.updateIndividuals(union,true);
-            // calculate fitness values, here
-            for (T element : union) {
-                for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
-                    ff.getFitness(element);
-                    notifyEvaluation(element);
-                }
-            }
+            this.diversityCalculator.updateIndividuals(union, true);
+            this.calculateDiversity(union);
         }
 
         this.computeStrength(union);
         this.archive = this.environmentalSelection(union);
+    }
+
+
+    private void calculateDiversity(List<T> union) {
+        for (T chromosome : union){
+            calculateDiversity(chromosome);
+        }
+    }
+
+    private void calculateDiversity(T chromosome) {
+        for (FitnessFunction<T> fitnessFunction :fitnessFunctions){
+            if (fitnessFunction instanceof CallDiversity){
+                fitnessFunction.getFitness(chromosome);
+                this.notifyEvaluation(chromosome);
+                return;
+            }
+        }
+        // It should not be the case that a chromosome does not have a diversity fitness function
+        throw new IllegalStateException("The GA algorithm does not have call diversity fitness function.");
+    }
+
+    private void calculateFitness(T offspring, boolean calculateDiversity) {
+        if(calculateDiversity){
+            calculateFitness(offspring);
+            return;
+        }
+
+        for (FitnessFunction<T> fitnessFunction :fitnessFunctions){
+            if (!(fitnessFunction instanceof CallDiversity)){
+                fitnessFunction.getFitness(offspring);
+                this.notifyEvaluation(offspring);
+            }
+        }
     }
 
     @Override
