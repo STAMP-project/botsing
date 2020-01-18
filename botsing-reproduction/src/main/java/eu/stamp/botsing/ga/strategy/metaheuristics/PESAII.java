@@ -8,6 +8,7 @@ import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
 import eu.stamp.botsing.fitnessfunction.calculator.diversity.CallDiversityFitnessCalculator;
 import eu.stamp.botsing.fitnessfunction.calculator.diversity.HammingDiversity;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
+import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.ga.GAUtil;
 import eu.stamp.botsing.ga.strategy.archive.GridArchive;
 import eu.stamp.botsing.ga.strategy.operators.selection.PESAIISelection;
@@ -71,6 +72,7 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         Boolean initialized = false;
         notifySearchStarted();
+        WSEvolution.getInstance().setStartTime(this.listeners);
         while (!initialized){
             try {
                 initializePopulation();
@@ -106,27 +108,17 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
 
         // calculate diversity fitness values if it has diversity in the search objectives
         if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)) {
+            // add individuals
             this.diversityCalculator.updateIndividuals(this.archive.getSolutions(),true);
             this.diversityCalculator.updateIndividuals(population,false);
 
             // Calculate diversity fitness values in archive and the  population
+
             // Diversity Fitness Function Evaluation of the population
-            for (T element : population) {
-                for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
-                    if (ff instanceof CallDiversity){
-                        ff.getFitness(element);
-                    }
-                }
-            }
+            this.calculateDiversity(population);
 
             // Diversity Fitness Function Evaluation of the individuals in the archive
-            for (T element : this.archive.getSolutions()) {
-                for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
-                    if (ff instanceof CallDiversity){
-                        ff.getFitness(element);
-                    }
-                }
-            }
+            this.calculateDiversity(this.archive.getSolutions());
 
             if(isFinished()){
                 return;
@@ -169,14 +161,8 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
             // Fitness Function Evaluation except diversity
             // If we have diversity search objective, we will calculate its fitness values before archive update
             for (T element : offspringPopulation) {
-                for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
-                    if (!(ff instanceof CallDiversity)){
-                        ff.getFitness(element);
-                        notifyEvaluation(element);
-                    }
-                }
+                this.calculateFitness(element,false);
             }
-//        }
 
 
         // Replacement
@@ -202,12 +188,7 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
         // Fitness Function Evaluation except diversity
         // If we have diversity search objective, we will calculate its fitness values before archive update
         for (T element : this.population) {
-            for (final FitnessFunction<T> ff : this.getFitnessFunctions()) {
-                if (!(ff instanceof CallDiversity)){
-                    ff.getFitness(element);
-                    notifyEvaluation(element);
-                }
-            }
+            this.calculateFitness(element,false);
         }
 
         this.notifyIteration();
@@ -227,6 +208,40 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
 
             if (isFinished()){
                 break;
+            }
+        }
+    }
+
+    private void calculateDiversity(List<T> union) {
+        for (T chromosome : union){
+            calculateDiversity(chromosome);
+        }
+    }
+
+    private void calculateDiversity(T chromosome) {
+        for (FitnessFunction<T> fitnessFunction :fitnessFunctions){
+            if (fitnessFunction instanceof CallDiversity){
+                fitnessFunction.getFitness(chromosome);
+                this.notifyEvaluation(chromosome);
+                return;
+            }
+        }
+        // It should not be the case that a chromosome does not have a diversity fitness function
+        throw new IllegalStateException("The GA algorithm does not have call diversity fitness function.");
+    }
+
+    private void calculateFitness(T offspring, boolean calculateDiversity) {
+
+
+        if(calculateDiversity){
+            calculateFitness(offspring);
+            return;
+        }
+
+        for (FitnessFunction<T> fitnessFunction :fitnessFunctions){
+            if (!(fitnessFunction instanceof CallDiversity)){
+                fitnessFunction.getFitness(offspring);
+                this.notifyEvaluation(offspring);
             }
         }
     }
