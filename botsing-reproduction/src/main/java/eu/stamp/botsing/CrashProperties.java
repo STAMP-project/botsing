@@ -86,6 +86,7 @@ public class CrashProperties {
         SPEA2,
         MOEAD,
         PESA_II,
+        FEMO,
         DynaMOSA;
 
         SearchAlgorithm() {
