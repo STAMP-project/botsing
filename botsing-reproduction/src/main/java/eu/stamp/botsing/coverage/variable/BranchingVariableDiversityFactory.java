@@ -29,6 +29,8 @@ public class BranchingVariableDiversityFactory extends AbstractFitnessFactory<Br
     @Resource
     protected CoverageUtility utility = new CoverageUtility();
 
+    private Map<LabelNode, Integer> labelLineMap;
+
     @Override
     public List<BranchingVariableDiversityObjective> getCoverageGoals() {
         List<BranchingVariableDiversityObjective> goals = new ArrayList<>();
@@ -42,7 +44,6 @@ public class BranchingVariableDiversityFactory extends AbstractFitnessFactory<Br
                     .getName() + Type.getMethodDescriptor((Method) executable);
             MethodNode methodNode = instructionPool.getMethodNode(className, methodName);
             List<LocalVariableNode> localVariables = methodNode.localVariables;
-            localVariables.sort(Comparator.comparingInt(o -> o.index));
             List<BytecodeInstruction> instructions = instructionPool.getInstructionsIn(className, methodName);
             goals.addAll(detectGoals(className, methodName, instructions, localVariables));
         }
@@ -64,12 +65,21 @@ public class BranchingVariableDiversityFactory extends AbstractFitnessFactory<Br
                                                          List<BytecodeInstruction> instructions,
                                                          List<LocalVariableNode> localVariables) {
         Set<BranchingVariableDiversityObjective> goals = new HashSet<>();
+        labelLineMap = new HashMap<>();
         int currentLine = 0;
+        boolean ignore = false;
         for (int i = 0; i < instructions.size(); i++) {
             AbstractInsnNode instruction = instructions.get(i).getASMNode();
-            if (instruction instanceof LineNumberNode) {
-                currentLine = ((LineNumberNode) instruction).line;
-            } else {
+            if (instruction instanceof LabelNode) {
+                if (instruction.getNext() instanceof LineNumberNode) {
+                    LineNumberNode lineNumberNode = (LineNumberNode) instruction.getNext();
+                    currentLine = lineNumberNode.line;
+                    labelLineMap.put(lineNumberNode.start, currentLine);
+                    ignore = false;
+                } else {
+                    ignore = true;
+                }
+            } else if (!ignore) {
                 int opcode = instruction.getOpcode();
                 if (opcode == DCMPL || opcode == DCMPG || opcode == FCMPL || opcode == FCMPG || opcode == LCMP || opcode >= IF_ICMPEQ && opcode <= IF_ICMPLE || opcode == IF_ACMPEQ || opcode == IF_ACMPNE) {
                     goals.addAll(detectVariables(className, methodName, currentLine, instructions, localVariables, i,
@@ -112,17 +122,36 @@ public class BranchingVariableDiversityFactory extends AbstractFitnessFactory<Br
                 case FLOAD:
                 case DLOAD:
                 case ALOAD:
-                    LocalVariableNode variable = localVariables.get(((VarInsnNode) current).var);
+                    LocalVariableNode variable = null;
+                    for (LocalVariableNode localVariable : localVariables) {
+                        if (localVariable.index == ((VarInsnNode) current).var) {
+                            Integer startLine = labelLineMap.get(localVariable.start);
+                            Integer endLine = labelLineMap.get(localVariable.end);
+                            if (startLine != null && startLine <= lineNumber) {
+                                if (endLine == null || endLine >= lineNumber) {
+                                    variable = localVariable;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (variable == null) {
+                        throw new IllegalStateException("Cannot find the local variable in the method node!!!");
+                    }
                     if (!isRegistered(className, lineNumber, variable.name)) {
                         goals.addAll(createGoals(className, methodName, lineNumber, variable));
                         registerVariable(className, lineNumber, variable.name);
                     }
+                    count++;
+                    break;
                     // endregion
                     // region The variable is a field of the object or a static field of the class
                 case GETSTATIC:
                 case GETFIELD:
                     // todo For now we only increase the counter, but maybe they should be treated differently as
                     // they may be related to crashes
+                    count++;
+                    break;
                     // endregion
                     // region The variable is a return value from a method call
                 case INVOKEVIRTUAL:
@@ -134,8 +163,12 @@ public class BranchingVariableDiversityFactory extends AbstractFitnessFactory<Br
                     // they may be related to crashes
                     // todo For now we haven't considered the arguments of the method call. They should be excluded
                     // as well.
+                    count++;
+                    break;
                     // endregion
                 case NEW: // todo New object maybe should be logged as well?
+                    count++;
+                    break;
                     // region The variable is a constant, we don't care about it, just increase the counter.
                 case ACONST_NULL:
                 case ICONST_M1:
@@ -155,6 +188,8 @@ public class BranchingVariableDiversityFactory extends AbstractFitnessFactory<Br
                 case BIPUSH:
                 case SIPUSH:
                 case LDC:
+                    count++;
+                    break;
                     // endregion
                     // region The variable is a result of a previous comparision, increase the counter and ignore it.
                 case LCMP:
@@ -164,6 +199,7 @@ public class BranchingVariableDiversityFactory extends AbstractFitnessFactory<Br
                 case DCMPG:
                     // endregion
                     count++;
+                    break;
                     // region We don't care about all the other instructions.
                 default:
                     break;
