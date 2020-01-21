@@ -182,6 +182,13 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
                 this.notifyEvaluation(offspring);
             }
         }
+
+        // Update WSEvolution if we are running a multi-objectivization search
+        if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.LineCoverage) &&
+                FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.ExceptionType) &&
+                FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.StackTraceSimilarity)){
+            GAUtil.informWSEvolution(offspring);
+        }
     }
 
     @Override

@@ -47,17 +47,12 @@ public class GAUtil {
                 double fitnessValue = individual.getFitnessValues().get(fitnessFunction);
                 LOG.info("{}: {}",fitnessFunction.getClass().getName(), fitnessValue);
             }
-            // Update WSEvolution if we are running a multi-objectivization search
-            if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.LineCoverage) &&
-                    FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.ExceptionType) &&
-                    FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.StackTraceSimilarity)){
-                informWSEvolution(individual, numberOfIterations);
-            }
+
         }
     }
 
 
-    private static void informWSEvolution(Chromosome individual, int numberOfIterations){
+    public static void informWSEvolution(Chromosome individual){
         double LineCoverageFitness = 1;
         double exceptionCoverage = 1;
         double frameSimilarity = 1;
@@ -82,7 +77,7 @@ public class GAUtil {
         }else {
             finalFitnessValue = frameSimilarity;
         }
-        WSEvolution.getInstance().inform(finalFitnessValue, numberOfIterations * Properties.POPULATION);
+        WSEvolution.getInstance().inform(finalFitnessValue);
     }
 
 }
