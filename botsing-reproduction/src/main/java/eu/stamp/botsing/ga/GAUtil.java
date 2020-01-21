@@ -1,6 +1,10 @@
 package eu.stamp.botsing.ga;
 
+import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingCondition;
+import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
@@ -35,7 +39,7 @@ public class GAUtil {
         }
     }
 
-    public static void reportNonDominatedFF(List<Chromosome> paretoFront) {
+    public static void reportNonDominatedFF(List<Chromosome> paretoFront,int numberOfIterations) {
         int counter = 1;
         for (Chromosome individual: paretoFront){
             LOG.info("Individual #{}:",counter);
@@ -43,8 +47,42 @@ public class GAUtil {
                 double fitnessValue = individual.getFitnessValues().get(fitnessFunction);
                 LOG.info("{}: {}",fitnessFunction.getClass().getName(), fitnessValue);
             }
-            counter++;
+            // Update WSEvolution if we are running a multi-objectivization search
+            if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.LineCoverage) &&
+                    FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.ExceptionType) &&
+                    FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.StackTraceSimilarity)){
+                informWSEvolution(individual, numberOfIterations);
+            }
         }
+    }
+
+
+    private static void informWSEvolution(Chromosome individual, int numberOfIterations){
+        double LineCoverageFitness = 1;
+        double exceptionCoverage = 1;
+        double frameSimilarity = 1;
+        for (FitnessFunction<?> fitnessFunction: individual.getFitnessValues().keySet()){
+            double fitnessValue = individual.getFitnessValues().get(fitnessFunction);
+            String objectiveClassname = fitnessFunction.getClass().getName();
+            if(objectiveClassname.endsWith("LineCoverageFF")){
+                LineCoverageFitness = fitnessValue;
+            }else if (objectiveClassname.endsWith("ExceptionTypeFF")){
+                exceptionCoverage = fitnessValue;
+            }else if(objectiveClassname.endsWith("StackTraceSimilarityFF")){
+                frameSimilarity = fitnessValue;
+            }else {
+                LOG.warn("4th objective is found in the multi-objectivization search");
+            }
+        }
+        double finalFitnessValue;
+        if(LineCoverageFitness > 0){
+            finalFitnessValue = 3 * LineCoverageFitness + 3;
+        }else if (exceptionCoverage > 0){
+            finalFitnessValue = 2 * exceptionCoverage + 1;
+        }else {
+            finalFitnessValue = frameSimilarity;
+        }
+        WSEvolution.getInstance().inform(finalFitnessValue, numberOfIterations * Properties.POPULATION);
     }
 
 }

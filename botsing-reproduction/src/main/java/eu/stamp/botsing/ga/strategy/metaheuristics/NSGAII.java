@@ -259,7 +259,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
             if(containsSinglecObjectiveZeroSC){
                 GAUtil.reportBestFF(stoppingConditions);
             }else{
-                GAUtil.reportNonDominatedFF((List<Chromosome>) this.rankingFunction.getSubfront(0));
+                GAUtil.reportNonDominatedFF((List<Chromosome>) this.rankingFunction.getSubfront(0),this.currentIteration+2);
             }
 
             evolve();

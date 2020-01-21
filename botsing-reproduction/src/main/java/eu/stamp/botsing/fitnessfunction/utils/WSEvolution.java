@@ -44,6 +44,13 @@ public class WSEvolution {
         }
     }
 
+    public void inform(double fitnessValue, int fitnessFunctionEvaluations) {
+        this.fitnessFunctionEvaluations = fitnessFunctionEvaluations;
+        if (fitnessValue < bestFitnessValue){
+            setBestFitnessValue(fitnessValue);
+        }
+    }
+
     public void setStartTime(Set<SearchListener> listeners) {
         for (SearchListener listener : listeners){
             if (listener instanceof MaxTimeStoppingCondition){
