@@ -77,6 +77,11 @@ public class BranchingVariableDiversityFactory extends AbstractFitnessFactory<Br
                     labelLineMap.put(lineNumberNode.start, currentLine);
                     ignore = false;
                 } else {
+                    AbstractInsnNode current = instruction.getPrevious();
+                    while (!(current instanceof LineNumberNode)) {
+                        current = current.getPrevious();
+                    }
+                    labelLineMap.put((LabelNode) instruction, ((LineNumberNode) current).line);
                     ignore = true;
                 }
             } else if (!ignore) {
