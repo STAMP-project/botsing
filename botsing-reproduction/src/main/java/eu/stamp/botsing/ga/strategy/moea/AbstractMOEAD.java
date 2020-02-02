@@ -99,8 +99,8 @@ public abstract class AbstractMOEAD<T extends Chromosome> extends GeneticAlgorit
             for (int n = 0; n < populationSize; n++) {
                 double a = 1.0 * n / (populationSize - 1);
                 lambda[n][0] = a;
-                lambda[n][1] = 1 - (a/2);
-                lambda[n][2] = 1 - (a/2);
+                lambda[n][1] = (1 - (a))/2;
+                lambda[n][2] = (1 - (a))/2;
             }
         }
 
