@@ -120,6 +120,9 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         List<T> front;
         List<T> f0 = this.rankingFunction.getSubfront(index);
         LOG.info("* Front0 Size: {}",f0.size());
+        for (T individual : f0){
+            LOG.info("{}",individual.getFitnessValues().toString());
+        }
 
         while (nextPopulation.size() < Properties.POPULATION){
             // obtaining the next front

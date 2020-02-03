@@ -181,6 +181,12 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
 
         this.computeStrength(union);
         this.archive = this.environmentalSelection(union);
+
+        LOG.info("Archive in generation {}:",this.currentIteration);
+        // Print archive
+        for (T individual : this.archive){
+            LOG.info("{} with distance {}",individual.getFitnessValues().toString(),individual.getDistance());
+        }
     }
 
 

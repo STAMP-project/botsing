@@ -4,6 +4,9 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.ga.strategy.archive.util.Grid;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
+import org.evosuite.testcase.TestChromosome;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -11,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GridArchive<T extends Chromosome> {
-
+    private static final Logger LOG = LoggerFactory.getLogger(GridArchive.class);
     private Grid<T> grid;
     private int archiveSizeLimit;
 
@@ -81,12 +84,17 @@ public class GridArchive<T extends Chromosome> {
             // Here, we check if the archive is not full
             if (this.archive.size() < this.archiveSizeLimit) {
                 // If it is not full, we simply add the individual to grid and archive
+                for (T indArch : archive){
+                    if ((((TestChromosome) indArch)).getTestCase().equals(((TestChromosome) individual).getTestCase())){
+                        continue;
+                    }
+                }
                 grid.add(individual);
                 archive.add(individual);
                 continue;
             }
 
-            // If it is not full, we will check if this individual is in the most populated hyperCube
+            // If it is full, we will check if this individual is in the most populated hyperCube
             if(grid.inMostPopulatedHypercube(individual)){
                 // If it is is in the most populated hypercube, we simply skip it
                 continue;
@@ -102,6 +110,11 @@ public class GridArchive<T extends Chromosome> {
             }else {
                 throw new IllegalStateException("prune was not successful");
             }
+        }
+
+        // Print archive
+        for (T individual : this.archive){
+            LOG.info("{} in hypercube {}",individual.getFitnessValues().toString(), grid.getHyperCube(individual));
         }
     }
 

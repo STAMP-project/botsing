@@ -15,6 +15,7 @@ import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
@@ -72,6 +73,11 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
             idealPoint.update(MOEAUtils.getPoints(offspring2));
             updateSubProblemNeighborhood(offspring1, subProblemId, selectFromNeighbor);
             updateSubProblemNeighborhood(offspring2, subProblemId, selectFromNeighbor);
+        }
+
+        for (int index=0;index< this.population.size();index++){
+            LOG.info("{} for lambda {}",population.get(index).getFitnessValues().toString(),
+                    Arrays.toString(this.lambda[index]));
         }
     }
 
