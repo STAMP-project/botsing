@@ -99,6 +99,7 @@ public class FEMO<T extends Chromosome> extends org.evosuite.ga.metaheuristics.G
             }
 
             evolve();
+            currentIteration++;
             this.notifyIteration();
             this.writeIndividuals(this.archive);
         }
@@ -124,6 +125,12 @@ public class FEMO<T extends Chromosome> extends org.evosuite.ga.metaheuristics.G
 
         // 4- Add offspring to archive if it is non-dominated
         updateArchive(offspring);
+
+        // Print Archive
+        LOG.info("Archive in generation {}:",this.currentIteration);
+        for (T individual : this.archive){
+            LOG.info("{}",individual.getFitnessValues().toString());
+        }
     }
 
     private void calculateFitness(T offspring, boolean calculateDiversity) {
