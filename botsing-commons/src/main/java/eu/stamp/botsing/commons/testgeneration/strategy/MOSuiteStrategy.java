@@ -63,8 +63,9 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
         if (fitnessFunctions.size() > 1) {
             for (TestFitnessFunction ff : fitnessFunctions) {
                 String ffClassName = ff.getClass().getName();
-                if (ffClassName.equals("eu.stamp.botsing.fitnessfunction.WeightedSum") || ffClassName.equals("eu" +
-                        ".stamp.botsing.fitnessfunction.IntegrationTestingFF")) {
+                if (ffClassName.equals("eu.stamp.botsing.fitnessfunction.WeightedSum") ||
+                        ffClassName.equals("eu.stamp.botsing.fitnessfunction.IntegrationTestingFF") ||
+                        ffClassName.equals("eu.stamp.botsing.fitnessfunction.ITFFForIndexedAccess")) {
                     containsMainFF = true;
                     ga.addStoppingCondition(new SingleObjectiveZeroStoppingCondition(ff));
                 }
