@@ -140,10 +140,7 @@ public class BranchingVariableDiversityFactory extends AbstractFitnessFactory<Br
                             }
                         }
                     }
-                    if (variable == null) {
-                        throw new IllegalStateException("Cannot find the local variable in the method node!!!");
-                    }
-                    if (!isRegistered(className, lineNumber, variable.name)) {
+                    if (variable != null && !isRegistered(className, lineNumber, variable.name)) {
                         goals.addAll(createGoals(className, methodName, lineNumber, variable));
                         registerVariable(className, lineNumber, variable.name);
                     }
