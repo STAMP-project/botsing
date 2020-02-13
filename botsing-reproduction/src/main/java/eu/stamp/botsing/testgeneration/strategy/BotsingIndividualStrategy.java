@@ -23,6 +23,7 @@ package eu.stamp.botsing.testgeneration.strategy;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingCondition;
+import eu.stamp.botsing.ga.strategy.metaheuristics.SPEA2;
 import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -80,11 +81,14 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         if(fitnessFunctions.size() > 1){
             // if we have multiple objectives, we should check the zero fitness value stopping condition
             for (TestFitnessFunction ff :fitnessFunctions){
-                // if it has one of the main crash reproduction fitness functions, we onlu check the zero value of that
+                // if it has one of the main crash reproduction fitness functions, we only check the zero value of that
                 String ffClassName = ff.getClass().getName();
                 if (ffClassName.equals("eu.stamp.botsing.fitnessfunction.WeightedSum")|| ffClassName.equals("eu.stamp.botsing.fitnessfunction.IntegrationTestingFF")){
                     containsMainFF = true;
-                    ga.addStoppingCondition(new SingleObjectiveZeroStoppingCondition(ff));
+                    if(CrashProperties.stopAfterFirstCrashReproduction){
+                        ga.addStoppingCondition(new SingleObjectiveZeroStoppingCondition(ff));
+                    }
+
                 }
             }
             if(! containsMainFF){
@@ -124,6 +128,16 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
         // Start the search process
         ga.generateSolution();
+
+        if(!CrashProperties.stopAfterFirstCrashReproduction){
+            if(ga instanceof SPEA2){
+                suite.addTests(((SPEA2) ga).getCrashReproducingTestCases());
+                return suite;
+            }else{
+                LOG.error("Detecting multiple crash reproducing test cases is supported only in SPEA2");
+            }
+        }
+
         double bestFF= Double.MAX_VALUE;
         if (containsMainFF){
             Iterator<StoppingCondition> itr = ga.getStoppingConditions().iterator();

@@ -5,6 +5,8 @@ import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import eu.stamp.botsing.fitnessfunction.CallDiversity;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+import eu.stamp.botsing.fitnessfunction.IntegrationTestingFF;
+import eu.stamp.botsing.fitnessfunction.WeightedSum;
 import eu.stamp.botsing.fitnessfunction.calculator.diversity.CallDiversityFitnessCalculator;
 import eu.stamp.botsing.fitnessfunction.calculator.diversity.HammingDiversity;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
@@ -16,12 +18,16 @@ import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
+import org.evosuite.testcase.TestChromosome;
+import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.SPEA2<T>  {
 
@@ -29,6 +35,8 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
 
     Mutation mutation;
     private int populationSize;
+
+    private Set<TestChromosome> crashReproducingTestCases;
 
     private CallDiversityFitnessCalculator<T> diversityCalculator;
 
@@ -51,6 +59,10 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
         if (FitnessFunctionHelper.containsFitness(CrashProperties.FitnessFunction.CallDiversity)){
             StackTrace targetTrace = ((StackTraceChromosomeFactory) this.chromosomeFactory).getTargetTrace();
             diversityCalculator = HammingDiversity.getInstance(targetTrace);
+        }
+
+        if (!CrashProperties.stopAfterFirstCrashReproduction){
+            crashReproducingTestCases = new HashSet<>();
         }
     }
 
@@ -130,13 +142,56 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
 
             if(containsSinglecObjectiveZeroSC){
                 GAUtil.reportBestFF(stoppingConditions);
+            }else if (!CrashProperties.stopAfterFirstCrashReproduction){
+
             }
 
             evolve();
             this.updateArchive();
+            if(!CrashProperties.stopAfterFirstCrashReproduction){
+                this.updateCrashReproducingSet();
+            }
             this.notifyIteration();
             this.writeIndividuals(this.archive);
         }
+    }
+
+    private void updateCrashReproducingSet() {
+        for (T individual: this.archive){
+            for (FitnessFunction<?> fitnessFunction: individual.getFitnessValues().keySet()){
+                if (fitnessFunction instanceof WeightedSum || fitnessFunction instanceof IntegrationTestingFF){
+                    double fitnessValue = individual.getFitnessValues().get(fitnessFunction);
+//                    individual.
+                    if(fitnessValue == 0){
+                        // A crash reproducing test
+                        if(!this.crashReproducingTestCases.contains(individual)){
+                            org.evosuite.testcase.TestCaseMinimizer minimizer = new org.evosuite.testcase.TestCaseMinimizer((TestFitnessFunction) fitnessFunction);
+                            TestChromosome copy = (TestChromosome) ((TestChromosome) individual).clone();
+                            minimizer.minimize(copy);
+
+                            if (((TestFitnessFunction) fitnessFunction).isCovered(copy)){
+                                if (isNewcrashReproducingTestCase(copy)){
+                                    LOG.info("Detect a new crash reproducing test case: {}",copy.getTestCase().toCode());
+                                    this.crashReproducingTestCases.add(copy);
+                                }
+                            }else{
+                                LOG.error("goal is not covered anymore by test {}",copy.getTestCase().toCode());
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isNewcrashReproducingTestCase(TestChromosome copy) {
+        for (TestChromosome chromosome: this.crashReproducingTestCases){
+            if(chromosome.getTestCase().toCode().equals(copy.getTestCase().toCode())){
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -182,10 +237,10 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
         this.computeStrength(union);
         this.archive = this.environmentalSelection(union);
 
-        LOG.info("Archive in generation {}:",this.currentIteration);
-        // Print archive
+        LOG.debug("Archive in generation {}:",this.currentIteration);
+        // Print archive in Debug mode
         for (T individual : this.archive){
-            LOG.info("{} with distance {}",individual.getFitnessValues().toString(),individual.getDistance());
+            LOG.debug("{} with distance {}",individual.getFitnessValues().toString(),individual.getDistance());
         }
     }
 
@@ -249,5 +304,9 @@ public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.
             }
         }
         return this.population.get(0);
+    }
+
+    public Set<TestChromosome> getCrashReproducingTestCases() {
+        return  (Set<TestChromosome>) crashReproducingTestCases;
     }
 }

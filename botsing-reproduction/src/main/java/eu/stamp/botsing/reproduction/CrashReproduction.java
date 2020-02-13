@@ -112,7 +112,7 @@ public class CrashReproduction {
         TestGenerationStrategy strategy = CrashReproductionHelper.getTestGenerationFactory();
         TestSuiteChromosome testCases = strategy.generateTests();
 
-        postProcessTests(testCases,getFitnessFactories());
+        postProcessTests(testCases,getFitnessFactories(),true);
 
         TestGenerationResult writingTest = writeJUnitTestsAndCreateResult(testCases, Properties.JUNIT_SUFFIX);
         writeJUnitFailingTests();

@@ -36,6 +36,7 @@ public class CommandLineParameters {
     public static final String IO_DIVERSITY = "io_diversity";
     public static final String SEARCH_ALGORITHM = "search_algorithm";
     public static final String FITNESS_FUNCTION = "fitness";
+    public static final String CONTINUE_AFTER_REPRODUCTION = "continue_after_reproduction";
 
     public static Options getCommandLineOptions() {
         Options options = new Options();
@@ -83,6 +84,10 @@ public class CommandLineParameters {
                 .desc("Use integration testing for crash reproduction")
                 .build());
 
+        // Continue after first crash reproduction
+        options.addOption(Option.builder(CONTINUE_AFTER_REPRODUCTION)
+                .desc("Continues the search process after finding the first crash reproducing test case")
+                .build());
         // Help message
         options.addOption(Option.builder(HELP_OPT)
                 .desc("Prints this help message.")

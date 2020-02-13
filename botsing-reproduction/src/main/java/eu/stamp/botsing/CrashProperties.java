@@ -123,6 +123,9 @@ public class CrashProperties {
     @Parameter(key = "io_diversity", group = "Crash reproduction", description = "Enables I/O diversity as extra goals to MOSA")
     public static boolean IODiversity = false;
 
+    @Parameter(key = "stop_after_first_crash_reproduction", group = "Crash reproduction", description = "Stops the search process after finding the first crash reproducing test case")
+    public static boolean stopAfterFirstCrashReproduction = true;
+
     @Parameter(key = "neighborhood_selection_probability", group = "MOEAD", description = "neighborhood Selection Probability")
     public static double neighborhoodSelectionProbability = 0.2;
 

@@ -92,6 +92,10 @@ public class Botsing {
             if(commands.hasOption(MODEL_PATH_OPT)){
                 setupModelSeedingRelatedProperties(commands);
             }
+            // Continue search after first crash reproduction
+            if(commands.hasOption(CONTINUE_AFTER_REPRODUCTION)){
+                CrashProperties.stopAfterFirstCrashReproduction = false;
+            }
             // execute
             return CrashReproduction.execute();
         }

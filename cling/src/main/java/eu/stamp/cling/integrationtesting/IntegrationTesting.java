@@ -95,7 +95,7 @@ public class IntegrationTesting {
         TestGenerationStrategy strategy = IntegrationTestingUtility.getTestGenerationFactory();
         TestSuiteChromosome testCases = strategy.generateTests();
 
-        postProcessTests(testCases,getFitnessFactories());
+        postProcessTests(testCases,getFitnessFactories(),false);
 
         TestGenerationResult writingTest = writeJUnitTestsAndCreateResult(testCases, Properties.JUNIT_SUFFIX);
         writeJUnitFailingTests();
