@@ -49,7 +49,7 @@ public class CoupledBranches {
         // We just need to compare them to find the number of covered coupled branches by test suites.
 
         List<BranchPairFF> coveredPairsByCling = getCoveredPairs(goalsSet, caller);
-        LOG.info("Number of covered coupled branches by test suite Cling: {}", coveredPairsByCling.size());
+        LOG.info("Number of covered coupled branches by test suite: {}", coveredPairsByCling.size());
 
     }
 
