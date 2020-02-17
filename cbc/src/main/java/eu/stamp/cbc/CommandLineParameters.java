@@ -29,6 +29,7 @@ public class CommandLineParameters {
     public static final String PROJECT_CP_OPT = "project_cp";
     public static final String TEST_SUITE_E = "test_suite_e";
     public static final String TEST_SUITE_R = "test_suite_r";
+    public static final String TEST_SUITE_CLING = "test_suite_cling";
     public static final String CALLER = "caller";
     public static final String CALLEE = "callee";
     public static final String HELP_OPT = "help";
@@ -66,6 +67,12 @@ public class CommandLineParameters {
         options.addOption(Option.builder(TEST_SUITE_R)
                 .hasArg()
                 .desc("Caller test suite for calculating CBC")
+                .build());
+
+
+        options.addOption(Option.builder(TEST_SUITE_CLING)
+                .hasArg()
+                .desc("Cling test suite for calculating CBC")
                 .build());
 
 

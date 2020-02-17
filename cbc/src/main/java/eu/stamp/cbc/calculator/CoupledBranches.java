@@ -23,17 +23,38 @@ public class CoupledBranches {
     private static final Logger LOG = LoggerFactory.getLogger(CoupledBranches.class);
 
 
-    public static void calculate(String givenTestCaller, String givenTestCallee, String caller, String callee){
-
+    private static Set<TestFitnessFunction> preCalculation(String caller, String callee){
         // Let's calculate Coupled Branches
         setClingProperties(caller,callee);
         List<Class> instrumentedClasses = instrumentClasses();
 
         generateCFGs(instrumentedClasses.get(1),instrumentedClasses.get(0));
+
         IntegrationTestingGoalFactory integrationTestingGoalFactory = new IntegrationTestingGoalFactory();
         Set<TestFitnessFunction> goalsSet = new HashSet<>(integrationTestingGoalFactory.getCoverageGoals());
         LOG.info("Total number of coupled branches goals: {}",goalsSet.size());
+        return goalsSet;
+    }
 
+    public static void calculate(String clingTest, String caller, String callee){
+        Set<TestFitnessFunction> goalsSet = preCalculation(caller,callee);
+        // Here, we have the list of coupled branches in BranchPairPool.
+        // Now, it is the time to execute the give test
+
+        // execute the cling test
+        Executor executor = new Executor(clingTest,caller,callee);
+        executor.execute();
+
+        // Here, we have the execution traces in a dedicated pool (ExecutionTracePool)
+        // We just need to compare them to find the number of covered coupled branches by test suites.
+
+        List<BranchPairFF> coveredPairsByCling = getCoveredPairs(goalsSet, caller);
+        LOG.info("Number of covered coupled branches by test suite Cling: {}", coveredPairsByCling.size());
+
+    }
+
+    public static void calculate(String givenTestCaller, String givenTestCallee, String caller, String callee){
+        Set<TestFitnessFunction> goalsSet = preCalculation(caller,callee);
         // Here, we have the list of coupled branches in BranchPairPool.
         // Now, it is the time to execute the give tests
 
@@ -46,9 +67,9 @@ public class CoupledBranches {
 
         // Here, we have the execution traces in a dedicated pool (ExecutionTracePool)
         // We just need to compare them to find the number of covered coupled branches by test suites.
-        List<BranchPairFF> coveredPairsByE = getCoveredPairs(goalsSet, caller);
+        List<BranchPairFF> coveredPairsByE = getCoveredPairs(goalsSet, callee);
         LOG.info("Number of covered coupled branches by test suite E: {}", coveredPairsByE.size());
-        List<BranchPairFF> coveredPairsByR = getCoveredPairs(goalsSet, callee);
+        List<BranchPairFF> coveredPairsByR = getCoveredPairs(goalsSet, caller);
         LOG.info("Number of covered coupled branches by test suite R: {}", coveredPairsByR.size());
         List<BranchPairFF> coveredByBoth = union(coveredPairsByE, coveredPairsByR);
         LOG.info("Number of covered coupled branches by both: {}", coveredByBoth.size());
