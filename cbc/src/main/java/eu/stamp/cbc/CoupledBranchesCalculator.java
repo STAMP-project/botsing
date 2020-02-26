@@ -26,7 +26,7 @@ public class CoupledBranchesCalculator {
         // If help option is provided
         if (commands.hasOption(HELP_OPT)) {
             printHelpMessage(options);
-        } else if(!(commands.hasOption(PROJECT_CP_OPT) && ((commands.hasOption(TEST_SUITE_E) && commands.hasOption(TEST_SUITE_R)) || commands.hasOption(TEST_SUITE_CLING))
+        } else if(!(commands.hasOption(PROJECT_CP_OPT) && ((commands.hasOption(TEST_SUITE_E) && commands.hasOption(TEST_SUITE_R)) || commands.hasOption(TEST_SUITE))
                 && commands.hasOption(CALLER) && commands.hasOption(CALLEE))) { // Check the required options are there
             LOG.error("A mandatory option -{} -{} -{} -{} -{} is missing!", PROJECT_CP_OPT, TEST_SUITE_E, TEST_SUITE_R, CALLER, CALLEE);
             printHelpMessage(options);
@@ -42,8 +42,8 @@ public class CoupledBranchesCalculator {
             String callee = commands.getOptionValue(CALLEE);
 
             // Get test Dir
-            if(commands.hasOption(TEST_SUITE_CLING)){
-                String clingTest = commands.getOptionValue(TEST_SUITE_CLING);
+            if(commands.hasOption(TEST_SUITE)){
+                String clingTest = commands.getOptionValue(TEST_SUITE);
                 CoupledBranches.calculate(clingTest,caller,callee);
             }else{
                 String givenTestCallee = commands.getOptionValue(TEST_SUITE_E);
