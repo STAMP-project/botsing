@@ -5,9 +5,6 @@ import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.FitnessFunction;
-
-import java.util.*;
-
 import org.evosuite.ga.comparators.OnlyCrowdingComparator;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
@@ -18,6 +15,8 @@ import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
     private static final Logger LOG = LoggerFactory.getLogger(MOSA.class);
@@ -36,18 +35,30 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
     private long startTime;
 
+    private List<T> offspringPopulation = new ArrayList<>();
 
-    public MOSA(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator, FitnessFunctions fitnessCollector) {
+    private TestFitnessFunction criticalObjective;
+
+    public MOSA(ChromosomeFactory<T> factory, CrossOverFunction crossOverOperator, Mutation<T> mutationOperator, FitnessFunctions fitnessCollector) {
         super(factory, fitnessCollector);
         mutation = mutationOperator;
         this.crossoverFunction = crossOverOperator;
+
+        for (TestFitnessFunction ff : fitnessCollector.getFitnessFunctionList()) {
+            String ffClassName = ff.getClass().getName();
+            if (ffClassName.equals("eu.stamp.botsing.fitnessfunction.WeightedSum") ||
+                    ffClassName.equals("eu.stamp.botsing.fitnessfunction.IntegrationTestingFF") ||
+                    ffClassName.equals("eu.stamp.botsing.fitnessfunction.ITFFForIndexedAccess")) {
+                criticalObjective = ff;
+            }
+        }
     }
 
 
 
     @Override
     protected void evolve() {
-        List<T> offspringPopulation = this.breedNextGeneration();
+        offspringPopulation = this.breedNextGeneration();
 
         // Create the union of parents and offSpring
         List<T> union = new ArrayList<T>();
@@ -93,23 +104,13 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
             for (int k = 0; k < remain; k++) {
                 this.population.add(front.get(k));
             }
-
-            remain = 0;
         }
 
-        try{
-
-
-
-            Map<FitnessFunction<?>, Double> front0= this.rankingFunction.getSubfront(0).get(0).getFitnessValues();
-            this.fitnessCollector.printCriticalTargets(front0);
-
-        }catch (Exception e){
+        try {
+            LOG.info(criticalObjective + ": " + fitnessTracker.get(criticalObjective));
+        } catch (Exception e) {
             LOG.info("SubFront is empty!");
-
         }
-
-
 
         this.currentIteration++;
     }
@@ -296,5 +297,9 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         int n_covered_goals = this.fitnessFunctions.size() - this.uncoveredGoals.size();
         LOG.debug("# Covered Goals = " + n_covered_goals);
         return n_covered_goals;
+    }
+
+    public List<T> getOffspringPopulation() {
+        return offspringPopulation;
     }
 }

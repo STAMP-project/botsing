@@ -1,6 +1,6 @@
 package eu.stamp.botsing.coverage.io.output;
 
-import eu.stamp.botsing.coverage.io.IOCoverageUtility;
+import eu.stamp.botsing.coverage.CoverageUtility;
 import org.evosuite.coverage.io.output.OutputCoverageTestFitness;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +16,7 @@ import java.util.List;
 @RunWith(MockitoJUnitRunner.class)
 public class OutputCoverageFactoryTest {
     @Spy
-    private IOCoverageUtility utility;
+    private CoverageUtility utility;
 
     @InjectMocks
     OutputCoverageFactory outputCoverageFactory = new OutputCoverageFactory();

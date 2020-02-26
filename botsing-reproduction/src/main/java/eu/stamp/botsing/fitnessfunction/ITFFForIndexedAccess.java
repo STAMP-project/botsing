@@ -1,5 +1,6 @@
 package eu.stamp.botsing.fitnessfunction;
 
+import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.slf4j.Logger;
@@ -20,11 +21,8 @@ public class ITFFForIndexedAccess extends IntegrationTestingFF {
             return 0;
         }
         double exceptionCoverage = 1;
-        Set<int[]> indexedAccessInfo = executionResult.getTrace().getIndexedAccessInfo();
-        if (indexedAccessInfo.isEmpty()) {
-            return exceptionCoverage;
-        }
-
+        Set<int[]> indexedAccessInfo = executionResult.getTrace()
+                .getIndexedAccessInfo(CrashProperties.getInstance().getStackTrace(0).getFrame(1).getClassName());
         for (int[] pair : indexedAccessInfo) {
             double distance = distance(pair[0], pair[1]);
             exceptionCoverage = Math.min(distance, exceptionCoverage);
@@ -40,7 +38,7 @@ public class ITFFForIndexedAccess extends IntegrationTestingFF {
      * @return If the index is negative or greater or equal to the length of the array, it is out of bounds and 0 will
      * be returned. Otherwise, return the ratio of index-to-bounds over mid-to-bounds.
      */
-    private static double distance(int index, int length) {
+    protected static double distance(int index, int length) {
         if (index < 0 || index >= length) {
             return 0;
         } else {

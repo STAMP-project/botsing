@@ -36,6 +36,7 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
+import static eu.stamp.botsing.CommandLineParameters.BRANCHING_VARIABLE_DIVERSITY;
 
 public class CrashProperties {
 
@@ -113,6 +114,9 @@ public class CrashProperties {
     @Parameter(key = "io_diversity", group = "Crash reproduction", description = "Enables I/O diversity as extra goals to MOSA")
     public static boolean IODiversity = false;
 
+    @Parameter(key = BRANCHING_VARIABLE_DIVERSITY, group = "Crash reproduction", description = "Enables branching " +
+            "variable diversity as extra goals to MOSA")
+    public static boolean branchingVariableDiversity = false;
 
     static java.util.Properties configFile = new java.util.Properties();
 

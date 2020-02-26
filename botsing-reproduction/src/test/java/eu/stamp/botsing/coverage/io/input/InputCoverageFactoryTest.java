@@ -1,13 +1,13 @@
 package eu.stamp.botsing.coverage.io.input;
 
-import eu.stamp.botsing.coverage.io.IOCoverageUtility;
+import eu.stamp.botsing.coverage.CoverageUtility;
 import org.evosuite.coverage.io.input.InputCoverageTestFitness;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.objectweb.asm.Type;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -19,7 +19,7 @@ import java.util.Set;
 @RunWith(MockitoJUnitRunner.class)
 public class InputCoverageFactoryTest {
     @Spy
-    private IOCoverageUtility utility;
+    private CoverageUtility utility;
 
     @InjectMocks
     InputCoverageFactory inputCoverageFactory = new InputCoverageFactory();
@@ -52,8 +52,8 @@ public class InputCoverageFactoryTest {
 
         List<InputCoverageTestFitness> goals = inputCoverageFactory.getCoverageGoals();
 
-        assert(goals.size() == 6);
-        // 3 goals for <init> and 3 goals for equals
+        assert(goals.size() == 5);
+        // 3 goals for <init> and 2 goals for equals
         int initCount = 0;
         int equalCount = 0;
         for (InputCoverageTestFitness goal : goals){
@@ -65,24 +65,22 @@ public class InputCoverageFactoryTest {
         }
 
         assert (initCount == 3);
-        assert (equalCount == 3);
+        assert (equalCount == 2);
     }
 
 
     @Test
     public void testDetectGoals_boolean(){
-        Type type = Type.getType(boolean.class);
-        List<InputCoverageTestFitness> goals = new ArrayList<InputCoverageTestFitness>();
-        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{boolean.class},new Type[]{type},goals);
+        List<InputCoverageTestFitness> goals = new ArrayList<>();
+        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{boolean.class},goals);
         assert (goals.size() == 2);
     }
 
 
     @Test
     public void testDetectGoals_char(){
-        Type type = Type.getType(char.class);
-        List<InputCoverageTestFitness> goals = new ArrayList<InputCoverageTestFitness>();
-        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{char.class},new Type[]{type},goals);
+        List<InputCoverageTestFitness> goals = new ArrayList<>();
+        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{char.class},goals);
         assert (goals.size() == 3);
     }
 
@@ -90,51 +88,45 @@ public class InputCoverageFactoryTest {
     @Test
     public void testDetectGoals_array(){
         String[] arr = new String[2];
-        Type type = Type.getType(arr.getClass());
-        List<InputCoverageTestFitness> goals = new ArrayList<InputCoverageTestFitness>();
-        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{arr.getClass()},new Type[]{type},goals);
+        List<InputCoverageTestFitness> goals = new ArrayList<>();
+        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{arr.getClass()},goals);
         assert (goals.size() == 3);
     }
 
     @Test
     public void testDetectGoals_strings(){
-        Type type = Type.getType(String.class);
-        List<InputCoverageTestFitness> goals = new ArrayList<InputCoverageTestFitness>();
-        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{String.class},new Type[]{type},goals);
+        List<InputCoverageTestFitness> goals = new ArrayList<>();
+        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{String.class},goals);
         assert (goals.size() == 3);
     }
 
 
     @Test
     public void testDetectGoals_list(){
-        Type type = Type.getType(List.class);
-        List<InputCoverageTestFitness> goals = new ArrayList<InputCoverageTestFitness>();
-        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{List.class},new Type[]{type},goals);
+        List<InputCoverageTestFitness> goals = new ArrayList<>();
+        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{List.class},goals);
         assert (goals.size() == 3);
     }
 
     @Test
     public void testDetectGoals_set(){
-        Type type = Type.getType(Set.class);
-        List<InputCoverageTestFitness> goals = new ArrayList<InputCoverageTestFitness>();
-        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{Set.class},new Type[]{type},goals);
+        List<InputCoverageTestFitness> goals = new ArrayList<>();
+        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{Set.class},goals);
         assert (goals.size() == 3);
     }
 
     @Test
     public void testDetectGoals_map(){
-        Type type = Type.getType(Map.class);
-        List<InputCoverageTestFitness> goals = new ArrayList<InputCoverageTestFitness>();
-        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{Map.class},new Type[]{type},goals);
+        List<InputCoverageTestFitness> goals = new ArrayList<>();
+        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{Map.class},goals);
         assert (goals.size() == 3);
     }
 
 
     @Test
     public void testDetectGoals_object(){
-        Type type = Type.getType(Method.class);
-        List<InputCoverageTestFitness> goals = new ArrayList<InputCoverageTestFitness>();
-        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{Method.class},new Type[]{type},goals);
+        List<InputCoverageTestFitness> goals = new ArrayList<>();
+        inputCoverageFactory.detectGoals("ClassA","method1",new Class[]{Method.class},goals);
         assert (goals.size() == 12);
     }
 }

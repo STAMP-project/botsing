@@ -25,17 +25,18 @@ import org.apache.commons.cli.Options;
 
 public class CommandLineParameters {
 
-    public static final String D_OPT = "D";
-    public static final String PROJECT_CP_OPT = "project_cp";
-    public static final String TARGET_FRAME_OPT = "target_frame";
-    public static final String CRASH_LOG_OPT = "crash_log";
-    public static final String MODEL_PATH_OPT = "model";
-    public static final String HELP_OPT = "help";
-    public static final String INTEGRATION_TESTING = "integration_testing";
-    public static final String DISABLE_LINE_ESTIMATION = "disable_line_estimation";
-    public static final String IO_DIVERSITY = "io_diversity";
-    public static final String SEARCH_ALGORITHM = "search_algorithm";
-    public static final String FITNESS_FUNCTION = "fitness";
+    static final String D_OPT = "D";
+    static final String PROJECT_CP_OPT = "project_cp";
+    static final String TARGET_FRAME_OPT = "target_frame";
+    static final String CRASH_LOG_OPT = "crash_log";
+    static final String MODEL_PATH_OPT = "model";
+    static final String HELP_OPT = "help";
+    static final String INTEGRATION_TESTING = "integration_testing";
+    static final String DISABLE_LINE_ESTIMATION = "disable_line_estimation";
+    static final String IO_DIVERSITY = "io_diversity";
+    static final String BRANCHING_VARIABLE_DIVERSITY = "branching_variable_diversity";
+    static final String SEARCH_ALGORITHM = "search_algorithm";
+    static final String FITNESS_FUNCTION = "fitness";
 
     public static Options getCommandLineOptions() {
         Options options = new Options();
@@ -91,6 +92,11 @@ public class CommandLineParameters {
         // enable I/O diversity
         options.addOption(Option.builder(IO_DIVERSITY)
                 .desc("Enables I/O diversity")
+                .build());
+
+        // enable branching variable diversity
+        options.addOption(Option.builder(BRANCHING_VARIABLE_DIVERSITY)
+                .desc("Enables branching variable diversity")
                 .build());
 
         return options;

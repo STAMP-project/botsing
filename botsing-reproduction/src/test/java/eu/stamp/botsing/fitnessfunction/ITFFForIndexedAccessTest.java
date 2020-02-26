@@ -1,23 +1,11 @@
 package eu.stamp.botsing.fitnessfunction;
 
-import eu.stamp.botsing.StackTrace;
-import org.evosuite.testcase.execution.ExecutionResult;
-import org.evosuite.testcase.execution.ExecutionTraceImpl;
-import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.mockito.Mockito;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.StringReader;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class ITFFForIndexedAccessTest extends IntegrationTestingFFTest {
@@ -45,37 +33,7 @@ public class ITFFForIndexedAccessTest extends IntegrationTestingFFTest {
     public double expectedDistance;
 
     @Override
-    public void testExceptionCoverage_executionResultWithoutTargetCrash() throws FileNotFoundException {
-        ExecutionResult executionResult = mock(ExecutionResult.class);
-        HashSet<Integer> exceptionLocators = new HashSet<>();
-        exceptionLocators.add(1);
-        doReturn(exceptionLocators).when(executionResult).getPositionsWhereExceptionsWereThrown();
-
-        ExecutionTraceImpl executionTrace = new ExecutionTraceImpl();
-        executionTrace.indexAndLengthMap = new HashMap<>();
-        executionTrace.indexAndLengthMap.put("eu.stamp.ClassB", new HashMap<>());
-        executionTrace.indexAndLengthMap.get("eu.stamp.ClassB").put("method1", new HashMap<>());
-        executionTrace.indexAndLengthMap.get("eu.stamp.ClassB").get("method1").put(0, new int[]{index, arrayLength});
-
-        doReturn(executionTrace).when(executionResult).getTrace();
-
-        Throwable resultException = Mockito.mock(Throwable.class);
-
-        StackTraceElement[] trace = new StackTraceElement[2];
-        trace[0] = new StackTraceElement("eu.stamp.ClassA", "method2", "ClassA", 10);
-        trace[1] = new StackTraceElement("eu.stamp.ClassB", "method1", "ClassB", 20);
-
-        Mockito.doReturn(trace).when(resultException).getStackTrace();
-        Mockito.doReturn(resultException).when(executionResult).getExceptionThrownAtPosition(1);
-
-        BufferedReader obj = new BufferedReader(new StringReader("java.lang.ArrayIndexOutOfBounds:\n\tat eu.stamp" +
-                ".ClassC.method2(ClassA.java:10)\n\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
-
-        StackTrace target = Mockito.spy(new StackTrace());
-        Mockito.doReturn(obj).when(target).readFromFile(anyString());
-        target.setup("", 2);
-
-        ITFFForIndexedAccess itffForIndexedAccess = new ITFFForIndexedAccess(target);
-        Assert.assertEquals(expectedDistance, itffForIndexedAccess.exceptionCoverage(executionResult), 0.00000001);
+    public void testExceptionCoverage_executionResultWithoutTargetCrash() {
+        assertEquals(expectedDistance, ITFFForIndexedAccess.distance(index, arrayLength), 0.00000001);
     }
 }
