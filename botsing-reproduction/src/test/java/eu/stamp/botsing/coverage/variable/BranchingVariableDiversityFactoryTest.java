@@ -1,16 +1,14 @@
 package eu.stamp.botsing.coverage.variable;
 
 import eu.stamp.botsing.coverage.CoverageUtility;
-import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.LocalVariableNode;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,16 +19,11 @@ import static eu.stamp.botsing.coverage.variable.BranchingVariableDiversityObjec
 import static eu.stamp.botsing.coverage.variable.DiversityObjective.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.objectweb.asm.Opcodes.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BranchingVariableDiversityFactoryTest {
     @Spy
     private CoverageUtility utility;
-
-    @Mock
-    List<LocalVariableNode> variables;
 
     @InjectMocks
     BranchingVariableDiversityFactory factory = new BranchingVariableDiversityFactory();
@@ -40,108 +33,6 @@ public class BranchingVariableDiversityFactoryTest {
         Mockito.when(utility.getStackTraceExecutables()).thenReturn(new ArrayList<>());
         List<BranchingVariableDiversityObjective> goals = factory.getCoverageGoals();
         assert (goals.isEmpty());
-    }
-
-    @Test
-    public void testDetectGoals_compareTwoInts() {
-        LineNumberNode lineNumberNode = mock(LineNumberNode.class);
-        lineNumberNode.line = 11;
-        BytecodeInstruction lineNumber = mock(BytecodeInstruction.class);
-        when(lineNumber.getASMNode()).thenReturn(lineNumberNode);
-
-        AbstractInsnNode constNode = mock(AbstractInsnNode.class);
-        when(constNode.getOpcode()).thenReturn(LDC);
-        BytecodeInstruction constInstruction = mock(BytecodeInstruction.class);
-        when(constInstruction.getASMNode()).thenReturn(constNode);
-
-        VarInsnNode varInsnNode = mock(VarInsnNode.class);
-        when(varInsnNode.getOpcode()).thenReturn(ILOAD);
-        varInsnNode.var = 0;
-        BytecodeInstruction varInstruction = mock(BytecodeInstruction.class);
-        when(varInstruction.getASMNode()).thenReturn(varInsnNode);
-
-        JumpInsnNode compareNode = mock(JumpInsnNode.class);
-        when(compareNode.getOpcode()).thenReturn(IF_ICMPGT);
-        BytecodeInstruction compareInstruction = mock(BytecodeInstruction.class);
-        when(compareInstruction.getASMNode()).thenReturn(compareNode);
-
-        LocalVariableNode variableNode = mock(LocalVariableNode.class);
-        variableNode.name = "variable";
-        variableNode.desc = "I";
-        when(variables.get(0)).thenReturn(variableNode);
-
-        List<BytecodeInstruction> instructions = new ArrayList<>();
-        instructions.add(lineNumber);
-        instructions.add(constInstruction);
-        instructions.add(varInstruction);
-        instructions.add(compareInstruction);
-
-        Set<BranchingVariableDiversityObjective> goals = factory.detectGoals("classA", "method1", instructions,
-                variables);
-
-        assertThat(goals).size().isEqualTo(3);
-    }
-
-    @Test
-    public void testDetectGoals_compareOneIntAgainstZero() {
-        LineNumberNode lineNumberNode = mock(LineNumberNode.class);
-        lineNumberNode.line = 11;
-        BytecodeInstruction lineNumber = mock(BytecodeInstruction.class);
-        when(lineNumber.getASMNode()).thenReturn(lineNumberNode);
-
-        VarInsnNode varInsnNode = mock(VarInsnNode.class);
-        when(varInsnNode.getOpcode()).thenReturn(ILOAD);
-        varInsnNode.var = 0;
-        BytecodeInstruction varInstruction = mock(BytecodeInstruction.class);
-        when(varInstruction.getASMNode()).thenReturn(varInsnNode);
-
-        JumpInsnNode compareNode = mock(JumpInsnNode.class);
-        when(compareNode.getOpcode()).thenReturn(IFEQ);
-        BytecodeInstruction compareInstruction = mock(BytecodeInstruction.class);
-        when(compareInstruction.getASMNode()).thenReturn(compareNode);
-
-        LocalVariableNode variableNode = mock(LocalVariableNode.class);
-        variableNode.name = "variable";
-        variableNode.desc = "I";
-        when(variables.get(0)).thenReturn(variableNode);
-
-        List<BytecodeInstruction> instructions = new ArrayList<>();
-        instructions.add(lineNumber);
-        instructions.add(varInstruction);
-        instructions.add(compareInstruction);
-
-        Set<BranchingVariableDiversityObjective> goals = factory.detectGoals("classA", "method1", instructions,
-                variables);
-
-        assertThat(goals).size().isEqualTo(3);
-    }
-
-    @Test
-    public void testDetectVariables() {
-        AbstractInsnNode constNode = mock(AbstractInsnNode.class);
-        when(constNode.getOpcode()).thenReturn(LDC);
-        BytecodeInstruction constInstruction = mock(BytecodeInstruction.class);
-        when(constInstruction.getASMNode()).thenReturn(constNode);
-
-        VarInsnNode varInsnNode = mock(VarInsnNode.class);
-        when(varInsnNode.getOpcode()).thenReturn(ILOAD);
-        varInsnNode.var = 0;
-        BytecodeInstruction varInstruction = mock(BytecodeInstruction.class);
-        when(varInstruction.getASMNode()).thenReturn(varInsnNode);
-
-        List<BytecodeInstruction> instructions = new ArrayList<>();
-        instructions.add(constInstruction);
-        instructions.add(varInstruction);
-
-        LocalVariableNode variableNode = mock(LocalVariableNode.class);
-        variableNode.name = "variable";
-        variableNode.desc = "I";
-        when(variables.get(0)).thenReturn(variableNode);
-
-        Set<BranchingVariableDiversityObjective> goals = factory.detectVariables("classA", "method1", 11,
-                instructions, variables, 1, 2);
-
-        assertThat(goals).size().isEqualTo(3);
     }
 
     @Test
