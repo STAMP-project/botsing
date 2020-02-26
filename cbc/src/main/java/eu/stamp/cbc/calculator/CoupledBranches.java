@@ -43,12 +43,12 @@ public class CoupledBranches {
 
         // execute the cling test
         Executor executor = new Executor(clingTest,caller,callee);
-        executor.execute();
+        executor.execute(goalsSet);
 
         // Here, we have the execution traces in a dedicated pool (ExecutionTracePool)
         // We just need to compare them to find the number of covered coupled branches by test suites.
 
-        List<BranchPairFF> coveredPairsByCling = getCoveredPairs(goalsSet, caller);
+        Set<BranchPairFF> coveredPairsByCling = getCoveredPairs(goalsSet, caller);
         LOG.info("Number of covered coupled branches by test suite: {}", coveredPairsByCling.size());
 
     }
@@ -60,24 +60,24 @@ public class CoupledBranches {
 
         // execute the callee test for calculating the coverages
         Executor executor = new Executor(givenTestCallee,caller,callee);
-        executor.execute();
+        executor.execute(goalsSet);
         // execute the caller test for calculating the coverages
         executor = new Executor(givenTestCaller,caller,callee);
-        executor.execute();
+        executor.execute(goalsSet);
 
         // Here, we have the execution traces in a dedicated pool (ExecutionTracePool)
         // We just need to compare them to find the number of covered coupled branches by test suites.
-        List<BranchPairFF> coveredPairsByE = getCoveredPairs(goalsSet, callee);
+        Set<BranchPairFF> coveredPairsByE = getCoveredPairs(goalsSet, callee);
         LOG.info("Number of covered coupled branches by test suite E: {}", coveredPairsByE.size());
-        List<BranchPairFF> coveredPairsByR = getCoveredPairs(goalsSet, caller);
+        Set<BranchPairFF> coveredPairsByR = getCoveredPairs(goalsSet, caller);
         LOG.info("Number of covered coupled branches by test suite R: {}", coveredPairsByR.size());
-        List<BranchPairFF> coveredByBoth = union(coveredPairsByE, coveredPairsByR);
-        LOG.info("Number of covered coupled branches by both: {}", coveredByBoth.size());
+//        List<BranchPairFF> coveredByBoth = union(coveredPairsByE, coveredPairsByR);
+//        LOG.info("Number of covered coupled branches by both: {}", coveredByBoth.size());
     }
 
-    private static List<BranchPairFF> getCoveredPairs( Set<TestFitnessFunction> goalsSet, String className){
+    private static Set<BranchPairFF> getCoveredPairs( Set<TestFitnessFunction> goalsSet, String className){
 
-        List<BranchPairFF> result = new ArrayList<>();
+        Set<BranchPairFF> result = new HashSet<>();
         for (TestFitnessFunction testFF: goalsSet){
             BranchPairFF branchPairFF = (BranchPairFF) testFF;
             BranchCoverageTestFitness firstBranchFF = branchPairFF.getFirstBranchFF();
@@ -89,7 +89,19 @@ public class CoupledBranches {
                 result.add(branchPairFF);
             }
         }
+        for (BranchPairFF bff : result){
+            LOG.info("==========");
+            if (bff.getFirstBranchFF() != null){
+                LOG.info("1- {}",bff.getFirstBranchFF().toString());
+            }
+            if (bff.getSecondBranchFF() != null){
+                LOG.info("2- {}",bff.getSecondBranchFF().toString());
+            }
 
+            if (bff.getBranchPair().isDependent()){
+                LOG.info("expression- {}",bff.getBranchPair().getExpression());
+            }
+        }
         return result;
     }
 
@@ -98,7 +110,7 @@ public class CoupledBranches {
             return true;
         }
         BranchPool branchPool = BranchPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-        Collection<ExecutionTrace> traces = ExecutionTracePool.getInstance().getExecutionTraces(className);
+        Collection<ExecutionTrace> traces = ExecutionTracePool.getInstance().getExecutionTraces();
         boolean branchExpressionValue = branchFF.getBranchExpressionValue();
         Branch targetBranch = branchFF.getBranch();
 
@@ -107,16 +119,13 @@ public class CoupledBranches {
             Set<Integer> branchIDsToCheck;
             if (branchExpressionValue){
                 // check covered true
-                branchIDsToCheck = trace.getCoveredFalseBranches();
+                branchIDsToCheck = trace.getCoveredTrueBranches();
             }else{
                 // check covered false
-                branchIDsToCheck = trace.getCoveredTrueBranches();
+                branchIDsToCheck = trace.getCoveredFalseBranches();
             }
-            for(Integer id: branchIDsToCheck){
-                Branch currentBranch = branchPool.getBranch(id);
-                if(currentBranch.equals(targetBranch)){
-                    return true;
-                }
+            if(branchIDsToCheck.contains(targetBranch.getActualBranchId())){
+                return true;
             }
         }
         return false;
