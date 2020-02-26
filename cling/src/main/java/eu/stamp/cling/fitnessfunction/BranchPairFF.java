@@ -129,6 +129,10 @@ public class BranchPairFF extends TestFitnessFunction {
     }
 
     public BranchCoverageTestFitness getSecondBranchFF(){
-        return firstBranchFF;
+        return secondBranchFF;
+    }
+
+    public BranchPair getBranchPair() {
+        return branchPair;
     }
 }
