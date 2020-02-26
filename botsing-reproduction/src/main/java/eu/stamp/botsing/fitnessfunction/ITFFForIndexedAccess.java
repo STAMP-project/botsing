@@ -38,7 +38,7 @@ public class ITFFForIndexedAccess extends IntegrationTestingFF {
      * @return If the index is negative or greater or equal to the length of the array, it is out of bounds and 0 will
      * be returned. Otherwise, return the ratio of index-to-bounds over mid-to-bounds.
      */
-    private static double distance(int index, int length) {
+    protected static double distance(int index, int length) {
         if (index < 0 || index >= length) {
             return 0;
         } else {
