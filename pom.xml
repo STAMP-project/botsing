@@ -265,6 +265,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/eu/stamp/cling/coverage/defuse/*</exclude>
+                        <exclude>**/eu/stamp/cling/graphs/cfg/PathsPool.*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
