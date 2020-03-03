@@ -23,6 +23,13 @@
         </dependency>
 
         <dependency>
+            <groupId>eu.stamp-project</groupId>
+            <artifactId>botsing-examples</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.evosuite</groupId>
             <artifactId>evosuite-standalone-runtime</artifactId>
             <version>${evosuite.version}</version>
