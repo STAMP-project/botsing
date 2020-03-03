@@ -4,7 +4,7 @@ package eu.stamp.cbc.calculator;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.instrumentation.ClassInstrumentation;
 import eu.stamp.cbc.extraction.ExecutionTracePool;
-import eu.stamp.cbc.testsuite.execution.Executor;
+import eu.stamp.cbc.Executor;
 import eu.stamp.cling.IntegrationTestingProperties;
 import eu.stamp.cling.fitnessfunction.BranchPairFF;
 import eu.stamp.cling.graphs.cfg.CFGGenerator;
@@ -43,7 +43,7 @@ public class CoupledBranches {
 
         // execute the cling test
         Executor executor = new Executor(clingTest,caller,callee);
-        executor.execute(goalsSet);
+        executor.execute();
 
         // Here, we have the execution traces in a dedicated pool (ExecutionTracePool)
         // We just need to compare them to find the number of covered coupled branches by test suites.
@@ -60,10 +60,10 @@ public class CoupledBranches {
 
         // execute the callee test for calculating the coverages
         Executor executor = new Executor(givenTestCallee,caller,callee);
-        executor.execute(goalsSet);
+        executor.execute();
         // execute the caller test for calculating the coverages
         executor = new Executor(givenTestCaller,caller,callee);
-        executor.execute(goalsSet);
+        executor.execute();
 
         // Here, we have the execution traces in a dedicated pool (ExecutionTracePool)
         // We just need to compare them to find the number of covered coupled branches by test suites.
@@ -137,7 +137,7 @@ public class CoupledBranches {
         cfgGenerator.generate();
     }
 
-    private static List<Class> instrumentClasses() {
+    public static List<Class> instrumentClasses() {
         ClassInstrumentation classInstrumenter = new ClassInstrumentation();
         List<String> interestingClasses = Arrays.asList(IntegrationTestingProperties.TARGET_CLASSES);
         Collections.reverse(interestingClasses);

@@ -49,16 +49,8 @@ public class ExecutionTracePool {
         return this.pool.values();
     }
 
-
-    public Collection<ExecutionTrace> getExecutionTraces(String className){
-        Collection<ExecutionTrace> result = new HashSet<>();
-
-        for (String key : pool.keySet()) {
-            if (key.startsWith(className+"_ESTest.")){
-                result.add(pool.get(key));
-            }
-        }
-        return result;
+    public void clear(){
+        pool.clear();
     }
 
 
