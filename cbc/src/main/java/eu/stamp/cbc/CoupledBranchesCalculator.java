@@ -26,11 +26,12 @@ public class CoupledBranchesCalculator {
         // If help option is provided
         if (commands.hasOption(HELP_OPT)) {
             printHelpMessage(options);
-        } else if(!(commands.hasOption(PROJECT_CP_OPT) && ((commands.hasOption(TEST_SUITE_E) && commands.hasOption(TEST_SUITE_R)) || commands.hasOption(TEST_SUITE))
-                && commands.hasOption(CALLER) && commands.hasOption(CALLEE))) { // Check the required options are there
-            LOG.error("A mandatory option -{} -{} -{} -{} -{} is missing!", PROJECT_CP_OPT, TEST_SUITE_E, TEST_SUITE_R, CALLER, CALLEE);
-            printHelpMessage(options);
-        }else {// Calculate CBC
+        } else if (commands.hasOption(PROJECT_CP_OPT) && // Check the required options are available
+                commands.hasOption(TEST_SUITE) &&
+                commands.hasOption(CALLER) &&
+                commands.hasOption(CALLEE)) {
+
+            // Calculate CBC
             // Update EvoSuite's properties
             java.util.Properties properties = commands.getOptionProperties(D_OPT);
             updateEvoSuiteProperties(properties);
@@ -42,14 +43,13 @@ public class CoupledBranchesCalculator {
             String callee = commands.getOptionValue(CALLEE);
 
             // Get test Dir
-            if(commands.hasOption(TEST_SUITE)){
+            if (commands.hasOption(TEST_SUITE)) {
                 String clingTest = commands.getOptionValue(TEST_SUITE);
-                CoupledBranches.calculate(clingTest,caller,callee);
-            }else{
-                String givenTestCallee = commands.getOptionValue(TEST_SUITE_E);
-                String givenTestCaller = commands.getOptionValue(TEST_SUITE_R);
-                CoupledBranches.calculate(givenTestCallee, givenTestCaller,caller,callee);
+                CoupledBranches.calculate(clingTest, caller, callee);
             }
+        } else {
+            LOG.error("A mandatory option -{} -{} -{} -{} -{} is missing!", PROJECT_CP_OPT, TEST_SUITE, CALLER, CALLEE);
+            printHelpMessage(options);
         }
     }
 

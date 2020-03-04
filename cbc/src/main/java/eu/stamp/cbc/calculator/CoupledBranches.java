@@ -53,27 +53,6 @@ public class CoupledBranches {
 
     }
 
-    public static void calculate(String givenTestCaller, String givenTestCallee, String caller, String callee){
-        Set<TestFitnessFunction> goalsSet = preCalculation(caller,callee);
-        // Here, we have the list of coupled branches in BranchPairPool.
-        // Now, it is the time to execute the give tests
-
-        // execute the callee test for calculating the coverages
-        Executor executor = new Executor(givenTestCallee,caller,callee);
-        executor.execute();
-        // execute the caller test for calculating the coverages
-        executor = new Executor(givenTestCaller,caller,callee);
-        executor.execute();
-
-        // Here, we have the execution traces in a dedicated pool (ExecutionTracePool)
-        // We just need to compare them to find the number of covered coupled branches by test suites.
-        Set<BranchPairFF> coveredPairsByE = getCoveredPairs(goalsSet, callee);
-        LOG.info("Number of covered coupled branches by test suite E: {}", coveredPairsByE.size());
-        Set<BranchPairFF> coveredPairsByR = getCoveredPairs(goalsSet, caller);
-        LOG.info("Number of covered coupled branches by test suite R: {}", coveredPairsByR.size());
-//        List<BranchPairFF> coveredByBoth = union(coveredPairsByE, coveredPairsByR);
-//        LOG.info("Number of covered coupled branches by both: {}", coveredByBoth.size());
-    }
 
     private static Set<BranchPairFF> getCoveredPairs( Set<TestFitnessFunction> goalsSet, String className){
 
@@ -151,13 +130,5 @@ public class CoupledBranches {
         IntegrationTestingProperties.TARGET_CLASSES = new String[]{caller, callee};
     }
 
-    private static  <T> List<T> union(List<T> list1, List<T> list2) {
-        Set<T> set = new HashSet<T>();
-
-        set.addAll(list1);
-        set.addAll(list2);
-
-        return new ArrayList<T>(set);
-    }
 
 }
