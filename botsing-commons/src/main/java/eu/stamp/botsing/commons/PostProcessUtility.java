@@ -29,7 +29,7 @@ public class PostProcessUtility {
     private static final Logger LOG = LoggerFactory.getLogger(PostProcessUtility.class);
 
     public static void postProcessTests(TestSuiteChromosome testSuite, List<TestFitnessFactory<? extends TestFitnessFunction>> fitnessFactories) {
-
+        LOG.info("test size before post-process: {}",testSuite.size());
         if (Properties.INLINE) {
             ConstantInliner inliner = new ConstantInliner();
             inliner.inline(testSuite);
@@ -49,6 +49,7 @@ public class PostProcessUtility {
                 throw new Error("EvoSuite bug: minimization lead fitness from " + before + " to " + after);
             }
         }
+        LOG.info("test size after post-process: {}",testSuite.size());
 
         if (Properties.ASSERTIONS) {
             LOG.info("Generating assertions");

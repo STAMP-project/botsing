@@ -11,6 +11,8 @@ import org.evosuite.graphs.cfg.BasicBlock;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testsuite.AbstractFitnessFactory;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -56,6 +58,10 @@ public class IntegrationTestingGoalFactory extends AbstractFitnessFactory<TestFi
     }
     @Override
     public List<TestFitnessFunction> getCoverageGoals() {
-        return goals;
+        HashSet set = new HashSet();
+        set.addAll(goals);
+        ArrayList result = new ArrayList();
+        result.addAll(set);
+        return result;
     }
 }

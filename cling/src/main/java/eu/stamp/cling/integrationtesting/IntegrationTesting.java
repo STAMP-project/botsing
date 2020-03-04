@@ -13,9 +13,12 @@ import org.evosuite.strategy.TestGenerationStrategy;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.TestCaseExecutor;
 import org.evosuite.testsuite.TestSuiteChromosome;
+import org.evosuite.testsuite.TestSuiteSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -97,12 +100,38 @@ public class IntegrationTesting {
 
         postProcessTests(testCases,getFitnessFactories());
 
+//        // Check if we lose CBC in the final test
+//        TestCaseExecutor.initExecutor();
+//        FitnessFunctions ffs = new FitnessFunctions();
+//        int coveredGoals = 0;
+//        for (TestFitnessFunction testFitnessFunction: ffs.getFitnessFunctionList()){
+//            double min = Double.MAX_VALUE;
+//            for (TestChromosome tc: testCases.getTestChromosomes()){
+//                double value = testFitnessFunction.getFitness(tc);
+//                if(value < min){
+//                    min = value;
+//                }
+//            }
+//            if (min == 0){
+//                coveredGoals++;
+//            }
+//        }
         TestGenerationResult writingTest = writeJUnitTestsAndCreateResult(testCases, Properties.JUNIT_SUFFIX);
+
+
+        if (Properties.CTG_SEEDS_FILE_OUT != null) {
+            String user_dir = System.getProperty("user.dir");
+            TestSuiteSerialization.saveTests(testCases, new File(Paths.get(user_dir,Properties.CTG_SEEDS_FILE_OUT).toString()));
+        }
         writeJUnitFailingTests();
         TestCaseExecutor.pullDown();
-
+        LOG.info("test size 7: {}",testCases.size());
         LOG.info("The solution test is saved!");
 
+//
+//        TestCaseExecutor.pullDown();
+//
+//        LOG.info("Number of Covered goals in the final test: {}", coveredGoals);
         return writingTest;
 
     }

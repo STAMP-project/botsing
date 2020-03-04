@@ -22,6 +22,7 @@ package eu.stamp.botsing.testgeneration.strategy;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
+import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingCondition;
 import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -40,6 +41,7 @@ import org.evosuite.utils.ResourceController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class BotsingIndividualStrategy extends TestGenerationStrategy {
@@ -70,8 +72,32 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
             e.printStackTrace();
         }
 
+
+
         ga.addStoppingCondition(stoppingCondition);
-        ga.addStoppingCondition(new ZeroFitnessStoppingCondition());
+
+
+        // Detect fitnes function(s)
+        List<TestFitnessFunction> fitnessFunctions = fitnessFunctionCollector.getFitnessFunctionList();
+        boolean containsMainFF = false;
+        if(fitnessFunctions.size() > 1){
+            // if we have multiple objectives, we should check the zero fitness value stopping condition
+            for (TestFitnessFunction ff :fitnessFunctions){
+                // if it has one of the main crash reproduction fitness functions, we onlu check the zero value of that
+                String ffClassName = ff.getClass().getName();
+                if (ffClassName.equals("eu.stamp.botsing.fitnessfunction.WeightedSum")|| ffClassName.equals("eu.stamp.botsing.fitnessfunction.IntegrationTestingFF")){
+                    containsMainFF = true;
+                    ga.addStoppingCondition(new SingleObjectiveZeroStoppingCondition(ff));
+                }
+            }
+            if(! containsMainFF){
+                ga.addStoppingCondition(new ZeroFitnessStoppingCondition());
+            }
+        }else if(CrashProperties.getInstance().fitnessFunctions.length == 1){
+            ga.addStoppingCondition(new ZeroFitnessStoppingCondition());
+        }else{
+            throw new IllegalStateException("Lis of Fitness Functions is empty");
+        }
 
         if (!(stoppingCondition instanceof MaxTimeStoppingCondition)) {
             ga.addStoppingCondition(new GlobalTimeStoppingCondition());
@@ -87,11 +113,9 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         ga.addListener(new ResourceController());
 
 
-        // Add fitnes function(s)
-        List<TestFitnessFunction> fitnessFunctions = fitnessFunctionCollector.getFitnessFunctionList();
-//        for(TestFitnessFunction ff : fitnessFunctions){
+
+        // Add fitness functions
         ga.addFitnessFunctions(fitnessFunctions);
-//        }
 
         // prepare model seeding before generating the solution
         if(Properties.MODEL_PATH != null){
@@ -103,10 +127,21 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
         // Start the search process
         ga.generateSolution();
+        double bestFF= Double.MAX_VALUE;
+        if (containsMainFF){
+            Iterator<StoppingCondition> itr = ga.getStoppingConditions().iterator();
+            while (itr.hasNext()){
+                StoppingCondition condition = itr.next();
+                if(condition instanceof SingleObjectiveZeroStoppingCondition){
+                    bestFF = condition.getCurrentValue();
+                    break;
+                }
+            }
+        }else{
+            bestFF =ga.getBestIndividual().getFitness();
+        }
 
-
-
-        if (ga.getBestIndividual().getFitness() == 0.0) {
+        if (bestFF== 0.0) {
             TestChromosome solution = (TestChromosome) ga.getBestIndividual();
             LOG.info("* The target crash is covered. The generated test is: "+solution.getTestCase().toCode());
             LOG.info("{} thrown exception(s) are detected in the solution: ",solution.getLastExecutionResult().getAllThrownExceptions().size());

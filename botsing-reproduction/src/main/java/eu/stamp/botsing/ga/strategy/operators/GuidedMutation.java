@@ -1,7 +1,7 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
-import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
+import eu.stamp.botsing.ga.strategy.metaheuristics.GuidedSingleObjectiveGA;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class GuidedMutation<T extends Chromosome> extends Mutation<T> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GuidedGeneticAlgorithm.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GuidedSingleObjectiveGA.class);
     private static GuidedSearchUtility utility = new GuidedSearchUtility();
 
     Set<GenericAccessibleObject<?>> publicCalls = new HashSet<>();

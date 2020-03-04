@@ -19,6 +19,10 @@ public class AbstractMOSA<T extends Chromosome> extends org.evosuite.ga.metaheur
     private static final Logger LOG = LoggerFactory.getLogger(AbstractMOSA.class);
     protected Mutation<T> mutation;
 
+    /** Boolean vector to indicate whether each test goal is covered or not. **/
+    protected Set<FitnessFunction<T>> uncoveredGoals = new LinkedHashSet<FitnessFunction<T>>();
+    protected Set<FitnessFunction<T>> coveredGoals = new LinkedHashSet<FitnessFunction<T>>();
+
     /** Map used to store the covered test goals (keys of the map) and the corresponding covering test cases (values of the map) **/
     protected Map<FitnessFunction<T>, T> archive = new LinkedHashMap<FitnessFunction<T>, T>();
     FitnessFunctions fitnessCollector;
@@ -131,7 +135,14 @@ public class AbstractMOSA<T extends Chromosome> extends org.evosuite.ga.metaheur
     @Override
     public void generateSolution() {}
 
+    @Override
+    protected Set<FitnessFunction<T>> getCoveredGoals() {
+        return this.coveredGoals;
+    }
 
-
+    @Override
+    protected Set<FitnessFunction<T>> getUncoveredGoals() {
+        return this.uncoveredGoals;
+    }
 
 }

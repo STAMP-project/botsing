@@ -87,9 +87,16 @@ public class WeightedSum extends TestFitnessFunction {
     }
 
     @Override
-    public int compareTo(TestFitnessFunction testFitnessFunction) {
-        // TODO Add this when we have multple fitness functions
-        return 0;
+    public int compareTo(TestFitnessFunction other) {
+        if (other == null){
+            return 1;
+        }
+
+        if (other instanceof WeightedSum){
+            return 0;
+        }
+
+        return compareClassName(other);
     }
 
     @Override
