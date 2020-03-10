@@ -45,8 +45,8 @@ public class ExecutionTracePool {
         return this.pool.get(testName);
     }
 
-    public Collection<ExecutionTrace> getExecutionTraces(){
-        return this.pool.values();
+    public Map<String,ExecutionTrace> getExecutionTraces(){
+        return this.pool;
     }
 
     public void clear(){

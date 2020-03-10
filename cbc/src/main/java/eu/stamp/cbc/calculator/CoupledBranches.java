@@ -62,11 +62,14 @@ public class CoupledBranches {
             BranchCoverageTestFitness firstBranchFF = branchPairFF.getFirstBranchFF();
             BranchCoverageTestFitness secondBranchFF = branchPairFF.getSecondBranchFF();
             // check both of the branches
-            if(isBranchCovered(firstBranchFF, className) && isBranchCovered(secondBranchFF, className)){
-                // The current branch pair is covered.
-                // Add it to covered goals
+            if(isBranchPairCovered(branchPairFF)){
                 result.add(branchPairFF);
             }
+//            if(isBranchCovered(firstBranchFF, className) && isBranchCovered(secondBranchFF, className)){
+//                // The current branch pair is covered.
+//                // Add it to covered goals
+//                result.add(branchPairFF);
+//            }
         }
         for (BranchPairFF bff : result){
             LOG.info("==========");
@@ -84,16 +87,62 @@ public class CoupledBranches {
         return result;
     }
 
+    private static boolean isBranchPairCovered(BranchPairFF branchPairFF) {
+
+        BranchCoverageTestFitness firstBranchFF = branchPairFF.getFirstBranchFF();
+        BranchCoverageTestFitness secondBranchFF = branchPairFF.getSecondBranchFF();
+        Map<String,ExecutionTrace> traces = ExecutionTracePool.getInstance().getExecutionTraces();
+
+
+        for (String test : traces.keySet()){
+            ExecutionTrace trace = traces.get(test);
+
+            if(isBranchCoveredByTrace(trace,firstBranchFF) && isBranchCoveredByTrace(trace,secondBranchFF)){
+                Set<Integer> coveredLines = trace.getCoveredLines(branchPairFF.getCallSite().getClassName());
+                if (coveredLines.contains(branchPairFF.getCallSite().getLineNumber()) || firstBranchFF == null){
+                    return true;
+                }else{
+                    LOG.debug("Call site is not covered");
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isBranchCoveredByTrace(ExecutionTrace trace, BranchCoverageTestFitness branchFF) {
+        if (branchFF == null){
+            return true;
+        }
+        boolean branchExpressionValue = branchFF.getBranchExpressionValue();
+        Branch targetBranch = branchFF.getBranch();
+
+        Set<Integer> branchIDsToCheck;
+        if (branchExpressionValue){
+            // check covered true
+            branchIDsToCheck = trace.getCoveredTrueBranches();
+        }else{
+            // check covered false
+            branchIDsToCheck = trace.getCoveredFalseBranches();
+        }
+
+        if(branchIDsToCheck.contains(targetBranch.getActualBranchId())){
+            return true;
+        }
+        return false;
+    }
+
     private static boolean isBranchCovered(BranchCoverageTestFitness branchFF, String className){
         if (branchFF == null){
             return true;
         }
         BranchPool branchPool = BranchPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-        Collection<ExecutionTrace> traces = ExecutionTracePool.getInstance().getExecutionTraces();
+        Map<String,ExecutionTrace> traces = ExecutionTracePool.getInstance().getExecutionTraces();
         boolean branchExpressionValue = branchFF.getBranchExpressionValue();
         Branch targetBranch = branchFF.getBranch();
 
-        for (ExecutionTrace trace : traces){
+        for (String test : traces.keySet()){
+            ExecutionTrace trace = traces.get(test);
             // Find branch ids for checking
             Set<Integer> branchIDsToCheck;
             if (branchExpressionValue){

@@ -3,6 +3,7 @@ package eu.stamp.cling.fitnessfunction;
 import eu.stamp.cling.coverage.branch.BranchPair;
 import eu.stamp.cling.coverage.branch.IntegrationTestingBranchCoverageFactory;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
+import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
@@ -134,5 +135,9 @@ public class BranchPairFF extends TestFitnessFunction {
 
     public BranchPair getBranchPair() {
         return branchPair;
+    }
+
+    public BytecodeInstruction getCallSite(){
+        return branchPair.getCallSite();
     }
 }
