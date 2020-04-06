@@ -179,7 +179,8 @@ public class CrashCoverageFitnessCalculatorTest {
         result.setTrace(executionTrace);
 
         // compute fitness function
-        double fitness = calculator.getLineCoverageFitness(result, target, 10);
+        calculator.setTargetCrash(target);
+        double fitness = calculator.getLineCoverageFitness(result, 10);
         assertEquals(0, fitness, 0.0001);
     }
 
@@ -209,7 +210,8 @@ public class CrashCoverageFitnessCalculatorTest {
         result.setTrace(executionTrace);
 
         // compute fitness function
-        double fitness = calculator.getLineCoverageFitness(result, target, 11);
+        calculator.setTargetCrash(target);
+        double fitness = calculator.getLineCoverageFitness(result, 11);
         assertEquals(Double.MAX_VALUE, fitness, 0.0001);
     }
 

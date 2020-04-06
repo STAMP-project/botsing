@@ -41,7 +41,7 @@ public class CrashCoverageFitnessCalculator {
 
     private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageFitnessCalculator.class);
 
-    StackTrace targetCrash;
+    private StackTrace targetCrash;
     LinkedList<LinkedList<Integer>> tracking = new LinkedList();
     int irrelevantFrameCounter=0;
 
@@ -49,44 +49,41 @@ public class CrashCoverageFitnessCalculator {
         targetCrash = crash;
     }
 
-    public double getLineCoverageFitness( ExecutionResult result , int lineNumber) {
-        StackTrace trace = targetCrash;
-        return getLineCoverageFitness(result, trace, lineNumber);
-    }
-
     public double getLineCoverageForFrame( ExecutionResult result, int frameLevel){
+        // If the frame is pointong to one of the dependencies of SUT, we just assume that the distance is zero
         if(targetCrash.isIrrelevantFrame(frameLevel)){
             irrelevantFrameCounter++;
             return 0.0;
         }
-        StackTrace trace = targetCrash;
+        // Check if we have the  coverage in the right depth or not
         int callDepth = targetCrash.getPublicTargetFrameLevel() - frameLevel + 1 - irrelevantFrameCounter;
-
-        StackTraceElement targetFrame = trace.getFrame(frameLevel);
+        StackTraceElement targetFrame = targetCrash.getFrame(frameLevel);
         String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting, targetFrame.getClassName(), targetFrame.getLineNumber());
-        int lineNumber = targetFrame.getLineNumber();
-        boolean found = findMethodCallsInDepth(result,methodName,lineNumber,callDepth);
-        if(!found){
-            tracking.clear();
-            irrelevantFrameCounter=0;
+        boolean found = findMethodCallsInDepth(result,methodName,targetFrame.getLineNumber(),callDepth);
+        // If we find it, we can return zero value for the fitness
+        if(found){
+            return 0.0;
         }
-        List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
-        double lineCoverageFitness;
-        if (found) {
-            lineCoverageFitness = 0.0;
-        } else {
-            lineCoverageFitness = Double.MAX_VALUE;
-            // Indicate minimum distance
-            for (BranchCoverageTestFitness branchFitness : branchFitnesses) {
-                // let's calculate the branch distance
-                double distance = computeBranchDistance(branchFitness, result);
-                lineCoverageFitness = Math.min(lineCoverageFitness, distance);
-            }
+        // Otherwise, we need to calculate the distance
 
-        }
+        // Clear tracking variables
+        tracking.clear();
+        irrelevantFrameCounter=0;
 
-        return lineCoverageFitness;
+        // Calculate the distance
+        return calculateBranchDistanceAndApproachLevel(result);
     }
+
+
+//    private double calculateDistance(ExecutionResult result){
+//        if(true){
+//            // lets calculate the distance using the classical approach level + branch distance
+//            return calculateBranchDistanceAndApproachLevel(result);
+//        }else{
+//            // lets use the the basic block distance
+//            return computeBasicBlockDistance(result);
+//        }
+//    }
 
     private boolean findMethodCallsInDepth(ExecutionResult result, String methodName,int lineNumber, int callDepth) {
         boolean found = false;
@@ -124,25 +121,47 @@ public class CrashCoverageFitnessCalculator {
         return -1;
     }
 
-    protected double getLineCoverageFitness(ExecutionResult result, StackTrace trace, int lineNumber) {
-        int targetFrameLevel = trace.getNumberOfFrames();
-        StackTraceElement targetFrame = trace.getFrame(targetFrameLevel);
-
-        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting,targetFrame.getClassName(), targetFrame.getLineNumber());
-        List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
-        double lineCoverageFitness = 1.0;
+    public double getLineCoverageFitness(ExecutionResult result, int lineNumber) {
+        // If line is covered, we the line distance is zero
         if (result.getTrace().getCoveredLines().contains(lineNumber)) {
-            lineCoverageFitness = 0.0;
-        } else {
-            lineCoverageFitness = Double.MAX_VALUE;
-            // Indicate minimum distance
-            for (BranchCoverageTestFitness branchFitness : branchFitnesses) {
-                // let's calculate the branch distance
-                double distance = computeBranchDistance(branchFitness, result);
-                lineCoverageFitness = Math.min(lineCoverageFitness, distance);
-            }
+            return  0.0;
         }
+
+        return calculateBranchDistanceAndApproachLevel(result);
+    }
+
+
+    private double calculateBranchDistanceAndApproachLevel(ExecutionResult result) {
+        // Get the target frame
+        StackTraceElement targetFrame = this.targetCrash.getFrame(targetCrash.getNumberOfFrames());
+        // Get the target method name
+        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting,targetFrame.getClassName(), targetFrame.getLineNumber());
+
+        // get control dependent branches
+        List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
+
+        double lineCoverageFitness = Double.MAX_VALUE;
+        // Indicate minimum distance
+        for (BranchCoverageTestFitness branchFitness : branchFitnesses) {
+            // let's calculate the branch distance
+            double distance = computeBranchDistance(branchFitness, result);
+            lineCoverageFitness = Math.min(lineCoverageFitness, distance);
+        }
+
         return lineCoverageFitness;
+    }
+
+    private double computeBasicBlockDistance(ExecutionResult result) {
+        // Get the target frame
+        StackTraceElement targetFrame = this.targetCrash.getFrame(targetCrash.getNumberOfFrames());
+        // Get the target method name
+        String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting,targetFrame.getClassName(), targetFrame.getLineNumber());
+
+        // get control dependent branches
+        List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
+        
+
+        return Double.MAX_VALUE;
     }
 
     protected double computeBranchDistance(BranchCoverageTestFitness branchFitness, ExecutionResult result){
@@ -152,7 +171,7 @@ public class CrashCoverageFitnessCalculator {
         if (value == 0.0) {
             // If the control dependency was covered, then likely
             // an exception happened before the line was reached
-            value = 1.0;
+            value = normalize(1.0);
         } else {
             value = normalize(value);
         }
@@ -270,6 +289,7 @@ public class CrashCoverageFitnessCalculator {
     }
 
 
-
-
+    public void setTargetCrash(StackTrace targetCrash) {
+        this.targetCrash = targetCrash;
+    }
 }
