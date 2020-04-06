@@ -36,6 +36,7 @@ public class CommandLineParameters {
     public static final String IO_DIVERSITY = "io_diversity";
     public static final String SEARCH_ALGORITHM = "search_algorithm";
     public static final String FITNESS_FUNCTION = "fitness";
+    public static final String CRASH_SECONDARY_OBJECTIVE = "crash_secondary_objective";
 
     public static Options getCommandLineOptions() {
         Options options = new Options();
@@ -91,6 +92,12 @@ public class CommandLineParameters {
         // enable I/O diversity
         options.addOption(Option.builder(IO_DIVERSITY)
                 .desc("Enables I/O diversity")
+                .build());
+
+        // Secondary Objective
+        options.addOption(Option.builder(CRASH_SECONDARY_OBJECTIVE)
+                .hasArg()
+                .desc("Crash-related secondary search objectives")
                 .build());
 
         return options;

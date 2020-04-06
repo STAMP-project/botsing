@@ -25,6 +25,7 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
+import eu.stamp.botsing.secondaryobjectives.TestCaseSecondaryObjective;
 import org.evosuite.Properties;
 import org.evosuite.ga.*;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -67,6 +68,10 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
         } catch (Properties.NoSuchParameterException e) {
             LOG.error("Parameter not found during initialization", e);
         }
+
+        // set the secondary objectives of test cases (useful when MOSA compares two test
+        // cases to, for example, update the archive)
+        TestCaseSecondaryObjective.setSecondaryObjectives();
     }
 
     @Override

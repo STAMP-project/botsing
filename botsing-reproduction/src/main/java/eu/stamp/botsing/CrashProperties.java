@@ -83,6 +83,14 @@ public class CrashProperties {
         }
     }
 
+    public enum SecondaryObjective {
+        TestLength,
+        BasicBlockCoverage;
+
+        SecondaryObjective() {
+        }
+    }
+
 
 //    @Properties.Parameter(key = "testGenerationStrategy", group = "Crash reproduction", description = "Which mode to use for crash reproduction")
 //    public static CrashProperties.TestGenerationStrategy testGenerationStrategy = CrashProperties.TestGenerationStrategy.Single_GA;
@@ -94,6 +102,9 @@ public class CrashProperties {
 
     @Properties.Parameter(key = "FitnessFunctions", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
     public static CrashProperties.FitnessFunction[] fitnessFunctions = {FitnessFunction.WeightedSum};
+
+    @Properties.Parameter(key = "SecondaryObjectives", group = "Crash reproduction", description = "Which fitness function should be used for the GGA")
+    public static CrashProperties.SecondaryObjective[] secondaryObjectives = {};
 
 
 
