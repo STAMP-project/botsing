@@ -1,8 +1,9 @@
 package eu.stamp.botsing.secondaryobjectives.basicblock;
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.commons.BotsingTestGenerationContext;
-import org.evosuite.TestGenerationContext;
+import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
+import eu.stamp.botsing.fitnessfunction.calculator.CrashCoverageFitnessCalculator;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BasicBlock;
@@ -102,6 +103,11 @@ public class BasicBlockUtility {
             if (targetLine >= firstLine && targetLine<= lastLine){
                 return currentBasicBlock;
             }
+            for (BasicBlock child: targetMethodCFG.getChildren(currentBasicBlock)){
+                if (!visitedBasicBlocks.contains(child)){
+                    BasicBlocksToVisit.add(child);
+                }
+            }
         }
         throw new IllegalArgumentException("The target line is not available in the given control flow graph!");
     }
@@ -111,13 +117,8 @@ public class BasicBlockUtility {
         Returns the actual control flow graph of the requested method
      */
     private static ActualControlFlowGraph getTargetMethodCFG(String targetClass, String targetMethod){
-        if(CrashProperties.integrationTesting){
-            GraphPool graphPool = GraphPool.getInstance(BotsingTestGenerationContext.getInstance().getClassLoaderForSUT());
-            return graphPool.getActualCFG(targetClass,targetMethod);
-        }else {
-            GraphPool graphPool = GraphPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT());
-            return graphPool.getActualCFG(targetClass,targetMethod);
-        }
+        GraphPool graphPool = GraphPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader(false));
+        return graphPool.getActualCFG(targetClass,targetMethod);
     }
 
     /*
@@ -237,24 +238,45 @@ public class BasicBlockUtility {
      */
 
     public static int compareCoveredLines(TestChromosome chromosome1, TestChromosome chromosome2, List<BasicBlock> semiCoveredBasicBlocks, int targetLine) {
+
         // First, we check if we have any semiCoveredBlock
         if (semiCoveredBasicBlocks.isEmpty()){
             return 0;
         }
-        // then we select the target block
-        BasicBlock targetBlock;
+
+        // Then, we remove blocks, in which the target block is not accessible
+        String targetClass = semiCoveredBasicBlocks.get(0).getClassName();
+        String targetMethod = semiCoveredBasicBlocks.get(0).getMethodName();
+        ActualControlFlowGraph targetMethodCFG = getTargetMethodCFG(targetClass,targetMethod);
+        BasicBlock targetBlock = findTargetBlock(targetMethodCFG,targetLine);
+        Iterator<BasicBlock> iter = semiCoveredBasicBlocks.iterator();
+        while (iter.hasNext()){
+            BasicBlock scBlock = iter.next();
+            if (targetMethodCFG.getDistance(scBlock,targetBlock)<0){
+                iter.remove();
+            }
+        }
+
+        // We continue if we still have any candidate for line comparison
+        if (semiCoveredBasicBlocks.isEmpty()){
+            return 0;
+        }
+
+        // Next, we select the target block
+        BasicBlock targetSemiCoveredBlock;
         if (semiCoveredBasicBlocks.size() == 1){
             // if we only have one semiCoveredBlock, we will select it  as our target block
-            targetBlock = semiCoveredBasicBlocks.get(0);
+            targetSemiCoveredBlock = semiCoveredBasicBlocks.get(0);
         }else{
             // if we have more than one block, we select the closest one to the target line
-            targetBlock = findTheClosestBlock(semiCoveredBasicBlocks, targetLine);
+            targetSemiCoveredBlock = findTheClosestBlock(semiCoveredBasicBlocks, targetLine);
         }
 
 
+
         // find the covered lines in the target method by the given chromosome
-        Collection<Integer> coveredLines1  = detectInterestingCoveredLines(chromosome1,targetBlock,targetLine);
-        Collection<Integer> coveredLines2  = detectInterestingCoveredLines(chromosome2,targetBlock,targetLine);
+        Collection<Integer> coveredLines1  = detectInterestingCoveredLines(chromosome1,targetSemiCoveredBlock,targetLine);
+        Collection<Integer> coveredLines2  = detectInterestingCoveredLines(chromosome2,targetSemiCoveredBlock,targetLine);
 
         if (coveredLines1.equals(coveredLines2)){
             // Same coverage
@@ -263,5 +285,46 @@ public class BasicBlockUtility {
 
         // the returned value is >0 if the number of covered lines by chromosome2 is more than chromosome1 and vice versa
         return coveredLines2.size() - coveredLines1.size();
+    }
+
+    /*
+   Returns the uncovered frame in the minimum level
+     */
+    public static StackTraceElement findFirstUncoveredFrame(StackTrace crash, TestChromosome chromosome1, TestChromosome chromosome2) {
+        int UncoveredFrameLevel = Integer.min(findFirstUncoveredFrame(chromosome1),findFirstUncoveredFrame(chromosome2));
+        StackTraceElement UncoveredFrame = crash.getFrame(UncoveredFrameLevel);
+
+        return UncoveredFrame;
+    }
+
+    /*
+            Returns the first frame which is not covered by the given chromosome
+    */
+    private static int findFirstUncoveredFrame(TestChromosome chromosome) {
+        StackTrace crash  = CrashProperties.getInstance().getStackTrace(0);
+        CrashCoverageFitnessCalculator fitnessCalculator = new CrashCoverageFitnessCalculator(crash);
+        int frameLevel = crash.getPublicTargetFrameLevel();
+
+        while (frameLevel>0){
+            if (isFrameCovered(fitnessCalculator, frameLevel,chromosome)){
+                frameLevel--;
+            }else {
+                return frameLevel;
+            }
+        }
+
+        // Covered all of the frames. So, we return the deepest frame.
+        return 1;
+    }
+
+    /*
+        Checks if the line indicated by the given frameLevel is covered by the given chromosome
+    */
+    private static boolean isFrameCovered(CrashCoverageFitnessCalculator fitnessCalculator, int frameLevel, TestChromosome chromosome) {
+        if(fitnessCalculator.getLineCoverageForFrame(chromosome.getLastExecutionResult(),frameLevel) == 0){
+            return true;
+        }
+
+        return false;
     }
 }

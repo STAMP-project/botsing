@@ -43,34 +43,42 @@ public class BasicBlockCoverage extends SecondaryObjective<TestChromosome> {
 
 
     private String getTargetMethod(TestChromosome chromosome1, TestChromosome chromosome2) {
+        StackTrace crash  = CrashProperties.getInstance().getStackTrace(0);
         if(CrashProperties.integrationTesting){
-            // ToDo: Complete this
-            return null;
+            // Find the first uncovered frame by the given chromosomes. We always choose the deepest first uncovered frame.
+            StackTraceElement uncoveredFrame = BasicBlockUtility.findFirstUncoveredFrame(crash,chromosome1,chromosome2);
+            // Return the method name in the detected frame level
+            return TestGenerationContextUtility.derivingMethodFromBytecode(true,uncoveredFrame.getClassName(),uncoveredFrame.getLineNumber());
         }else{
             // target method is fixed
-            StackTrace crash  = CrashProperties.getInstance().getStackTrace(0);
-            return TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting,crash.getTargetClass(), crash.getTargetLine());
+            return TestGenerationContextUtility.derivingMethodFromBytecode(false,crash.getTargetClass(), crash.getTargetLine());
         }
 
     }
 
     private String getTargetClass(TestChromosome chromosome1, TestChromosome chromosome2) {
+        StackTrace crash  = CrashProperties.getInstance().getStackTrace(0);
         if(CrashProperties.integrationTesting){
-            // ToDo: Complete this
-            return null;
+            // Find the first uncovered frame by the given chromosomes. We always choose the deepest first uncovered frame.
+            StackTraceElement uncoveredFrame = BasicBlockUtility.findFirstUncoveredFrame(crash,chromosome1,chromosome2);
+            // Return the className in the detected frame
+            return uncoveredFrame.getClassName();
         }else{
             // target class is fixed
-            return CrashProperties.getInstance().getStackTrace(0).getTargetClass();
+            return crash.getTargetClass();
         }
     }
 
     private int getTargetLine(TestChromosome chromosome1, TestChromosome chromosome2) {
+        StackTrace crash  = CrashProperties.getInstance().getStackTrace(0);
         if(CrashProperties.integrationTesting){
-            // ToDo: Complete this
-            return 0;
+            // Find the first uncovered frame by the given chromosomes. We always choose the deepest first uncovered frame.
+            StackTraceElement uncoveredFrame = BasicBlockUtility.findFirstUncoveredFrame(crash,chromosome1,chromosome2);
+            // Return the line number indicated in the detected frame
+            return uncoveredFrame.getLineNumber();
         }else{
             // target line is fixed
-            return CrashProperties.getInstance().getStackTrace(0).getTargetLine();
+            return crash.getTargetLine();
         }
 
     }
