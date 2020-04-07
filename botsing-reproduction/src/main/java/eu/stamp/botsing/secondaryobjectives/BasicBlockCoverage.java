@@ -6,8 +6,6 @@ import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import eu.stamp.botsing.secondaryobjectives.basicblock.BasicBlockUtility;
 import eu.stamp.botsing.secondaryobjectives.basicblock.CoveredBasicBlock;
 import org.evosuite.ga.SecondaryObjective;
-import org.evosuite.graphs.cfg.ActualControlFlowGraph;
-import org.evosuite.graphs.cfg.BasicBlock;
 import org.evosuite.testcase.TestChromosome;
 
 import java.util.*;
