@@ -22,6 +22,7 @@ package eu.stamp.botsing.fitnessfunction;
 
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.fitnessfunction.calculator.CrashCoverageFitnessCalculator;
+import eu.stamp.botsing.fitnessfunction.utils.CrashDistanceEvolution;
 import eu.stamp.botsing.testgeneration.strategy.BotsingIndividualStrategy;
 import org.evosuite.coverage.exception.ExceptionCoverageHelper;
 
@@ -83,6 +84,7 @@ public class WeightedSum extends TestFitnessFunction {
         LOG.debug("Fitness Function: "+fitnessValue);
         testChromosome.setFitness(this,fitnessValue);
         testChromosome.increaseNumberOfEvaluations();
+        CrashDistanceEvolution.getInstance().inform(fitnessValue);
         return fitnessValue;
     }
 

@@ -2,6 +2,7 @@ package eu.stamp.botsing.fitnessfunction;
 
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.fitnessfunction.calculator.CrashCoverageFitnessCalculator;
+import eu.stamp.botsing.fitnessfunction.utils.CrashDistanceEvolution;
 import org.evosuite.coverage.exception.ExceptionCoverageHelper;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
@@ -50,6 +51,7 @@ public class IntegrationTestingFF extends TestFitnessFunction {
         LOG.debug("Fitness Function: "+fitnessValue);
         testChromosome.setFitness(this,fitnessValue);
         testChromosome.increaseNumberOfEvaluations();
+        CrashDistanceEvolution.getInstance().inform(fitnessValue);
         return fitnessValue;
     }
 
