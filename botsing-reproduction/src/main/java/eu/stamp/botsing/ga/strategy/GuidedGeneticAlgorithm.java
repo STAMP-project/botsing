@@ -23,6 +23,7 @@ package eu.stamp.botsing.ga.strategy;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
+import eu.stamp.botsing.fitnessfunction.utils.CrashDistanceEvolution;
 import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
 import eu.stamp.botsing.secondaryobjectives.TestCaseSecondaryObjective;
@@ -77,7 +78,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
     @Override
     public void generateSolution() {
         currentIteration = 0;
-
+        CrashDistanceEvolution.getInstance().setStartTime(this.listeners);
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         Boolean initilized = false;
