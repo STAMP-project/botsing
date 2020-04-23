@@ -3,6 +3,7 @@ package eu.stamp.botsing.ga.strategy.operators;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
+import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
@@ -27,12 +28,15 @@ public class GuidedSearchUtility<T extends Chromosome> {
 
     public BytecodeInstruction collectPublicCalls(StackTrace trace){
         Set<BytecodeInstruction> result = new HashSet<>();
-        getPublicCalls(trace.getTargetClass(), trace.getTargetLine());
+
         boolean nonPrivateFrameFound = false;
         int currentTargetFramelevel = trace.getTargetFrameLevel();
 
         while(!nonPrivateFrameFound){
+//            Get current target frame
             StackTraceElement currentTargetFrame = trace.getAllFrames().get(currentTargetFramelevel-1);
+            publicCallsBC.clear();
+            getPublicCalls(currentTargetFrame.getClassName(), currentTargetFrame.getLineNumber());
             for(BytecodeInstruction bc: publicCallsBC){
                 if(bc.getClassName().equals(currentTargetFrame.getClassName()) &&
                         cleanMethodName(bc.getMethodName()).equals(currentTargetFrame.getMethodName()) &&

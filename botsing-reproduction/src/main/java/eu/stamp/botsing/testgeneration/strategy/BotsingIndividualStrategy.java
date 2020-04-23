@@ -24,6 +24,7 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
+import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.GlobalTimeStoppingCondition;
 import org.evosuite.ga.stoppingconditions.MaxTimeStoppingCondition;
@@ -103,11 +104,16 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
         // Start the search process
         ga.generateSolution();
+        Chromosome bestIndividual;
+        try{
+            bestIndividual = ga.getBestIndividual();
+        }catch (Exception e){
+            return suite;
+        }
 
 
-
-        if (ga.getBestIndividual().getFitness() == 0.0) {
-            TestChromosome solution = (TestChromosome) ga.getBestIndividual();
+        if (bestIndividual.getFitness() == 0.0) {
+            TestChromosome solution = (TestChromosome) bestIndividual;
             LOG.info("* The target crash is covered. The generated test is: "+solution.getTestCase().toCode());
             LOG.info("{} thrown exception(s) are detected in the solution: ",solution.getLastExecutionResult().getAllThrownExceptions().size());
             for(Throwable t: solution.getLastExecutionResult().getAllThrownExceptions()){
@@ -121,8 +127,8 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
 
         }else{
-            LOG.info("* The target crash is not covered! The best solution has "+ga.getBestIndividual().getFitness()+" fitness value.");
-            LOG.info("The best test is:(non-minimized version:\n)",((TestChromosome) ga.getBestIndividual()).toString());
+            LOG.info("* The target crash is not covered! The best solution has "+bestIndividual.getFitness()+" fitness value.");
+            LOG.info("The best test is:(non-minimized version:\n)",((TestChromosome) bestIndividual).toString());
         }
 
         // after finishing the search check: ga.getBestIndividual().getFitness() == 0.0

@@ -81,14 +81,23 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         Boolean initilized = false;
+        int initializeCounter=0;
         while (!initilized){
             try {
                 initializePopulation();
                 initilized=true;
             }catch (Exception |Error e){
+                if(initializeCounter == 50){
+                    break;
+                }
                 LOG.warn("Botsing was unsuccessful in generating the initial population. cause: {}",e.getMessage());
+                initializeCounter++;
             }
         }
+        if (!initilized){
+            return;
+        }
+
 
 
         int starvationCounter = 0;
