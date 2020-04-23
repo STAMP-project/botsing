@@ -33,7 +33,7 @@ public class CrashDistanceEvolution {
 
 
     public void setBestFitnessValue(double bestFitnessValue) {
-        LOG.info("New Value for Weighted Sum after {} fitness evolutions and {} second: {}", fitnessFunctionEvaluations, getPassedTime(), bestFitnessValue);
+        LOG.info("New value for Crash Distance after {} fitness evolutions and {} second: {}", fitnessFunctionEvaluations, getPassedTime(), bestFitnessValue);
         this.bestFitnessValue = bestFitnessValue;
     }
 
