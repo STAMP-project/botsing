@@ -26,10 +26,7 @@ import eu.stamp.botsing.seeding.ModelSeedingHelper;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
-import org.evosuite.ga.stoppingconditions.GlobalTimeStoppingCondition;
-import org.evosuite.ga.stoppingconditions.MaxTimeStoppingCondition;
-import org.evosuite.ga.stoppingconditions.StoppingCondition;
-import org.evosuite.ga.stoppingconditions.ZeroFitnessStoppingCondition;
+import org.evosuite.ga.stoppingconditions.*;
 import org.evosuite.seeding.ObjectPool;
 import org.evosuite.seeding.ObjectPoolManager;
 import org.evosuite.strategy.TestGenerationStrategy;
@@ -138,6 +135,22 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
         return suite;
     }
 
-
+    @Override
+    protected StoppingCondition getStoppingCondition() {
+        switch(Properties.STOPPING_CONDITION) {
+            case MAXGENERATIONS:
+                return new MaxGenerationStoppingCondition();
+            case MAXFITNESSEVALUATIONS:
+                return new MaxFitnessEvaluationsStoppingCondition();
+            case MAXTIME:
+                return new eu.stamp.botsing.ga.stoppingconditions.MaxTimeStoppingCondition();
+            case MAXTESTS:
+                return new MaxTestsStoppingCondition();
+            case MAXSTATEMENTS:
+                return new MaxStatementsStoppingCondition();
+            default:
+                return new MaxGenerationStoppingCondition();
+        }
+    }
 
 }
