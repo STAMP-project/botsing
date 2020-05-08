@@ -24,6 +24,10 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     }
     @Override
     public double getFitness(TestChromosome testChromosome, ExecutionResult executionResult) {
+        if(fitnessCalculator.sameException(executionResult)){
+            return 0;
+        }
+
         int targetFrame = targetCrash.getPublicTargetFrameLevel();
         double fitnessValue=0;
         boolean covering = true;

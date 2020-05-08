@@ -27,6 +27,7 @@ import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.branch.BranchCoverageFactory;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
+import org.evosuite.coverage.exception.ExceptionCoverageHelper;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
@@ -85,10 +86,11 @@ public class CrashCoverageFitnessCalculator {
 //        }
 //    }
 
-    private boolean findMethodCallsInDepth(ExecutionResult result, String methodName,int lineNumber, int callDepth) {
+    protected boolean findMethodCallsInDepth(ExecutionResult result, String methodName,int lineNumber, int callDepth) {
         boolean found = false;
-        List<MethodCall> finishedCalls = result.getTrace().getMethodCalls();
-        for(MethodCall call: finishedCalls){
+        List<MethodCall> callChains = result.getTrace().getMethodCalls();
+        callChains.addAll(result.getTrace().getUnfinishedCalls());
+        for(MethodCall call: callChains){
             if(call.callDepth == callDepth && call.methodName.equals(methodName) && call.lineTrace.contains(lineNumber)){
                 // Check the caller method id
 
@@ -291,5 +293,19 @@ public class CrashCoverageFitnessCalculator {
 
     public void setTargetCrash(StackTrace targetCrash) {
         this.targetCrash = targetCrash;
+    }
+
+    public boolean sameException(ExecutionResult executionResult) {
+        for (Integer ExceptionLocator : executionResult.getPositionsWhereExceptionsWereThrown()) {
+            String thrownException = ExceptionCoverageHelper.getExceptionClass(executionResult, ExceptionLocator).getName();
+            if (thrownException.equals(targetCrash.getExceptionType())){
+                double tempFitness = calculateFrameSimilarity( executionResult.getExceptionThrownAtPosition(ExceptionLocator).getStackTrace());
+                if (tempFitness == 0.0){
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
