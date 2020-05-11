@@ -68,8 +68,13 @@ public class CrashProperties {
     public enum FitnessFunction {
         WeightedSum,
         SimpleSum,
+        TestLen,
+        CallDiversity,
         IntegrationIndexedAccess,
-        IntegrationSingleObjective;
+        IntegrationSingleObjective,
+        LineCoverage,
+        ExceptionType,
+        StackTraceSimilarity;
         FitnessFunction() {
         }
     }
@@ -77,6 +82,11 @@ public class CrashProperties {
     public enum SearchAlgorithm {
         Single_Objective_GGA,
         Guided_MOSA,
+        NSGA_II,
+        SPEA2,
+        MOEAD,
+        PESA_II,
+        FEMO,
         DynaMOSA;
 
         SearchAlgorithm() {
@@ -124,6 +134,36 @@ public class CrashProperties {
     @Parameter(key = "io_diversity", group = "Crash reproduction", description = "Enables I/O diversity as extra goals to MOSA")
     public static boolean IODiversity = false;
 
+    @Parameter(key = "stop_after_first_crash_reproduction", group = "Crash reproduction", description = "Stops the search process after finding the first crash reproducing test case")
+    public static boolean stopAfterFirstCrashReproduction = true;
+
+    @Parameter(key = "neighborhood_selection_probability", group = "MOEAD", description = "neighborhood Selection Probability")
+    public static double neighborhoodSelectionProbability = 0.2;
+
+    @Parameter(key = "maximum_number_of_replaced_solutions", group = "MOEAD", description = "Maximum Number Of Replaced Solutions")
+    public static int maximumNumberOfReplacedSolutions = 100;
+
+    @Parameter(key = "ideal_point_shift", group = "MOEAD", description = "Shift objectives of ideal point to a better situation (to avoid local optimum)")
+    public static double idealPointShift = 0.1;
+
+
+    public enum DistanceCalculator {
+        WS, // Weighted Sum
+        TE, // Tchebycheff (default)
+        PBI, // Penalty-based boundary intersection
+    }
+
+    @Parameter(key = "distance_calculator", group = "MOEAD", description = "neighborhood Selection Probability")
+    public static CrashProperties.DistanceCalculator distanceCalculator = DistanceCalculator.TE;
+
+    @Parameter(key = "archive_bisections", group = "PESA", description = "Number of bisections for each objective for archive's grids creation")
+    public static int archiveBisections = 5;
+
+    @Parameter(key = "archive_size", group = "PESA", description = "Size of archive")
+    public static int archiveSize = 50;
+
+//    @Parameter(key = "multi_objectivization", group = "Multi Objectivization", description = "Size of archive")
+//    public static boolean multiObjectivization = false;
 
     static java.util.Properties configFile = new java.util.Properties();
 

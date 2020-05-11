@@ -42,9 +42,9 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorithm<T> {
+public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GuidedGeneticAlgorithm.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GuidedSingleObjectiveGA.class);
 
     protected ReplacementFunction replacementFunction = new FitnessReplacementFunction();
 
@@ -54,7 +54,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
 
     private int eliteSize;
 
-    public GuidedGeneticAlgorithm(ChromosomeFactory<T> factory) {
+    public GuidedSingleObjectiveGA(ChromosomeFactory<T> factory) {
         super(factory);
         this.stoppingConditions.clear();
         this.crossoverFunction = new GuidedSinglePointCrossover();
@@ -93,6 +93,10 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
                 }
                 LOG.warn("Botsing was unsuccessful in generating the initial population. cause: {}",e.getMessage());
                 initializeCounter++;
+            }
+
+            if (isFinished()){
+                break;
             }
         }
         if (!initilized){
@@ -250,9 +254,10 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
         }
 
         // Generate Initial Population
+        LOG.debug("Initializing the population.");
         generatePopulation(this.populationSize);
 
-        LOG.debug("Initializing the population.");
+
         // Calculate fitness functions
         calculateFitness();
         // Sort individuals
@@ -287,7 +292,7 @@ public class GuidedGeneticAlgorithm<T extends Chromosome> extends GeneticAlgorit
     protected void calculateFitness(T chromosome){
         for (FitnessFunction<T> fitnessFunction : fitnessFunctions) {
             notifyEvaluation(chromosome);
-            double value = fitnessFunction.getFitness(chromosome);
+            fitnessFunction.getFitness(chromosome);
         }
     }
 

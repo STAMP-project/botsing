@@ -39,6 +39,7 @@ import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.MethodCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper.normalize;
 
 import java.util.*;
 
@@ -204,7 +205,7 @@ public class CrashCoverageFitnessCalculator {
 
         // get control dependent branches
         List<BranchCoverageTestFitness> branchFitnesses = setupDependencies(targetFrame.getClassName(), methodName, targetFrame.getLineNumber());
-        
+
 
         return Double.MAX_VALUE;
     }

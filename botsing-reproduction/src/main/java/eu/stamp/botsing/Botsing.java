@@ -97,6 +97,10 @@ public class Botsing {
             if(commands.hasOption(MODEL_PATH_OPT)){
                 setupModelSeedingRelatedProperties(commands);
             }
+            // Continue search after first crash reproduction
+            if(commands.hasOption(CONTINUE_AFTER_REPRODUCTION)){
+                CrashProperties.stopAfterFirstCrashReproduction = false;
+            }
             // execute
             return CrashReproduction.execute();
         }
@@ -105,7 +109,19 @@ public class Botsing {
     }
 
     private void setFF(String fitnessFunction) {
-        CrashProperties.fitnessFunctions = new CrashProperties.FitnessFunction[]{CrashProperties.FitnessFunction.valueOf(fitnessFunction)};
+        if (fitnessFunction.contains(":")){
+            String[] ffs = fitnessFunction.split(":");
+            CrashProperties.FitnessFunction[] newFitnessFunctionsArray = new CrashProperties.FitnessFunction[ffs.length];
+            int index = 0;
+            for (String ff: ffs){
+                newFitnessFunctionsArray[index]=CrashProperties.FitnessFunction.valueOf(ff);
+                index++;
+            }
+            CrashProperties.fitnessFunctions = newFitnessFunctionsArray;
+        }else {
+            CrashProperties.fitnessFunctions = new CrashProperties.FitnessFunction[]{CrashProperties.FitnessFunction.valueOf(fitnessFunction)};
+        }
+
     }
 
     private void setSecondaryObjective(String secondaryObjective) {

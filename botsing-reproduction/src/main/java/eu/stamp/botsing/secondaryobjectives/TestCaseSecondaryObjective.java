@@ -1,7 +1,6 @@
 package eu.stamp.botsing.secondaryobjectives;
 
 import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.secondaryobjectives.MinimizeLengthSecondaryObjective;
 import org.slf4j.Logger;

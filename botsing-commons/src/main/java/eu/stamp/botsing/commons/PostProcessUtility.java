@@ -28,7 +28,7 @@ import java.util.List;
 public class PostProcessUtility {
     private static final Logger LOG = LoggerFactory.getLogger(PostProcessUtility.class);
 
-    public static void postProcessTests(TestSuiteChromosome testSuite, List<TestFitnessFactory<? extends TestFitnessFunction>> fitnessFactories) {
+    public static void postProcessTests(TestSuiteChromosome testSuite, List<TestFitnessFactory<? extends TestFitnessFunction>> fitnessFactories, boolean keepTestsCoveringSameGoal) {
 
         if (Properties.INLINE) {
             ConstantInliner inliner = new ConstantInliner();
@@ -39,10 +39,14 @@ public class PostProcessUtility {
         if (Properties.MINIMIZE) {
             double before = testSuite.getFitness();
 
-            TestSuiteMinimizer minimizer = new TestSuiteMinimizer(fitnessFactories);
+
 
             LOG.info("* Minimizing test suite");
-            minimizer.minimize(testSuite, true);
+            if(!keepTestsCoveringSameGoal){
+                TestSuiteMinimizer minimizer = new TestSuiteMinimizer(fitnessFactories);
+                minimizer.minimize(testSuite, true);
+            }
+
 
             double after = testSuite.getFitness();
             if (after > before + 0.01d) { // assume minimization
@@ -50,10 +54,7 @@ public class PostProcessUtility {
             }
         }
 
-        if (Properties.ASSERTIONS) {
-            LOG.info("Generating assertions");
-            TestSuiteGeneratorHelper.addAssertions(testSuite);
-        }
+
 
 
         compileAndCheckTests(testSuite);

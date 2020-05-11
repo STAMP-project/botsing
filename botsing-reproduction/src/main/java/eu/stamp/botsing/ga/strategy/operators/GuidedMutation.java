@@ -1,7 +1,7 @@
 package eu.stamp.botsing.ga.strategy.operators;
 
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
-import eu.stamp.botsing.ga.strategy.GuidedGeneticAlgorithm;
+
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class GuidedMutation<T extends Chromosome> extends Mutation<T> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GuidedGeneticAlgorithm.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GuidedMutation.class);
     private static GuidedSearchUtility utility = new GuidedSearchUtility();
 
     Set<GenericAccessibleObject<?>> publicCalls = new HashSet<>();
@@ -24,7 +24,7 @@ public class GuidedMutation<T extends Chromosome> extends Mutation<T> {
         }
         boolean isValid = false;
         int nTrials = 0; // we try maximum 50 insertion mutations (to avoid infinite loop)
-        while (!isValid && nTrials < 5) {
+        while (!isValid && nTrials < 50) {
             try {
                     doRandomMutation(offspring);
                 isValid = utility.includesPublicCall(offspring,publicCalls);
