@@ -22,12 +22,16 @@ package eu.stamp.botsing.fitnessfunction.calculator;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageFactory;
 import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
+import org.evosuite.TestGenerationContext;
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.branch.BranchCoverageFactory;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.coverage.exception.ExceptionCoverageHelper;
+import org.evosuite.graphs.GraphPool;
+import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
@@ -45,6 +49,7 @@ public class CrashCoverageFitnessCalculator {
     private StackTrace targetCrash;
     LinkedList<LinkedList<Integer>> tracking = new LinkedList();
     int irrelevantFrameCounter=0;
+    int firstLineSpecialCallers=0;
 
     public CrashCoverageFitnessCalculator(StackTrace crash){
         targetCrash = crash;
@@ -57,22 +62,60 @@ public class CrashCoverageFitnessCalculator {
             return 0.0;
         }
         // Check if we have the  coverage in the right depth or not
-        int callDepth = targetCrash.getPublicTargetFrameLevel() - frameLevel + 1 - irrelevantFrameCounter;
+        int callDepth = targetCrash.getPublicTargetFrameLevel() - frameLevel + 1 - irrelevantFrameCounter - firstLineSpecialCallers;
         StackTraceElement targetFrame = targetCrash.getFrame(frameLevel);
         String methodName = TestGenerationContextUtility.derivingMethodFromBytecode(CrashProperties.integrationTesting, targetFrame.getClassName(), targetFrame.getLineNumber());
         boolean found = findMethodCallsInDepth(result,methodName,targetFrame.getLineNumber(),callDepth);
         // If we find it, we can return zero value for the fitness
         if(found){
+            if(isFirstLineSpecialCaller(targetFrame.getClassName(),methodName)){
+                firstLineSpecialCallers++;
+            }
             return 0.0;
         }
         // Otherwise, we need to calculate the distance
 
         // Clear tracking variables
-        tracking.clear();
-        irrelevantFrameCounter=0;
+        reset();
 
         // Calculate the distance
         return calculateBranchDistanceAndApproachLevel(result);
+    }
+
+    private boolean isFirstLineSpecialCaller(String className, String methodName) {
+        boolean result = false;
+
+        ClassLoader classLoader;
+        if(CrashProperties.integrationTesting){
+            classLoader = BotsingTestGenerationContext.getInstance().getClassLoaderForSUT();
+        }else{
+            classLoader = TestGenerationContext.getInstance().getClassLoaderForSUT();
+        }
+
+        ActualControlFlowGraph acfg = GraphPool.getInstance(classLoader).getActualCFG(className,methodName);
+
+
+        int firstLine = acfg.getEntryPoint().getBasicBlock().getFirstLine();
+        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(classLoader).getInstructionsIn(className,methodName);
+
+        for(BytecodeInstruction instruction : instructions){
+            if(instruction.getLineNumber() > firstLine){
+                break;
+            }
+            if(instruction.getASMNodeString() != null && instruction.getASMNodeString().contains("INVOKESPECIAL")){
+                result = true;
+                break;
+            }
+
+            if(instruction.getASMNodeString() != null && instruction.getASMNodeString().contains("INVOKE")){
+                result = false;
+                break;
+            }
+
+        }
+
+
+        return result;
     }
 
 
@@ -307,5 +350,11 @@ public class CrashCoverageFitnessCalculator {
         }
 
         return false;
+    }
+
+    public void reset() {
+        tracking.clear();
+        irrelevantFrameCounter=0;
+        firstLineSpecialCallers=0;
     }
 }

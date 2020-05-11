@@ -24,13 +24,14 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     }
     @Override
     public double getFitness(TestChromosome testChromosome, ExecutionResult executionResult) {
-        if(fitnessCalculator.sameException(executionResult)){
-            return 0;
-        }
+//        if(fitnessCalculator.sameException(executionResult)){
+//            return 0;
+//        }
 
         int targetFrame = targetCrash.getPublicTargetFrameLevel();
         double fitnessValue=0;
         boolean covering = true;
+        fitnessCalculator.reset();
         for(int frameLevel = targetFrame; frameLevel > 0 ; frameLevel--){
             if(covering){
                 double lineCoverageFitness = fitnessCalculator.getLineCoverageForFrame(executionResult,frameLevel);
