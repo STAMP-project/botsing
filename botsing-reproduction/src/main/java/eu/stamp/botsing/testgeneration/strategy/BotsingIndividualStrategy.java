@@ -22,6 +22,7 @@ package eu.stamp.botsing.testgeneration.strategy;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
+import eu.stamp.botsing.fitnessfunction.utils.SpecialCallersPool;
 import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingCondition;
 import eu.stamp.botsing.ga.strategy.metaheuristics.SPEA2;
 import eu.stamp.botsing.seeding.ModelSeedingHelper;
@@ -122,6 +123,11 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
             ObjectPool pool = modelSeedingHelper.generatePool();
             ObjectPoolManager.getInstance().addPool(pool);
             Properties.ALLOW_OBJECT_POOL_USAGE = true;
+        }
+
+        if(CrashProperties.integrationTesting){
+//            Detect special callers
+            SpecialCallersPool.getInstance().detectSpecialCallers(CrashProperties.getInstance().getStackTrace(0));
         }
 
         // Start the search process

@@ -25,6 +25,7 @@ import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageFactory;
 import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
+import eu.stamp.botsing.fitnessfunction.utils.SpecialCallersPool;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.branch.BranchCoverageFactory;
@@ -69,7 +70,7 @@ public class CrashCoverageFitnessCalculator {
         boolean found = findMethodCallsInDepth(result,methodName,targetFrame.getLineNumber(),callDepth);
         // If we find it, we can return zero value for the fitness
         if(found){
-            if(isFirstLineSpecialCaller(targetFrame.getClassName(),methodName)){
+            if(SpecialCallersPool.getInstance().isFirstLineSpecialCaller(targetFrame)){
                 firstLineSpecialCallers++;
             }
             return 0.0;
@@ -81,42 +82,6 @@ public class CrashCoverageFitnessCalculator {
 
         // Calculate the distance
         return calculateBranchDistanceAndApproachLevel(result);
-    }
-
-    private boolean isFirstLineSpecialCaller(String className, String methodName) {
-        boolean result = false;
-
-        ClassLoader classLoader;
-        if(CrashProperties.integrationTesting){
-            classLoader = BotsingTestGenerationContext.getInstance().getClassLoaderForSUT();
-        }else{
-            classLoader = TestGenerationContext.getInstance().getClassLoaderForSUT();
-        }
-
-        ActualControlFlowGraph acfg = GraphPool.getInstance(classLoader).getActualCFG(className,methodName);
-
-
-        int firstLine = acfg.getEntryPoint().getBasicBlock().getFirstLine();
-        List<BytecodeInstruction> instructions = BytecodeInstructionPool.getInstance(classLoader).getInstructionsIn(className,methodName);
-
-        for(BytecodeInstruction instruction : instructions){
-            if(instruction.getLineNumber() > firstLine){
-                break;
-            }
-            if(instruction.getASMNodeString() != null && instruction.getASMNodeString().contains("INVOKESPECIAL")){
-                result = true;
-                break;
-            }
-
-            if(instruction.getASMNodeString() != null && instruction.getASMNodeString().contains("INVOKE")){
-                result = false;
-                break;
-            }
-
-        }
-
-
-        return result;
     }
 
 

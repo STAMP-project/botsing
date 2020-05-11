@@ -24,9 +24,9 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     }
     @Override
     public double getFitness(TestChromosome testChromosome, ExecutionResult executionResult) {
-//        if(fitnessCalculator.sameException(executionResult)){
-//            return 0;
-//        }
+        if(fitnessCalculator.sameException(executionResult)){
+            return 0;
+        }
 
         int targetFrame = targetCrash.getPublicTargetFrameLevel();
         double fitnessValue=0;
@@ -50,6 +50,14 @@ public class IntegrationTestingFF extends TestFitnessFunction {
         }else {
             // We have not reached to the deepest frame target line. So, we set the target exception to 1 as the penalty.
             fitnessValue++;
+//            Iterator iterator = executionResult.getAllThrownExceptions().iterator();
+//            while (iterator.hasNext()) {
+//                Exception exceptionType = (Exception) iterator.next();
+//                if(exceptionType.toString().contains("evosuite")){
+//                    fitnessValue++;
+//                }
+//            }
+
         }
 
 //        double fitnessValue = lineCoverageFitness;
