@@ -103,6 +103,12 @@ public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgori
             return;
         }
 
+        // Calculate fitness functions
+        calculateFitness();
+        // Sort individuals
+        sortPopulation();
+        assert!population.isEmpty() : "Could not create any test";
+
 
 
         int starvationCounter = 0;
@@ -257,12 +263,12 @@ public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgori
         LOG.debug("Initializing the population.");
         generatePopulation(this.populationSize);
 
-
-        // Calculate fitness functions
-        calculateFitness();
-        // Sort individuals
-        sortPopulation();
-        assert!population.isEmpty() : "Could not create any test";
+//
+//        // Calculate fitness functions
+//        calculateFitness();
+//        // Sort individuals
+//        sortPopulation();
+//        assert!population.isEmpty() : "Could not create any test";
     }
 
     protected void sortPopulation() {

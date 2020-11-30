@@ -97,7 +97,7 @@ public class CrashCoverageFitnessCalculator {
 
     protected boolean findMethodCallsInDepth(ExecutionResult result, String methodName,int lineNumber, int callDepth) {
         boolean found = false;
-        List<MethodCall> callChains = result.getTrace().getMethodCalls();
+        List<MethodCall> callChains = new ArrayList<>(result.getTrace().getMethodCalls());
         callChains.addAll(result.getTrace().getUnfinishedCalls());
         for(MethodCall call: callChains){
             if(call.callDepth == callDepth && call.methodName.equals(methodName) && call.lineTrace.contains(lineNumber)){

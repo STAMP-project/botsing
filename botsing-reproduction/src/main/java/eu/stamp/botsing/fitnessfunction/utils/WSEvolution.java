@@ -12,6 +12,10 @@ public class WSEvolution {
 
     private double bestFitnessValue = 6.0;
 
+    public double getBestFitnessValue() {
+        return bestFitnessValue;
+    }
+
     private int fitnessFunctionEvaluations = 0;
 
     private long startTime;

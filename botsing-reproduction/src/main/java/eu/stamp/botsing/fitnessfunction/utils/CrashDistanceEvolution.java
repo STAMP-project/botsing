@@ -10,6 +10,10 @@ import java.util.Set;
 public class CrashDistanceEvolution {
     private static final Logger LOG = LoggerFactory.getLogger(CrashDistanceEvolution.class);
 
+    public double getBestFitnessValue() {
+        return bestFitnessValue;
+    }
+
     private double bestFitnessValue = Double.MAX_VALUE;
 
     private int fitnessFunctionEvaluations = 0;

@@ -4,6 +4,7 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import eu.stamp.botsing.fitnessfunction.calculator.CrashCoverageFitnessCalculator;
+import org.evosuite.ga.Chromosome;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BasicBlock;
@@ -14,51 +15,50 @@ import java.util.stream.Collectors;
 
 public class BasicBlockUtility {
 
+    protected HashMap<Chromosome,Set<BasicBlock>> fullyCoveredBlocks= new HashMap<>();
+    protected HashMap<Chromosome,Set<BasicBlock>> semiCoveredBlocks= new HashMap<>();
+    BasicBlock targetBlock;
     /*
      Checks if the given CoveredBasicBlocks has the same coverage (returns true) or not.
     */
-    public static boolean sameBasicBlockCoverage(Collection<CoveredBasicBlock> coveredBlocks1, Collection<CoveredBasicBlock> coveredBlocks2) {
-        Collection<BasicBlock> fullyCovered1 = getFullyCoveredBasicBlocks(coveredBlocks1);
-        Collection<BasicBlock> fullyCovered2 = getFullyCoveredBasicBlocks(coveredBlocks2);
+    public boolean sameBasicBlockCoverage(TestChromosome chromosome1, TestChromosome chromosome2) {
+        Collection<BasicBlock> fullyCovered1 = getFullyCoveredBasicBlocks(chromosome1);
+        Collection<BasicBlock> fullyCovered2 = getFullyCoveredBasicBlocks(chromosome2);
         if(!fullyCovered1.equals(fullyCovered2)){
             return false;
         }
 
-        Collection<BasicBlock> semiCovered1 = getSemiCoveredBasicBlocks(coveredBlocks1);
-        Collection<BasicBlock> semiCovered2 = getSemiCoveredBasicBlocks(coveredBlocks2);
+        Collection<BasicBlock> semiCovered1 = getSemiCoveredBasicBlocks(chromosome1);
+        Collection<BasicBlock> semiCovered2 = getSemiCoveredBasicBlocks(chromosome2);
         return semiCovered1.equals(semiCovered2);
     }
     /*
          Returns the fully-covered basic blocks
      */
-    private static Set<BasicBlock> getFullyCoveredBasicBlocks(Collection<CoveredBasicBlock> coveredBlocks) {
-        Set<BasicBlock> fullyCovered = new HashSet<>();
-        for (CoveredBasicBlock coveredBasicBlock: coveredBlocks){
-            if (coveredBasicBlock.isFullyCovered()){
-                fullyCovered.add(coveredBasicBlock.getBasicBlock());
-            }
+    private Set<BasicBlock> getFullyCoveredBasicBlocks(Chromosome chromosome1) {
+        if(fullyCoveredBlocks.containsKey(chromosome1)){
+            return fullyCoveredBlocks.get(chromosome1);
         }
 
-        return fullyCovered;
+        return new HashSet<>();
+
     }
 
     /*
         Returns the semi-covered basic blocks
     */
-    public static List<BasicBlock> getSemiCoveredBasicBlocks(Collection<CoveredBasicBlock> coveredBlocks) {
-        Set<BasicBlock> semiCovered = new HashSet<>();
-        for (CoveredBasicBlock coveredBasicBlock: coveredBlocks){
-            if (!coveredBasicBlock.isFullyCovered()){
-                semiCovered.add(coveredBasicBlock.getBasicBlock());
-            }
+    public List<BasicBlock> getSemiCoveredBasicBlocks(Chromosome chromosome1) {
+        if(semiCoveredBlocks.containsKey(chromosome1)){
+            return semiCoveredBlocks.get(chromosome1).stream().collect(Collectors.toList());
         }
-        return semiCovered.stream().collect(Collectors.toList());
+
+        return new ArrayList<>();
     }
 
     /*
     Search the given actual control flow graph to find the closest basic block to the given line number.
     */
-    private static BasicBlock findTheClosestBlock(List<BasicBlock> semiCoveredBasicBlocks, int targetLine){
+    private  BasicBlock findTheClosestBlock(List<BasicBlock> semiCoveredBasicBlocks, int targetLine){
         String targetClass = semiCoveredBasicBlocks.get(0).getClassName();
         String targetMethod = semiCoveredBasicBlocks.get(0).getMethodName();
 
@@ -86,7 +86,10 @@ public class BasicBlockUtility {
     /*
         Search the given actual control flow graph to find a basic block, which contains the given line number.
      */
-    private static BasicBlock findTargetBlock(ActualControlFlowGraph targetMethodCFG, int targetLine) {
+    private  BasicBlock findTargetBlock(ActualControlFlowGraph targetMethodCFG, int targetLine) {
+        if (targetBlock != null){
+            return targetBlock;
+        }
         // check the basic blocks in the targetMethodCFG iteratively
         List<BasicBlock> visitedBasicBlocks = new ArrayList<>();
         List<BasicBlock> BasicBlocksToVisit = new LinkedList<>();
@@ -101,6 +104,7 @@ public class BasicBlockUtility {
             int firstLine = currentBasicBlock.getFirstLine();
             int lastLine = currentBasicBlock.getLastLine();
             if (targetLine >= firstLine && targetLine<= lastLine){
+                targetBlock = currentBasicBlock;
                 return currentBasicBlock;
             }
             for (BasicBlock child: targetMethodCFG.getChildren(currentBasicBlock)){
@@ -116,7 +120,7 @@ public class BasicBlockUtility {
     /*
         Returns the actual control flow graph of the requested method
      */
-    private static ActualControlFlowGraph getTargetMethodCFG(String targetClass, String targetMethod){
+    private  ActualControlFlowGraph getTargetMethodCFG(String targetClass, String targetMethod){
         GraphPool graphPool = GraphPool.getInstance(TestGenerationContextUtility.getTestGenerationContextClassLoader(false));
         return graphPool.getActualCFG(targetClass,targetMethod);
     }
@@ -124,7 +128,7 @@ public class BasicBlockUtility {
     /*
         Returns the lines that their coverage is important for us in the current comparison
      */
-    private static Set<Integer> detectInterestingCoveredLines(TestChromosome chromosome, BasicBlock targetBlock, int targetLine) {
+    private  Set<Integer> detectInterestingCoveredLines(TestChromosome chromosome, BasicBlock targetBlock, int targetLine) {
         Set<Integer> result = new HashSet<>();
         int lastLine = Integer.min(targetLine,targetBlock.getLastLine());
 
@@ -140,27 +144,27 @@ public class BasicBlockUtility {
     }
 
     /*
-    Checks if the fully covered blocks in the first parameter (coveredBlocks1) is a subset of fully covered blocks in the second parameter (coveredBlocks2)
+    Checks if the fully covered blocks in the first parameter (chromosome1) is a subset of fully covered blocks in the second parameter (chromosome2)
      */
-    public static boolean isSubset(Collection<CoveredBasicBlock> coveredBlocks1, Collection<CoveredBasicBlock> coveredBlocks2) {
+    public  boolean isSubset(TestChromosome chromosome1, TestChromosome chromosome2) {
 
-        Collection<BasicBlock> fullyCovered1 = getFullyCoveredBasicBlocks(coveredBlocks1);
-        Collection<BasicBlock> fullyCovered2 = getFullyCoveredBasicBlocks(coveredBlocks2);
+        Collection<BasicBlock> fullyCovered1 = getFullyCoveredBasicBlocks(chromosome1);
+        Collection<BasicBlock> fullyCovered2 = getFullyCoveredBasicBlocks(chromosome2);
         if(!fullyCovered2.containsAll(fullyCovered1)){
             return false;
         }
 
-        Collection<BasicBlock> semiCovered1 = getSemiCoveredBasicBlocks(coveredBlocks1);
-        Collection<BasicBlock> semiCovered2 = getSemiCoveredBasicBlocks(coveredBlocks1);
+        Collection<BasicBlock> semiCovered1 = getSemiCoveredBasicBlocks(chromosome1);
+        Collection<BasicBlock> semiCovered2 = getSemiCoveredBasicBlocks(chromosome2);
         return semiCovered2.containsAll(semiCovered1);
     }
 
     /*
     Returns the coverage size. The fully covered blocks are counted two times.
      */
-    public static int getCoverageSize(Collection<CoveredBasicBlock> coveredBlocks) {
-        Collection<BasicBlock> fullyCovered = getFullyCoveredBasicBlocks(coveredBlocks);
-        Collection<BasicBlock> semiCovered = getSemiCoveredBasicBlocks(coveredBlocks);
+    public  int getCoverageSize(Chromosome chromosome) {
+        Collection<BasicBlock> fullyCovered = getFullyCoveredBasicBlocks(chromosome);
+        Collection<BasicBlock> semiCovered = getSemiCoveredBasicBlocks(chromosome);
 
         return fullyCovered.size()*2+ semiCovered.size();
     }
@@ -168,7 +172,7 @@ public class BasicBlockUtility {
     /*
         Checks if the given chromosome has covered all of the given basic block
      */
-    private static boolean isFullyCovered(BasicBlock currentBasicBlock, Set<Integer> coveredLines, int targetLine) {
+    private  boolean isFullyCovered(BasicBlock currentBasicBlock, Set<Integer> coveredLines, int targetLine) {
         if(currentBasicBlock.isEntryBlock()){
             return true;
         }
@@ -183,7 +187,7 @@ public class BasicBlockUtility {
     /*
         Checks if the given chromosome has reached to the given basic block
      */
-    private static boolean isTouched(BasicBlock currentBasicBlock, Set<Integer> coveredLines) {
+    private  boolean isTouched(BasicBlock currentBasicBlock, Set<Integer> coveredLines) {
         if(currentBasicBlock.isEntryBlock()){
             return true;
         }
@@ -196,7 +200,7 @@ public class BasicBlockUtility {
         Returns all of the basic blocks in the target method, which are covered (either fully or semi) by the given chromosome.
      */
     // toDo: Should we filter out the irrelevant basic blocks?
-    public static Collection<CoveredBasicBlock> collectCoveredBasicBlocks(TestChromosome chromosome, String targetClass, String targetMethod, int targetLine) {
+    public  Collection<CoveredBasicBlock> collectCoveredBasicBlocks(TestChromosome chromosome, String targetClass, String targetMethod, int targetLine) {
         Set<CoveredBasicBlock> coveredBasicBlocks = new HashSet<>();
 
         // Find the control flow graph of target method
@@ -219,7 +223,22 @@ public class BasicBlockUtility {
             // check if it is covered
             if(isTouched(currentBasicBlock,coveredLines)){
                 // if it is covered, first, we add it to the final list.
-                coveredBasicBlocks.add(new CoveredBasicBlock(currentBasicBlock,isFullyCovered(currentBasicBlock,coveredLines,targetLine)));
+                if(isFullyCovered(currentBasicBlock,coveredLines,targetLine)){
+                    coveredBasicBlocks.add(new CoveredBasicBlock(currentBasicBlock,true));
+                    if(!fullyCoveredBlocks.containsKey(chromosome)){
+                        fullyCoveredBlocks.put(chromosome,new HashSet<>());
+                    }
+                    fullyCoveredBlocks.get(chromosome).add(currentBasicBlock);
+                }else{
+                    coveredBasicBlocks.add(new CoveredBasicBlock(currentBasicBlock,false));
+                    if(!semiCoveredBlocks.containsKey(chromosome)){
+                        semiCoveredBlocks.put(chromosome,new HashSet<>());
+                    }
+                    semiCoveredBlocks.get(chromosome).add(currentBasicBlock);
+                }
+
+
+
                 // Second we check its children to check them too.
                 for (BasicBlock child: targetMethodCFG.getChildren(currentBasicBlock)){
                     if(!visitedBasicBlocks.contains(child)){
@@ -233,11 +252,12 @@ public class BasicBlockUtility {
     }
 
 
+
     /*
     Check the line coverage in the semi covered blocks. More line coverage is better
      */
 
-    public static int compareCoveredLines(TestChromosome chromosome1, TestChromosome chromosome2, List<BasicBlock> semiCoveredBasicBlocks, int targetLine) {
+    public  int compareCoveredLines(TestChromosome chromosome1, TestChromosome chromosome2, List<BasicBlock> semiCoveredBasicBlocks, int targetLine) {
 
         // First, we check if we have any semiCoveredBlock
         if (semiCoveredBasicBlocks.isEmpty()){
@@ -290,7 +310,7 @@ public class BasicBlockUtility {
     /*
    Returns the uncovered frame in the minimum level
      */
-    public static StackTraceElement findFirstUncoveredFrame(StackTrace crash, TestChromosome chromosome1, TestChromosome chromosome2) {
+    public  StackTraceElement findFirstUncoveredFrame(StackTrace crash, TestChromosome chromosome1, TestChromosome chromosome2) {
         int UncoveredFrameLevel = Integer.min(findFirstUncoveredFrame(chromosome1),findFirstUncoveredFrame(chromosome2));
         StackTraceElement UncoveredFrame = crash.getFrame(UncoveredFrameLevel);
 
@@ -300,7 +320,7 @@ public class BasicBlockUtility {
     /*
             Returns the first frame which is not covered by the given chromosome
     */
-    private static int findFirstUncoveredFrame(TestChromosome chromosome) {
+    private  int findFirstUncoveredFrame(TestChromosome chromosome) {
         StackTrace crash  = CrashProperties.getInstance().getStackTrace(0);
         CrashCoverageFitnessCalculator fitnessCalculator = new CrashCoverageFitnessCalculator(crash);
         int frameLevel = crash.getPublicTargetFrameLevel();
@@ -320,11 +340,17 @@ public class BasicBlockUtility {
     /*
         Checks if the line indicated by the given frameLevel is covered by the given chromosome
     */
-    private static boolean isFrameCovered(CrashCoverageFitnessCalculator fitnessCalculator, int frameLevel, TestChromosome chromosome) {
+    private  boolean isFrameCovered(CrashCoverageFitnessCalculator fitnessCalculator, int frameLevel, TestChromosome chromosome) {
         if(fitnessCalculator.getLineCoverageForFrame(chromosome.getLastExecutionResult(),frameLevel) == 0){
             return true;
         }
 
         return false;
+    }
+
+    public void clear() {
+        fullyCoveredBlocks.clear();
+        semiCoveredBlocks.clear();
+        targetBlock=null;
     }
 }

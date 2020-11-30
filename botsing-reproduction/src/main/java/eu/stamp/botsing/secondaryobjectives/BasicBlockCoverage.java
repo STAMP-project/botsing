@@ -3,35 +3,56 @@ package eu.stamp.botsing.secondaryobjectives;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
+import eu.stamp.botsing.fitnessfunction.utils.CrashDistanceEvolution;
+import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.secondaryobjectives.basicblock.BasicBlockUtility;
 import eu.stamp.botsing.secondaryobjectives.basicblock.CoveredBasicBlock;
+import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.SecondaryObjective;
 import org.evosuite.testcase.TestChromosome;
 
 import java.util.*;
 
 public class BasicBlockCoverage extends SecondaryObjective<TestChromosome> {
+
+    BasicBlockUtility basicBlockUtility;
+    public BasicBlockCoverage(){
+        super();
+        basicBlockUtility = new BasicBlockUtility();
+    }
+
     @Override
     public int compareChromosomes(TestChromosome chromosome1, TestChromosome chromosome2) {
+        double bestFF = CrashDistanceEvolution.getInstance().getBestFitnessValue();
+        Map.Entry<FitnessFunction<?>, Double> entry = chromosome1.getFitnessValues().entrySet().iterator().next();
+        if (bestFF < entry.getValue()){
+            return 0;
+        }
+
+        int finalValue;
+
+
         // Get target method and target class
         String targetClass = getTargetClass(chromosome1,chromosome2);
         String targetMethod = getTargetMethod(chromosome1,chromosome2);
         int targetLine = getTargetLine(chromosome1,chromosome2);
 
-        Collection<CoveredBasicBlock> coveredBlocks1 = BasicBlockUtility.collectCoveredBasicBlocks(chromosome1,targetClass,targetMethod,targetLine);
-        Collection<CoveredBasicBlock> coveredBlocks2 = BasicBlockUtility.collectCoveredBasicBlocks(chromosome2,targetClass,targetMethod,targetLine);
+        basicBlockUtility.collectCoveredBasicBlocks(chromosome1,targetClass,targetMethod,targetLine);
+        basicBlockUtility.collectCoveredBasicBlocks(chromosome2,targetClass,targetMethod,targetLine);
 
-        if(BasicBlockUtility.sameBasicBlockCoverage(coveredBlocks1,coveredBlocks2)){
-            return BasicBlockUtility.compareCoveredLines(chromosome1,chromosome2,BasicBlockUtility.getSemiCoveredBasicBlocks(coveredBlocks1),targetLine);
-        }else if(BasicBlockUtility.isSubset(coveredBlocks2,coveredBlocks1) || BasicBlockUtility.isSubset(coveredBlocks1,coveredBlocks2)){
+        if(basicBlockUtility.sameBasicBlockCoverage(chromosome1,chromosome2)){
+            finalValue=basicBlockUtility.compareCoveredLines(chromosome1,chromosome2,basicBlockUtility.getSemiCoveredBasicBlocks(chromosome1),targetLine);
+        }else if(basicBlockUtility.isSubset(chromosome2,chromosome1) || basicBlockUtility.isSubset(chromosome1,chromosome2)){
             // chromosome 2 coverage is a subset of chromosome 1 coverage
             // or
             // chromosome 1 coverage is a subset of chromosome 2 coverage
             // the returned value is >0 if chromosome1 is a subset of chromosome2 and vice versa.
-            return BasicBlockUtility.getCoverageSize(coveredBlocks2) - BasicBlockUtility.getCoverageSize(coveredBlocks1);
+            finalValue = basicBlockUtility.getCoverageSize(chromosome2) - basicBlockUtility.getCoverageSize(chromosome1);
         }else {
-            return 0;
+            finalValue= 0;
         }
+        basicBlockUtility.clear();
+        return finalValue;
     }
 
     @Override
@@ -46,7 +67,7 @@ public class BasicBlockCoverage extends SecondaryObjective<TestChromosome> {
         StackTrace crash  = CrashProperties.getInstance().getStackTrace(0);
         if(CrashProperties.integrationTesting){
             // Find the first uncovered frame by the given chromosomes. We always choose the deepest first uncovered frame.
-            StackTraceElement uncoveredFrame = BasicBlockUtility.findFirstUncoveredFrame(crash,chromosome1,chromosome2);
+            StackTraceElement uncoveredFrame = basicBlockUtility.findFirstUncoveredFrame(crash,chromosome1,chromosome2);
             // Return the method name in the detected frame level
             return TestGenerationContextUtility.derivingMethodFromBytecode(true,uncoveredFrame.getClassName(),uncoveredFrame.getLineNumber());
         }else{
@@ -60,7 +81,7 @@ public class BasicBlockCoverage extends SecondaryObjective<TestChromosome> {
         StackTrace crash  = CrashProperties.getInstance().getStackTrace(0);
         if(CrashProperties.integrationTesting){
             // Find the first uncovered frame by the given chromosomes. We always choose the deepest first uncovered frame.
-            StackTraceElement uncoveredFrame = BasicBlockUtility.findFirstUncoveredFrame(crash,chromosome1,chromosome2);
+            StackTraceElement uncoveredFrame = basicBlockUtility.findFirstUncoveredFrame(crash,chromosome1,chromosome2);
             // Return the className in the detected frame
             return uncoveredFrame.getClassName();
         }else{
@@ -73,7 +94,7 @@ public class BasicBlockCoverage extends SecondaryObjective<TestChromosome> {
         StackTrace crash  = CrashProperties.getInstance().getStackTrace(0);
         if(CrashProperties.integrationTesting){
             // Find the first uncovered frame by the given chromosomes. We always choose the deepest first uncovered frame.
-            StackTraceElement uncoveredFrame = BasicBlockUtility.findFirstUncoveredFrame(crash,chromosome1,chromosome2);
+            StackTraceElement uncoveredFrame = basicBlockUtility.findFirstUncoveredFrame(crash,chromosome1,chromosome2);
             // Return the line number indicated in the detected frame
             return uncoveredFrame.getLineNumber();
         }else{
