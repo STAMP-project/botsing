@@ -4,6 +4,7 @@ import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.instrumentation.InstrumentingClassLoader;
 import eu.stamp.cbc.extraction.TestCaseRunListener;
 import org.evosuite.runtime.classhandling.ClassResetter;
+import org.evosuite.runtime.sandbox.Sandbox;
 import org.evosuite.testcase.execution.ExecutionTracer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -63,6 +64,7 @@ public class Executor {
                     throw new ClassNotFoundException();
                 }
                 Result result = runner.run(junitClass);
+                Sandbox.resetDefaultSecurityManager();
                 LOG.info("Result: {}/{} failure", result.getFailureCount(), result.getRunCount());
 
             } catch ( ClassNotFoundException e) {

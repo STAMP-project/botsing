@@ -36,14 +36,22 @@ public class CoupledBranches {
         return goalsSet;
     }
 
-    public static void calculate(String clingTest, String caller, String callee){
+    public static void calculate(String tests, String caller, String callee){
         Set<TestFitnessFunction> goalsSet = preCalculation(caller,callee);
         // Here, we have the list of coupled branches in BranchPairPool.
-        // Now, it is the time to execute the give test
+        // Now, it is the time to execute the given tests
 
+        String[] testsArr = tests.split(":");
+        LOG.info("Number of given tests: {}",testsArr.length);
+        Map<String,ExecutionTrace> traces = new HashMap<>();
+
+        for (String testClass: testsArr){
+            Executor executor = new Executor(testClass,caller,callee);
+            executor.execute();
+        }
         // execute the cling test
-        Executor executor = new Executor(clingTest,caller,callee);
-        executor.execute();
+
+
 
         // Here, we have the execution traces in a dedicated pool (ExecutionTracePool)
         // We just need to compare them to find the number of covered coupled branches by test suites.
