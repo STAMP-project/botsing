@@ -40,7 +40,13 @@ public class CoupledBranches {
         Set<TestFitnessFunction> goalsSet = preCalculation(caller,callee);
         // Here, we have the list of coupled branches in BranchPairPool.
         // Now, it is the time to execute the given tests
+        if(tests.startsWith(":")){
+            tests=tests.substring(1);
+        }
 
+        if (tests.endsWith(":")){
+            tests= tests.substring(0, tests.length()-1);
+        }
         String[] testsArr = tests.split(":");
         LOG.info("Number of given tests: {}",testsArr.length);
         Map<String,ExecutionTrace> traces = new HashMap<>();
