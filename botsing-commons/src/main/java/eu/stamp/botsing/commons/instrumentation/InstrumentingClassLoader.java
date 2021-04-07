@@ -33,6 +33,9 @@ public class InstrumentingClassLoader extends ClassLoader {
 
     @Override
     public Class<?> loadClass(String name) throws ClassNotFoundException {
+//        if(!Properties.TARGET_CLASS.equals(name)){
+//            Properties.TARGET_CLASS = name;
+//        }
         if (!RuntimeInstrumentation.checkIfCanInstrument(name)){
             Class<?> result = visitedClasses.get(name);
             if (result != null) {

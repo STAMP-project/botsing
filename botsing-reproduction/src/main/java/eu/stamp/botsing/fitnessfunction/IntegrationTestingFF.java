@@ -2,6 +2,7 @@ package eu.stamp.botsing.fitnessfunction;
 
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.fitnessfunction.calculator.CrashCoverageFitnessCalculator;
+import eu.stamp.botsing.fitnessfunction.utils.CrashDistanceEvolution;
 import org.evosuite.coverage.exception.ExceptionCoverageHelper;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
@@ -23,9 +24,14 @@ public class IntegrationTestingFF extends TestFitnessFunction {
     }
     @Override
     public double getFitness(TestChromosome testChromosome, ExecutionResult executionResult) {
+        if(fitnessCalculator.sameException(executionResult)){
+            return 0;
+        }
+
         int targetFrame = targetCrash.getPublicTargetFrameLevel();
         double fitnessValue=0;
         boolean covering = true;
+        fitnessCalculator.reset();
         for(int frameLevel = targetFrame; frameLevel > 0 ; frameLevel--){
             if(covering){
                 double lineCoverageFitness = fitnessCalculator.getLineCoverageForFrame(executionResult,frameLevel);
@@ -44,12 +50,21 @@ public class IntegrationTestingFF extends TestFitnessFunction {
         }else {
             // We have not reached to the deepest frame target line. So, we set the target exception to 1 as the penalty.
             fitnessValue++;
+//            Iterator iterator = executionResult.getAllThrownExceptions().iterator();
+//            while (iterator.hasNext()) {
+//                Exception exceptionType = (Exception) iterator.next();
+//                if(exceptionType.toString().contains("evosuite")){
+//                    fitnessValue++;
+//                }
+//            }
+
         }
 
 //        double fitnessValue = lineCoverageFitness;
         LOG.debug("Fitness Function: "+fitnessValue);
         testChromosome.setFitness(this,fitnessValue);
         testChromosome.increaseNumberOfEvaluations();
+        CrashDistanceEvolution.getInstance().inform(fitnessValue);
         return fitnessValue;
     }
 

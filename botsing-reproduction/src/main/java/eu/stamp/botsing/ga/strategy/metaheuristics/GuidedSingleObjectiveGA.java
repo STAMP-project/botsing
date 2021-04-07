@@ -1,4 +1,4 @@
-package eu.stamp.botsing.ga.strategy.metaheuristics;
+package eu.stamp.botsing.ga.strategy;
 
 /*-
  * #%L
@@ -23,9 +23,10 @@ package eu.stamp.botsing.ga.strategy.metaheuristics;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
-import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
+import eu.stamp.botsing.fitnessfunction.utils.CrashDistanceEvolution;
 import eu.stamp.botsing.ga.strategy.operators.GuidedMutation;
 import eu.stamp.botsing.ga.strategy.operators.GuidedSinglePointCrossover;
+import eu.stamp.botsing.secondaryobjectives.TestCaseSecondaryObjective;
 import org.evosuite.Properties;
 import org.evosuite.ga.*;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -68,29 +69,46 @@ public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgori
         } catch (Properties.NoSuchParameterException e) {
             LOG.error("Parameter not found during initialization", e);
         }
+
+        // set the secondary objectives of test cases (useful when MOSA compares two test
+        // cases to, for example, update the archive)
+        TestCaseSecondaryObjective.setSecondaryObjectives();
     }
 
     @Override
     public void generateSolution() {
         currentIteration = 0;
-
+        CrashDistanceEvolution.getInstance().setStartTime(this.listeners);
         // generate initial population
         LOG.info("Initializing the first population with size of {} individuals",this.populationSize);
         Boolean initilized = false;
-        this.notifySearchStarted();
-        WSEvolution.getInstance().setStartTime(this.listeners);
+        int initializeCounter=0;
         while (!initilized){
             try {
                 initializePopulation();
                 initilized=true;
             }catch (Exception |Error e){
+                if(initializeCounter == 50){
+                    break;
+                }
                 LOG.warn("Botsing was unsuccessful in generating the initial population. cause: {}",e.getMessage());
+                initializeCounter++;
             }
 
             if (isFinished()){
                 break;
             }
         }
+        if (!initilized){
+            return;
+        }
+
+        // Calculate fitness functions
+        calculateFitness();
+        // Sort individuals
+        sortPopulation();
+        assert!population.isEmpty() : "Could not create any test";
+
 
 
         int starvationCounter = 0;
@@ -245,12 +263,12 @@ public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgori
         LOG.debug("Initializing the population.");
         generatePopulation(this.populationSize);
 
-
-        // Calculate fitness functions
-        calculateFitness();
-        // Sort individuals
-        sortPopulation();
-        assert!population.isEmpty() : "Could not create any test";
+//
+//        // Calculate fitness functions
+//        calculateFitness();
+//        // Sort individuals
+//        sortPopulation();
+//        assert!population.isEmpty() : "Could not create any test";
     }
 
     protected void sortPopulation() {

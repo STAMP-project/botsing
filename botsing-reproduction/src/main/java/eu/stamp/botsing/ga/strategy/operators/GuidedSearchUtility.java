@@ -27,12 +27,15 @@ public class GuidedSearchUtility<T extends Chromosome> {
 
     public BytecodeInstruction collectPublicCalls(StackTrace trace){
         Set<BytecodeInstruction> result = new HashSet<>();
-        getPublicCalls(trace.getTargetClass(), trace.getTargetLine());
+
         boolean nonPrivateFrameFound = false;
         int currentTargetFramelevel = trace.getTargetFrameLevel();
 
         while(!nonPrivateFrameFound){
+//            Get current target frame
             StackTraceElement currentTargetFrame = trace.getAllFrames().get(currentTargetFramelevel-1);
+            publicCallsBC.clear();
+            getPublicCalls(currentTargetFrame.getClassName(), currentTargetFrame.getLineNumber());
             for(BytecodeInstruction bc: publicCallsBC){
                 if(bc.getClassName().equals(currentTargetFrame.getClassName()) &&
                         cleanMethodName(bc.getMethodName()).equals(currentTargetFrame.getMethodName()) &&

@@ -82,6 +82,9 @@ public class BotsingBytecodeInstrumentation {
 
 
     public static boolean checkIfCanInstrument(String className) {
+        if(!className.contains(".")){
+            return false;
+        }
         return RuntimeInstrumentation.checkIfCanInstrument(className);
     }
 }

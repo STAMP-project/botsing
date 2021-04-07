@@ -4,7 +4,7 @@ import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.commons.testgeneration.strategy.AbstractTestGenerationUtility;
 import eu.stamp.botsing.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
-import eu.stamp.botsing.ga.strategy.metaheuristics.GuidedSingleObjectiveGA;
+import eu.stamp.botsing.ga.strategy.GuidedSingleObjectiveGA;
 import eu.stamp.botsing.ga.strategy.metaheuristics.NSGAII;
 import eu.stamp.botsing.ga.strategy.metaheuristics.PESAII;
 import eu.stamp.botsing.ga.strategy.metaheuristics.SPEA2;

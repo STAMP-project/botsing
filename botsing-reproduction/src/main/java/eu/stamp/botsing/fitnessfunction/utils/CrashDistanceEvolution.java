@@ -7,14 +7,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
-public class WSEvolution {
-    private static final Logger LOG = LoggerFactory.getLogger(WSEvolution.class);
-
-    private double bestFitnessValue = 6.0;
+public class CrashDistanceEvolution {
+    private static final Logger LOG = LoggerFactory.getLogger(CrashDistanceEvolution.class);
 
     public double getBestFitnessValue() {
         return bestFitnessValue;
     }
+
+    private double bestFitnessValue = Double.MAX_VALUE;
 
     private int fitnessFunctionEvaluations = 0;
 
@@ -22,14 +22,14 @@ public class WSEvolution {
 
     // Time
 
-    private static WSEvolution instance;
+    private static CrashDistanceEvolution instance;
 
-    private WSEvolution(){}
+    private CrashDistanceEvolution(){}
 
 
-    public static WSEvolution getInstance(){
+    public static CrashDistanceEvolution getInstance(){
         if (instance == null){
-            instance = new WSEvolution();
+            instance = new CrashDistanceEvolution();
         }
 
         return instance;
@@ -37,7 +37,7 @@ public class WSEvolution {
 
 
     public void setBestFitnessValue(double bestFitnessValue) {
-        LOG.info("New Value for Weighted Sum after {} fitness evolutions and {} second: {}", fitnessFunctionEvaluations, getPassedTime(), bestFitnessValue);
+        LOG.info("New value for Crash Distance after {} fitness evolutions and {} second: {}", fitnessFunctionEvaluations, getPassedTime(), bestFitnessValue);
         this.bestFitnessValue = bestFitnessValue;
     }
 

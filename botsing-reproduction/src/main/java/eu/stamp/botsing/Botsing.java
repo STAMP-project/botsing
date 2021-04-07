@@ -76,6 +76,11 @@ public class Botsing {
             if(commands.hasOption(FITNESS_FUNCTION)){
                 setFF(commands.getOptionValue(FITNESS_FUNCTION));
             }
+
+            // Set secondary objective(s)
+            if(commands.hasOption(CRASH_SECONDARY_OBJECTIVE)){
+                setSecondaryObjective(commands.getOptionValue(CRASH_SECONDARY_OBJECTIVE));
+            }
             // Enable integration testing in the crash reproduction process if it is necessary.
             if(commands.hasOption(INTEGRATION_TESTING)){
                 CrashProperties.integrationTesting = true;
@@ -118,6 +123,11 @@ public class Botsing {
         }
 
     }
+
+    private void setSecondaryObjective(String secondaryObjective) {
+        CrashProperties.secondaryObjectives = new CrashProperties.SecondaryObjective[]{CrashProperties.SecondaryObjective.valueOf(secondaryObjective)};
+    }
+
 
     private void setSearchAlgorithm(String algorithm) {
 
