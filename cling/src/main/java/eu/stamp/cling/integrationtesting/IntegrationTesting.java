@@ -98,7 +98,7 @@ public class IntegrationTesting {
         TestGenerationStrategy strategy = IntegrationTestingUtility.getTestGenerationFactory();
         TestSuiteChromosome testCases = strategy.generateTests();
 
-        postProcessTests(testCases,getFitnessFactories());
+        postProcessTests(testCases,getFitnessFactories(),false);
 
 //        // Check if we lose CBC in the final test
 //        TestCaseExecutor.initExecutor();

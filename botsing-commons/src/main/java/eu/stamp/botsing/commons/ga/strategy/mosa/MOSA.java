@@ -35,6 +35,8 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
     private long startTime;
 
+    private List<T> offspringPopulation;
+
 
     public MOSA(ChromosomeFactory factory, CrossOverFunction crossOverOperator, Mutation mutationOperator, FitnessFunctions fitnessCollector) {
         super(factory, fitnessCollector);
@@ -46,7 +48,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
     @Override
     protected void evolve() {
-        List<T> offspringPopulation = this.breedNextGeneration();
+        offspringPopulation = this.breedNextGeneration();
 
         // Create the union of parents and offSpring
         List<T> union = new ArrayList<T>();
@@ -299,10 +301,16 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         return n_covered_goals;
     }
 
+
+    public List<T> getOffspringPopulation() {
+        return offspringPopulation;
+    }
+
     @Override
     protected List<T> getNonDominatedSolutions(List<T> solutions) {
         return super.getNonDominatedSolutions(solutions);
     }
+
 
 
 }

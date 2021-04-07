@@ -1,7 +1,6 @@
 package eu.stamp.botsing.commons;
 
 import org.evosuite.Properties;
-import org.evosuite.TestSuiteGeneratorHelper;
 import org.evosuite.TimeController;
 import org.evosuite.contracts.FailingTestSet;
 import org.evosuite.coverage.TestFitnessFactory;
@@ -28,8 +27,10 @@ import java.util.List;
 public class PostProcessUtility {
     private static final Logger LOG = LoggerFactory.getLogger(PostProcessUtility.class);
 
-    public static void postProcessTests(TestSuiteChromosome testSuite, List<TestFitnessFactory<? extends TestFitnessFunction>> fitnessFactories) {
+
+    public static void postProcessTests(TestSuiteChromosome testSuite, List<TestFitnessFactory<? extends TestFitnessFunction>> fitnessFactories, boolean keepTestsCoveringSameGoal) {
         LOG.info("test size before post-process: {}",testSuite.size());
+
         if (Properties.INLINE) {
             ConstantInliner inliner = new ConstantInliner();
             inliner.inline(testSuite);
@@ -39,10 +40,14 @@ public class PostProcessUtility {
         if (Properties.MINIMIZE) {
             double before = testSuite.getFitness();
 
-            TestSuiteMinimizer minimizer = new TestSuiteMinimizer(fitnessFactories);
+
 
             LOG.info("* Minimizing test suite");
-            minimizer.minimize(testSuite, true);
+            if(!keepTestsCoveringSameGoal){
+                TestSuiteMinimizer minimizer = new TestSuiteMinimizer(fitnessFactories);
+                minimizer.minimize(testSuite, true);
+            }
+
 
             double after = testSuite.getFitness();
             if (after > before + 0.01d) { // assume minimization
@@ -51,10 +56,7 @@ public class PostProcessUtility {
         }
         LOG.info("test size after post-process: {}",testSuite.size());
 
-        if (Properties.ASSERTIONS) {
-            LOG.info("Generating assertions");
-            TestSuiteGeneratorHelper.addAssertions(testSuite);
-        }
+
 
 
         compileAndCheckTests(testSuite);

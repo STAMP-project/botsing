@@ -23,10 +23,70 @@ package eu.stamp.botsing.fitnessfunction;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
+import eu.stamp.botsing.fitnessfunction.multiobjectivization.ExceptionTypeFF;
+import eu.stamp.botsing.fitnessfunction.multiobjectivization.LineCoverageFF;
+import eu.stamp.botsing.fitnessfunction.multiobjectivization.StackTraceSimilarityFF;
+import org.evosuite.ga.Chromosome;
+import org.evosuite.ga.FitnessFunction;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.testcase.TestFitnessFunction;
 
 public class FitnessFunctionHelper {
+
+    public static double getFitnessValue(Chromosome individual,
+                                         CrashProperties.FitnessFunction objective) {
+        Class ffClass = getType(objective);
+        for (FitnessFunction<?> ff : individual.getFitnessValues().keySet()){
+            if (ff.getClass().equals(ffClass)){
+                return individual.getFitnessValues().get(ff).doubleValue();
+            }
+        }
+        throw new IllegalArgumentException("Objective is not available in the given fitness functions");
+    }
+
+    public static boolean containsFitness(CrashProperties.FitnessFunction objective) {
+        for (CrashProperties.FitnessFunction ff : CrashProperties.fitnessFunctions){
+            if(ff.equals(objective)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Class getType(CrashProperties.FitnessFunction objective){
+        Class ffClass;
+
+        switch (objective) {
+            case WeightedSum:
+                ffClass = WeightedSum.class;
+                break;
+            case IntegrationSingleObjective:
+                ffClass = IntegrationTestingFF.class;
+                break;
+            case IntegrationIndexedAccess:
+                ffClass = ITFFForIndexedAccess.class;
+                break;
+            case TestLen:
+                ffClass = TestLenFF.class;
+                break;
+            case LineCoverage:
+                ffClass = LineCoverageFF.class;
+                break;
+            case ExceptionType:
+                ffClass = ExceptionTypeFF.class;
+                break;
+            case StackTraceSimilarity:
+                ffClass = StackTraceSimilarityFF.class;
+                break;
+            case CallDiversity:
+                ffClass = CallDiversity.class;
+                break;
+            default:
+                throw new IllegalArgumentException("Objective is not defined");
+        }
+
+        return ffClass;
+    }
 
     public boolean isConstructor(BytecodeInstruction targetInstruction) {
         String methodName = targetInstruction.getMethodName();
@@ -77,6 +137,14 @@ public class FitnessFunctionHelper {
                 return new ITFFForIndexedAccess(crash);
             case TestLen:
                 return new TestLenFF();
+            case LineCoverage:
+                return new LineCoverageFF(crash);
+            case ExceptionType:
+                return new ExceptionTypeFF(crash);
+            case StackTraceSimilarity:
+                return new StackTraceSimilarityFF(crash);
+            case CallDiversity:
+                return new CallDiversity(crash);
             default:
                 return new WeightedSum(crash);
         }

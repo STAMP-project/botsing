@@ -1,9 +1,13 @@
 package eu.stamp.botsing.ga.stoppingconditions;
 
+
+import eu.stamp.botsing.commons.ga.strategy.mosa.MOSA;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.StoppingConditionImpl;
 import org.evosuite.testcase.TestFitnessFunction;
+
+import java.util.List;
 
 
 public class SingleObjectiveZeroStoppingCondition extends StoppingConditionImpl {
@@ -24,6 +28,12 @@ public class SingleObjectiveZeroStoppingCondition extends StoppingConditionImpl 
 
     @Override
     public void iteration(GeneticAlgorithm<?> algorithm) {
+        if (algorithm instanceof MOSA){
+            for (Chromosome individual: (List<Chromosome>)((MOSA)algorithm).getOffspringPopulation()){
+                lastFitness = Math.min(lastFitness, individual.getFitness(mainFF));
+            }
+        }
+
         for(Chromosome individual:  algorithm.getPopulation()){
             lastFitness = Math.min(lastFitness, individual.getFitness(mainFF));
         }
@@ -33,6 +43,10 @@ public class SingleObjectiveZeroStoppingCondition extends StoppingConditionImpl 
     @Override
     public long getCurrentValue() {
         return (long) this.lastFitness;
+    }
+
+    public double getCurrentDoubleValue() {
+        return  this.lastFitness;
     }
 
     @Override

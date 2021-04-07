@@ -24,7 +24,7 @@ public class GuidedMutation<T extends Chromosome> extends Mutation<T> {
         }
         boolean isValid = false;
         int nTrials = 0; // we try maximum 50 insertion mutations (to avoid infinite loop)
-        while (!isValid && nTrials < 5) {
+        while (!isValid && nTrials < 50) {
             try {
                     doRandomMutation(offspring);
                 isValid = utility.includesPublicCall(offspring,publicCalls);

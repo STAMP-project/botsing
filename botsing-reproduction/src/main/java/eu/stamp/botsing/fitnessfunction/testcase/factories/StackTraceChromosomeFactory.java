@@ -239,4 +239,8 @@ public class StackTraceChromosomeFactory extends AllMethodsTestChromosomeFactory
 
         return result;
     }
+
+    public StackTrace getTargetTrace() {
+        return targetTrace;
+    }
 }

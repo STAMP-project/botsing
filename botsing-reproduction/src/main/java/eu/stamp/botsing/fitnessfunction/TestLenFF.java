@@ -8,8 +8,11 @@ public class TestLenFF extends TestFitnessFunction {
     @Override
     public double getFitness(TestChromosome testChromosome, ExecutionResult executionResult) {
         double testLen = testChromosome.getTestCase().size();
+        if(testLen == 0){
+            return 1;
+        }
         // 1 - Normalize(len)
-        return (1 - FitnessFunctionHelper.normalize(testLen));
+        return (FitnessFunctionHelper.normalize(testLen));
     }
 
     @Override
