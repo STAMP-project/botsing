@@ -128,19 +128,6 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
 
         // Start the search process
         ga.generateSolution();
-        double bestFF= Double.MAX_VALUE;
-        if (containsMainFF){
-            Iterator<StoppingCondition> itr = ga.getStoppingConditions().iterator();
-            while (itr.hasNext()){
-                StoppingCondition condition = itr.next();
-                if(condition instanceof SingleObjectiveZeroStoppingCondition){
-                    bestFF = condition.getCurrentValue();
-                    break;
-                }
-            }
-        }else{
-            bestFF =ga.getBestIndividual().getFitness();
-        }
 
         if(!CrashProperties.stopAfterFirstCrashReproduction){
             if(ga instanceof SPEA2){

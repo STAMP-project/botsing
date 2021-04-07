@@ -58,7 +58,7 @@ public class PostProcessUtilityTest {
         TestFitnessFactory testFitnessFactory = Mockito.mock(TestFitnessFactory.class);
         ArrayList testFitnessFactoryList = new ArrayList();
         testFitnessFactoryList.add(testFitnessFactory);
-        PostProcessUtility.postProcessTests(testSuite, testFitnessFactoryList);
+        PostProcessUtility.postProcessTests(testSuite, testFitnessFactoryList,false);
         // Minimization suppose to remove the test because there is no search objective
         assert(testSuite.getTests().size() == 0);
     }
@@ -76,7 +76,7 @@ public class PostProcessUtilityTest {
         Mockito.when(testFitnessFactory.getCoverageGoals()).thenReturn(coverageGoals);
         ArrayList testFitnessFactoryList = new ArrayList();
         testFitnessFactoryList.add(testFitnessFactory);
-        PostProcessUtility.postProcessTests(testSuite, testFitnessFactoryList);
+        PostProcessUtility.postProcessTests(testSuite, testFitnessFactoryList,true);
         assert(testSuite.getTests().size() == 1);
     }
 
