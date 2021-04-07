@@ -265,6 +265,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/eu/stamp/cling/coverage/defuse/*</exclude>
+                        <exclude>**/eu/stamp/cling/graphs/cfg/PathsPool.*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -315,6 +316,10 @@
                                     <relocation>
                                         <pattern>org.apache.commons.logging</pattern>
                                         <shadedPattern>org.evosuite.shaded.org.apache.commons.logging</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                        <pattern>org.apache.commons.lang3</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.apache.commons.lang3</shadedPattern>
                                     </relocation>
                                     <relocation>
                                         <pattern>javassist</pattern>
@@ -421,6 +426,7 @@
         <module>botsing-parsers</module>
         <module>cling</module>
         <module>class-coupling-analyzer</module>
+        <module>cbc</module>
     </modules>
 
 </project>

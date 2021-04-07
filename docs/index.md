@@ -6,17 +6,6 @@ layout: default
 
 Botsing is a Java framework for search-based crash reproduction. It implements and extends the EvoCrash approach and relies on [EvoSuite](http://www.evosuite.org) for Java code instrumentation during test generation and execution.
 
-## Beta testing
-
-[![Beta testing campain banner](assets/beta_banner.jpg)](https://www.stamp-project.eu/view/main/betatestingsurvey/)
-
-
-**Give us your feedback!** Please take 5' of your time to fill in this quick [questionnaire](https://www.stamp-project.eu/view/main/betatestingsurvey/).
-
-This is **important** for us. As a recognition for your feedback, you will receive a limited edition **STAMP Software Test Pilot gift** and be recognized as a STAMP contributor. 
-
-This campaign will close on 31 September, 2019. You will be contacted individually for a customized gift and for contribution opportunities.
-
 # How does it work?
 
 The goal of search-based crash reproduction is to produce a JUnit test able to reproduce a given *crash stack trace* (or stack trace for short) produced whenever a crash happens in a Java application. For instance, the following stack trace indicates that an exception has been thrown in method `FastDateParser.toArray` at line `413` and propagated through the method calls stack:

@@ -1,6 +1,7 @@
 package eu.stamp.botsing.ga.strategy.metaheuristics;
 
 import eu.stamp.botsing.CrashProperties;
+
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import eu.stamp.botsing.fitnessfunction.CallDiversity;
@@ -10,6 +11,9 @@ import eu.stamp.botsing.fitnessfunction.calculator.diversity.HammingDiversity;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.ga.GAUtil;
+import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
+import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingCondition;
+
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
@@ -17,7 +21,10 @@ import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.comparators.RankAndCrowdingDistanceComparator;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
+import org.evosuite.ga.stoppingconditions.StoppingCondition;
+import org.evosuite.ga.stoppingconditions.ZeroFitnessStoppingCondition;
 import org.evosuite.utils.Randomness;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +64,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
             StackTrace targetTrace = ((StackTraceChromosomeFactory) this.chromosomeFactory).getTargetTrace();
             diversityCalculator = HammingDiversity.getInstance(targetTrace);
         }
+
     }
 
     @Override
@@ -64,6 +72,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         List<T> offspringPopulation = new ArrayList<T>(population.size());
 
         // create an offspring population
+
         for (int i = 0; i < (population.size() / 2); i++) {
             // Selection
             T parent1 = selectionFunction.select(population);
@@ -93,6 +102,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
 
             calculateFitness(offspring1,false);
             calculateFitness(offspring2,false);
+
 
             // Add to offspring population
             offspringPopulation.add(offspring1);
@@ -197,6 +207,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
     @Override
     public void initializePopulation() {
 
+
         if (!population.isEmpty()) {
             return;
         }
@@ -206,6 +217,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         generatePopulation(this.populationSize);
 
         calculateFitness(false);
+
 
 
         this.notifyIteration();
@@ -261,6 +273,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
             if (isFinished()){
                 break;
             }
+
         }
 
         while (!isFinished()) {
@@ -274,7 +287,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
 
             evolve();
             this.notifyIteration();
-//            LOG.info("Value of fitness functions");
+
             this.writeIndividuals(this.population);
         }
     }
@@ -309,5 +322,17 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
     }
 
 
+
+
+    private void reportBestFF() {
+
+        for (StoppingCondition condition: stoppingConditions){
+            if (condition instanceof ZeroFitnessStoppingCondition){
+                SingleObjectiveZeroStoppingCondition selectedCondition = (SingleObjectiveZeroStoppingCondition) condition;
+                LOG.info("The best FF for {} is {}",selectedCondition.getNameOfObjective(),selectedCondition.getCurrentValue());
+                break;
+            }
+        }
+    }
 
 }

@@ -78,8 +78,4 @@ public class TestGenerationUtility extends AbstractTestGenerationUtility {
         return new StackTraceChromosomeFactory(CrashProperties.getInstance().getStackTrace(0), new GuidedSearchUtility());
     }
 
-
-
-
-
 }

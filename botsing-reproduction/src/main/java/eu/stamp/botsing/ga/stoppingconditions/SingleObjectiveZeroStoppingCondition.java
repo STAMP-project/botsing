@@ -1,5 +1,6 @@
 package eu.stamp.botsing.ga.stoppingconditions;
 
+
 import eu.stamp.botsing.commons.ga.strategy.mosa.MOSA;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
