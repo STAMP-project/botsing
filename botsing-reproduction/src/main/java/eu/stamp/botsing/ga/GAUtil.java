@@ -1,10 +1,8 @@
 package eu.stamp.botsing.ga;
 
-import eu.stamp.botsing.CrashProperties;
-import eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper;
+
 import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingCondition;
-import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
