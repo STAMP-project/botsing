@@ -1,5 +1,6 @@
 package eu.stamp.botsing.ga;
 
+
 import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingCondition;
 import org.evosuite.ga.Chromosome;

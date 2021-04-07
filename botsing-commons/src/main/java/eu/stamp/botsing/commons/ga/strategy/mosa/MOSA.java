@@ -23,8 +23,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
     private static final Logger LOG = LoggerFactory.getLogger(MOSA.class);
 
 
-    /** Boolean vector to indicate whether each test goal is covered or not. **/
-    protected Set<FitnessFunction<T>> uncoveredGoals = new LinkedHashSet<FitnessFunction<T>>();
+
 
     protected CrowdingDistance<T> distance = new CrowdingDistance<T>();
 
@@ -136,7 +135,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         // Calculate dominance ranks and crowding distance
         this.rankingFunction.computeRankingAssignment(this.population, this.uncoveredGoals);
         for (int i = 0; i < this.rankingFunction.getNumberOfSubfronts(); i++) {
-            this.distance.fastEpsilonDominanceAssignment(this.rankingFunction.getSubfront(i), this.getUncoveredGoals());
+            this.distance.fastEpsilonDominanceAssignment(this.rankingFunction.getSubfront(i), this.uncoveredGoals);
         }
 
 
@@ -151,6 +150,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
             for(StoppingCondition stoppingCondition : this.stoppingConditions){
                 if(stoppingCondition.isFinished()){
                     LOG.info("Stopping reason: {}", stoppingCondition.toString());
+                    LOG.info("Number of covered goals are: {}", this.coveredGoals.size());
                 }
 
             }
@@ -212,6 +212,7 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         } else {
             archive.put(covered, solution);
             this.uncoveredGoals.remove(covered);
+            this.coveredGoals.add(covered);
             LOG.debug("New covered goal: {}",covered);
         }
     }
@@ -300,7 +301,16 @@ public class MOSA<T extends Chromosome> extends AbstractMOSA<T> {
         return n_covered_goals;
     }
 
+
     public List<T> getOffspringPopulation() {
         return offspringPopulation;
     }
+
+    @Override
+    protected List<T> getNonDominatedSolutions(List<T> solutions) {
+        return super.getNonDominatedSolutions(solutions);
+    }
+
+
+
 }

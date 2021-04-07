@@ -51,6 +51,7 @@ Thumbs.db
 **/test/**/botsing/model/generation/local/
 **/test/**/cling/local/
 **/test/**/coupling/analyze/local/
+**/test/**/cbc/local/
 
 
 # Generated website

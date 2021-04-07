@@ -164,6 +164,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
                 bestFF = ga.getBestIndividual().getFitness();
             }
 
+
             if (bestFF == 0.0) {
                 LOG.info("* The target crash is covered. The generated test is: " + solution.getTestCase().toCode());
                 LOG.info("{} thrown exception(s) are detected in the solution: ", solution.getLastExecutionResult().getAllThrownExceptions().size());
@@ -172,6 +173,7 @@ public class BotsingIndividualStrategy extends TestGenerationStrategy {
                     for (StackTraceElement frame : t.getStackTrace()) {
                         LOG.info(frame.toString());
                     }
+
 
                 }
                 suite.addTest(solution);
