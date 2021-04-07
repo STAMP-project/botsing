@@ -1,7 +1,6 @@
 package eu.stamp.botsing.commons.instrumentation;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
-import org.evosuite.Properties;
 import org.evosuite.classpath.ResourceList;
 import org.evosuite.runtime.instrumentation.RuntimeInstrumentation;
 import org.objectweb.asm.ClassReader;
