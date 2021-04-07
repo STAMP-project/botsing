@@ -268,6 +268,6 @@ public class CrashCoverageFitnessCalculatorTest {
         BranchCoverageTestFitness fitness = new BranchCoverageTestFitness(goal);
 
         double fitnessValue = calculator.computeBranchDistance(fitness, result);
-        assertEquals(1.0, fitnessValue, 0.0001);
+        assertEquals(0.5, fitnessValue, 0.0001);
     }
 }
