@@ -11,7 +11,6 @@ import eu.stamp.botsing.fitnessfunction.calculator.diversity.HammingDiversity;
 import eu.stamp.botsing.fitnessfunction.testcase.factories.StackTraceChromosomeFactory;
 import eu.stamp.botsing.fitnessfunction.utils.WSEvolution;
 import eu.stamp.botsing.ga.GAUtil;
-import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
 import eu.stamp.botsing.ga.stoppingconditions.SingleObjectiveZeroStoppingCondition;
 
 import org.evosuite.Properties;
