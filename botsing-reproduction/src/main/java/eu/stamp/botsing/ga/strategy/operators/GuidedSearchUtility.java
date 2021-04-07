@@ -3,7 +3,6 @@ package eu.stamp.botsing.ga.strategy.operators;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
-import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BytecodeInstruction;

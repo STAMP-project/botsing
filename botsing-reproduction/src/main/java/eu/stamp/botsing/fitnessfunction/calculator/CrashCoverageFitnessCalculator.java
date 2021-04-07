@@ -22,17 +22,13 @@ package eu.stamp.botsing.fitnessfunction.calculator;
 
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
-import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageFactory;
 import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import eu.stamp.botsing.fitnessfunction.utils.SpecialCallersPool;
-import org.evosuite.TestGenerationContext;
 import org.evosuite.coverage.ControlFlowDistance;
 import org.evosuite.coverage.branch.BranchCoverageFactory;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.coverage.exception.ExceptionCoverageHelper;
-import org.evosuite.graphs.GraphPool;
-import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
@@ -40,7 +36,6 @@ import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.MethodCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static eu.stamp.botsing.fitnessfunction.FitnessFunctionHelper.normalize;
 
 import java.util.*;
 
