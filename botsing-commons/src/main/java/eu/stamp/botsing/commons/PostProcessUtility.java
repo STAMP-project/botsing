@@ -1,7 +1,6 @@
 package eu.stamp.botsing.commons;
 
 import org.evosuite.Properties;
-import org.evosuite.TestSuiteGeneratorHelper;
 import org.evosuite.TimeController;
 import org.evosuite.contracts.FailingTestSet;
 import org.evosuite.coverage.TestFitnessFactory;
