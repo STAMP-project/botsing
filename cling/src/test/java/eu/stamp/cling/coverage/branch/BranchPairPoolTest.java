@@ -5,7 +5,7 @@ import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 
 public class BranchPairPoolTest {
 

@@ -13,6 +13,7 @@ import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
+import org.evosuite.testcase.TestChromosome;
 import org.evosuite.utils.Randomness;
 
 
@@ -21,7 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public abstract class AbstractMOEAD<T extends Chromosome> extends GeneticAlgorithm<T> {
+public abstract class AbstractMOEAD<T extends Chromosome<T>> extends GeneticAlgorithm<T> {
 
     /** Z* vector */
     protected IdealPoint idealPoint;

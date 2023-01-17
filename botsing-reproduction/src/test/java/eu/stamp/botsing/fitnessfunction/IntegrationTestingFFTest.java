@@ -4,7 +4,7 @@ import eu.stamp.botsing.StackTrace;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

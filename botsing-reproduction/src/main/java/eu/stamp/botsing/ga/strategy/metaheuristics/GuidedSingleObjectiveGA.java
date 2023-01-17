@@ -1,4 +1,4 @@
-package eu.stamp.botsing.ga.strategy;
+package eu.stamp.botsing.ga.strategy.metaheuristics;
 
 /*-
  * #%L
@@ -42,7 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgorithm<T> {
+public class GuidedSingleObjectiveGA<T extends Chromosome<T>> extends GeneticAlgorithm<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(GuidedSingleObjectiveGA.class);
 
@@ -307,7 +307,7 @@ public class GuidedSingleObjectiveGA<T extends Chromosome> extends GeneticAlgori
         for (int i = 0; i < populationSize; i++) {
             T individual;
             individual = chromosomeFactory.getChromosome();
-            for (FitnessFunction<?> fitnessFunction : this.fitnessFunctions) {
+            for (FitnessFunction<T> fitnessFunction : this.fitnessFunctions) {
                 individual.addFitness(fitnessFunction);
             }
 

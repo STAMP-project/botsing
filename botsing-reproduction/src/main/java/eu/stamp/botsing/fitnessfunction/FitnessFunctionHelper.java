@@ -33,10 +33,10 @@ import org.evosuite.testcase.TestFitnessFunction;
 
 public class FitnessFunctionHelper {
 
-    public static double getFitnessValue(Chromosome individual,
+    public static <T extends Chromosome<T>> double getFitnessValue(Chromosome<T> individual,
                                          CrashProperties.FitnessFunction objective) {
         Class ffClass = getType(objective);
-        for (FitnessFunction<?> ff : individual.getFitnessValues().keySet()){
+        for (FitnessFunction<T> ff : individual.getFitnessValues().keySet()){
             if (ff.getClass().equals(ffClass)){
                 return individual.getFitnessValues().get(ff).doubleValue();
             }

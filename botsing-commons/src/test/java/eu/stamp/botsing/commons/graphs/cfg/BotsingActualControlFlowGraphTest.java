@@ -4,7 +4,7 @@ import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 
 import java.util.HashSet;
 import java.util.Set;

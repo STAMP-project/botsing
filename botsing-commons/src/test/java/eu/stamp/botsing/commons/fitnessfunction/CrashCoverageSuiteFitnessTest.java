@@ -2,10 +2,10 @@ package eu.stamp.botsing.commons.fitnessfunction;
 
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
-import org.evosuite.testsuite.AbstractTestSuiteChromosome;
+import org.evosuite.testsuite.TestSuiteChromosome;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public class CrashCoverageSuiteFitnessTest {
         CrashCoverageSuiteFitness crashCoverageSuiteFitness = new CrashCoverageSuiteFitness(ff);
         CrashCoverageSuiteFitness spiedCrashCoverageSuiteFitness = Mockito.spy(crashCoverageSuiteFitness);
         // Mock abstractTestSuiteChromosome
-        AbstractTestSuiteChromosome abstractTestSuiteChromosome = Mockito.mock(AbstractTestSuiteChromosome.class);
+        TestSuiteChromosome abstractTestSuiteChromosome = Mockito.mock(TestSuiteChromosome.class);
 
         Mockito.doReturn(null).when(spiedCrashCoverageSuiteFitness).runTestSuite(abstractTestSuiteChromosome);
         // Get fitness
@@ -56,7 +56,7 @@ public class CrashCoverageSuiteFitnessTest {
         ExecutionResult result = Mockito.mock(ExecutionResult.class, Mockito.RETURNS_DEEP_STUBS);
         results.add(result);
         // Mock abstractTestSuiteChromosome
-        AbstractTestSuiteChromosome abstractTestSuiteChromosome = Mockito.mock(AbstractTestSuiteChromosome.class);
+        TestSuiteChromosome abstractTestSuiteChromosome = Mockito.mock(TestSuiteChromosome.class);
         Mockito.doReturn(1).when(abstractTestSuiteChromosome).size();
 
         Mockito.doReturn(results).when(spiedCrashCoverageSuiteFitness).runTestSuite(abstractTestSuiteChromosome);

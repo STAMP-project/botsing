@@ -10,7 +10,7 @@ import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cdg.ControlDependenceGraph;
 import org.evosuite.graphs.cfg.*;
 import org.evosuite.utils.Randomness;
-import org.objectweb.asm.Opcodes;
+import org.evosuite.shaded.org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

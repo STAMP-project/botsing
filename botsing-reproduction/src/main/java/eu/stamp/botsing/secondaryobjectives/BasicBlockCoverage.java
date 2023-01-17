@@ -22,7 +22,7 @@ public class BasicBlockCoverage extends SecondaryObjective<TestChromosome> {
     @Override
     public int compareChromosomes(TestChromosome chromosome1, TestChromosome chromosome2) {
         double bestFF = CrashDistanceEvolution.getInstance().getBestFitnessValue();
-        Map.Entry<FitnessFunction<?>, Double> entry = chromosome1.getFitnessValues().entrySet().iterator().next();
+        Map.Entry<FitnessFunction<TestChromosome>, Double> entry = chromosome1.getFitnessValues().entrySet().iterator().next();
         if (bestFF < entry.getValue()){
             return 0;
         }

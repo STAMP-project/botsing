@@ -12,7 +12,7 @@ import org.evosuite.utils.generic.GenericClass;
 import org.evosuite.utils.generic.GenericMethod;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

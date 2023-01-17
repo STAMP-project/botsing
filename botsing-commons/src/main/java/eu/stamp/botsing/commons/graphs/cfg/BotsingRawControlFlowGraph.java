@@ -2,7 +2,7 @@ package eu.stamp.botsing.commons.graphs.cfg;
 
 import eu.stamp.botsing.commons.BotsingTestGenerationContext;
 import eu.stamp.botsing.commons.instrumentation.InstrumentingClassLoader;
-import org.apache.commons.collections.map.HashedMap;
+import org.evosuite.shaded.org.apache.commons.collections.map.HashedMap;
 import org.evosuite.graphs.cfg.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

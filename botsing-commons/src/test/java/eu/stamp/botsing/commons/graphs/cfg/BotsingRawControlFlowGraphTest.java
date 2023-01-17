@@ -6,7 +6,7 @@ import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 
 import java.util.HashSet;
 

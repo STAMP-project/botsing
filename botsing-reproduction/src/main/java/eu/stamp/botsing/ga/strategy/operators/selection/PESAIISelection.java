@@ -7,7 +7,7 @@ import org.evosuite.utils.Randomness;
 
 import java.util.List;
 
-public class PESAIISelection <T extends Chromosome> extends SelectionFunction<T> {
+public class PESAIISelection <T extends Chromosome<T>> extends SelectionFunction<T> {
 
     public T select(GridArchive<T> archive) {
         int selectedHyperCube = selectRandomHyperCube(archive);

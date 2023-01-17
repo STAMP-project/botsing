@@ -71,8 +71,8 @@
         <build-helper-maven-plugin.version>1.12</build-helper-maven-plugin.version>
         <commons-cli.version>1.4</commons-cli.version>
         <!-- <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version> -->
-        <evosuite.version>1.0.6</evosuite.version>
-        <evosuite-client.version>1.1.1</evosuite-client.version>
+        <evosuite.version>1.2.0</evosuite.version>
+        <evosuite-client.version>1.2.0</evosuite-client.version>
         <guava.version>27.0.1-jre</guava.version>
 
         <hamcrest.version>2.0.0.0</hamcrest.version>
@@ -326,6 +326,10 @@
                                         <shadedPattern>org.evosuite.shaded.javassist</shadedPattern>
                                     </relocation>
                                     <relocation>
+                                        <pattern>org.objectweb.asm</pattern>
+                                        <shadedPattern>org.evosuite.shaded.org.objectweb.asm</shadedPattern>
+                                    </relocation>
+                                    <relocation>
                                         <pattern>antlr</pattern>
                                         <shadedPattern>org.evosuite.shaded.antlr</shadedPattern>
                                     </relocation>
@@ -399,14 +403,14 @@
                                         <pattern>com.google</pattern>
                                         <shadedPattern>org.evosuite.shaded.com.google</shadedPattern>
                                     </relocation>
-                                    <!--<relocation>-->
-                                    <!--<pattern>org.slf4j</pattern>-->
-                                    <!--<shadedPattern>org.evosuite.shaded.org.slf4j</shadedPattern>-->
-                                    <!--</relocation>-->
-                                    <!--<relocation>-->
-                                    <!--<pattern>ch.qos.logback</pattern>-->
-                                    <!--<shadedPattern>org.evosuite.shaded.ch.qos.logback</shadedPattern>-->
-                                    <!--</relocation>-->
+                                    <relocation>
+                                    <pattern>org.slf4j</pattern>
+                                    <shadedPattern>org.evosuite.shaded.org.slf4j</shadedPattern>
+                                    </relocation>
+                                    <relocation>
+                                    <pattern>ch.qos.logback</pattern>
+                                    <shadedPattern>org.evosuite.shaded.ch.qos.logback</shadedPattern>
+                                    </relocation>
                                 </relocations>
                             </configuration>
                         </execution>
@@ -422,11 +426,11 @@
         <module>botsing-reproduction</module>
         <module>botsing-maven</module>
         <module>botsing-preprocessing</module>
-        <module>botsing-model-generation</module>
+<!--        <module>botsing-model-generation</module>-->
         <module>botsing-parsers</module>
-        <module>cling</module>
-        <module>class-coupling-analyzer</module>
-        <module>cbc</module>
+<!--        <module>cling</module>-->
+<!--        <module>class-coupling-analyzer</module>-->
+<!--        <module>cbc</module>-->
     </modules>
 
 </project>

@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SPEA2<T extends Chromosome> extends org.evosuite.ga.metaheuristics.SPEA2<T>  {
+public class SPEA2<T extends Chromosome<T>> extends org.evosuite.ga.metaheuristics.SPEA2<T>  {
 
     private static final Logger LOG = LoggerFactory.getLogger(SPEA2.class);
 

@@ -7,7 +7,7 @@ import eu.stamp.botsing.commons.testgeneration.TestGenerationContextUtility;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.setup.TestClusterUtils;
-import org.objectweb.asm.Type;
+import org.evosuite.shaded.org.objectweb.asm.Type;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

@@ -12,6 +12,7 @@ import org.evosuite.ga.metaheuristics.mosa.structural.StructuralGoalManager;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
+import org.evosuite.testcase.TestChromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,13 +20,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
+public class DynaMOSA extends AbstractMOSA {
     private static final Logger LOG = LoggerFactory.getLogger(DynaMOSA.class);
 
-    protected StructuralGoalManager<T> goalsManager = null;
-    protected CrowdingDistance<T> distance = new CrowdingDistance<T>();
+    protected StructuralGoalManager goalsManager = null;
+    protected CrowdingDistance<TestChromosome> distance = new CrowdingDistance<TestChromosome>();
 
-    public DynaMOSA(ChromosomeFactory<T> factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
+    public DynaMOSA(ChromosomeFactory<TestChromosome> factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
         super(factory, new FitnessFunctions());
         mutation = mutationOperator;
         this.crossoverFunction = crossOverOperator;
@@ -35,10 +36,10 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
     @Override
     protected void evolve() {
         LOG.info("DynaMOSA evolve");
-        List<T> offspringPopulation = this.breedNextGeneration();
+        List<TestChromosome> offspringPopulation = this.breedNextGeneration();
 
         // Create the union of parents and offSpring
-        List<T> union = new ArrayList<T>(this.population.size() + offspringPopulation.size());
+        List<TestChromosome> union = new ArrayList<TestChromosome>(this.population.size() + offspringPopulation.size());
         union.addAll(this.population);
         union.addAll(offspringPopulation);
 
@@ -52,7 +53,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
         // updated set of goals
         int remain = Math.max(Properties.POPULATION, this.rankingFunction.getSubfront(0).size());
         int index = 0;
-        List<T> front = null;
+        List<TestChromosome> front = null;
         this.population.clear();
 
         // Obtain the next front
@@ -98,7 +99,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
     public void generateSolution() {
         LOG.info("Generating solution in DynaMOSA");
 
-        this.goalsManager = new BotsingMultiCriteriatManager<>(this.fitnessFunctions);
+        this.goalsManager = new BotsingMultiCriteriatManager(this.fitnessFunctions);
 
         LOG.info("* Initialsss Number of Goals in DynMOSA = " +
                 this.goalsManager.getCurrentGoals().size() +" / "+ this.getUncoveredGoals().size());
@@ -131,8 +132,8 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
     }
 
     @Override
-    protected void calculateFitness(T c) {
-        this.goalsManager.calculateFitness(c);
+    protected void calculateFitness(TestChromosome c) {
+        this.goalsManager.calculateFitness(c, this);
         this.notifyEvaluation(c);
     }
 

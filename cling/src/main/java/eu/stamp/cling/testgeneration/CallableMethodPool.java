@@ -15,8 +15,8 @@ import org.evosuite.testcase.statements.Statement;
 import org.evosuite.utils.generic.GenericAccessibleObject;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.evosuite.shaded.org.objectweb.asm.Opcodes;
+import org.evosuite.shaded.org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -20,7 +20,7 @@ public class CallDiversity extends TestFitnessFunction {
     @Override
     public double getFitness(TestChromosome individual) {
         double fitness = this.getFitness(individual, null);
-        this.updateIndividual(this, individual, fitness);
+        this.updateIndividual(individual, fitness);
         return fitness;
     }
 

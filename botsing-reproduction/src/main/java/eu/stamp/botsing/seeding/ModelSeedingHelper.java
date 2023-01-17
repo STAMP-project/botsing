@@ -8,7 +8,7 @@ import be.vibes.ts.Transition;
 import be.vibes.ts.UsageModel;
 import eu.stamp.botsing.CrashProperties;
 import eu.stamp.botsing.StackTrace;
-import org.apache.commons.lang3.StringUtils;
+import org.evosuite.shaded.org.apache.commons.lang3.StringUtils;
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.graphs.GraphPool;
@@ -20,6 +20,7 @@ import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestFactory;
 import org.evosuite.utils.generic.GenericClass;
+import org.evosuite.utils.generic.GenericClassImpl;
 import org.evosuite.utils.generic.GenericConstructor;
 import org.evosuite.utils.generic.GenericMethod;
 import org.slf4j.Logger;
@@ -112,7 +113,7 @@ public class ModelSeedingHelper {
                                         LOG.debug("could not load " + className);
                                     }
                                     if (sequenceClass != null) {
-                                        genericClass = new GenericClass(sequenceClass);
+                                        genericClass = new GenericClassImpl(sequenceClass);
                                         //Getting methods
                                         Set<Method> methods = TestClusterUtils.getMethods(sequenceClass);
                                         //Getting Constructors

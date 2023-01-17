@@ -28,7 +28,7 @@ public class InterproceduralBasicBlock extends BasicBlock {
             throw new IllegalArgumentException("a basic block can not contain the same element twice");
         }
 
-        instruction.basicBlock = this;
+        instruction.setBasicBlock(this);
         return this.instructions.add(instruction);
     }
 }

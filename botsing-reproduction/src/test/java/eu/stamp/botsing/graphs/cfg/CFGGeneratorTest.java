@@ -9,7 +9,7 @@ import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 

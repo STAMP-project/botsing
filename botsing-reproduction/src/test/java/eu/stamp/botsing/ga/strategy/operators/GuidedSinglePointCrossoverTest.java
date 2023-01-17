@@ -18,17 +18,14 @@ import org.evosuite.testcase.TestFactory;
 import org.evosuite.testcase.statements.MethodStatement;
 import org.evosuite.testcase.statements.numeric.IntPrimitiveStatement;
 import org.evosuite.testcase.variable.VariableReference;
-import org.evosuite.utils.generic.GenericAccessibleObject;
-import org.evosuite.utils.generic.GenericClass;
-import org.evosuite.utils.generic.GenericConstructor;
-import org.evosuite.utils.generic.GenericMethod;
+import org.evosuite.utils.generic.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +127,7 @@ public class GuidedSinglePointCrossoverTest {
 
     private TestCase getIntTest(int x, String methodName) throws NoSuchMethodException, SecurityException, ConstructionFailedException, ClassNotFoundException {
         Class<?> sut = TestGenerationContext.getInstance().getClassLoaderForSUT().loadClass("java.lang.Integer");
-        GenericClass clazz = new GenericClass(sut);
+        GenericClass clazz = new GenericClassImpl(sut);
 
         DefaultTestCase test = new DefaultTestCase();
         GenericConstructor gc = new GenericConstructor(clazz.getRawClass().getConstructors()[0], clazz);

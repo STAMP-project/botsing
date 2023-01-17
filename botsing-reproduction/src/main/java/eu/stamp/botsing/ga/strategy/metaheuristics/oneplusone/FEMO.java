@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public class FEMO<T extends Chromosome> extends org.evosuite.ga.metaheuristics.GeneticAlgorithm<T> {
+public class FEMO<T extends Chromosome<T>> extends org.evosuite.ga.metaheuristics.GeneticAlgorithm<T> {
 
     Mutation mutation;
 
@@ -286,7 +286,7 @@ public class FEMO<T extends Chromosome> extends org.evosuite.ga.metaheuristics.G
         // Generate individual
         T individual = chromosomeFactory.getChromosome();
         // Add search objectives to it
-        for (FitnessFunction<?> fitnessFunction : this.fitnessFunctions) {
+        for (FitnessFunction<T> fitnessFunction : this.fitnessFunctions) {
             individual.addFitness(fitnessFunction);
         }
         // calculate its fitness functions

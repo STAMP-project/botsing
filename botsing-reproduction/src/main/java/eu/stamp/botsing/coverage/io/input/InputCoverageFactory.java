@@ -1,11 +1,11 @@
 package eu.stamp.botsing.coverage.io.input;
 
 import eu.stamp.botsing.coverage.io.IOCoverageUtility;
-import org.apache.commons.lang3.ClassUtils;
+import org.evosuite.shaded.org.apache.commons.lang3.ClassUtils;
 import org.evosuite.assertion.Inspector;
 import org.evosuite.assertion.InspectorManager;
 import org.evosuite.coverage.io.input.InputCoverageTestFitness;
-import org.objectweb.asm.Type;
+import org.evosuite.shaded.org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

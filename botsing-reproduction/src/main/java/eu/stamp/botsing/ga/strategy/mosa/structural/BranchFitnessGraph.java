@@ -10,13 +10,14 @@ import org.evosuite.ga.FitnessFunction;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BasicBlock;
+import org.evosuite.testcase.TestFitnessFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<T>> extends org.evosuite.ga.metaheuristics.mosa.structural.BranchFitnessGraph {
+public class BranchFitnessGraph<T extends Chromosome, V extends TestFitnessFunction> extends org.evosuite.ga.metaheuristics.mosa.structural.BranchFitnessGraph {
     private static final Logger LOG = LoggerFactory.getLogger(BranchFitnessGraph.class);
     public BranchFitnessGraph(Set goals) {
         super(goals);
@@ -28,7 +29,7 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
 
 
         // derive dependencies among branches
-        for (FitnessFunction<T> fitness : (Set<FitnessFunction<T>>) goals){
+        for (TestFitnessFunction fitness : (Set<TestFitnessFunction>) goals){
             Branch branch = ((IntegrationTestingBranchCoverageTestFitness) fitness).getBranch();
             if (branch==null){
                 this.rootBranches.add(fitness);
@@ -59,9 +60,9 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
                 if(graph.containsVertex(newFitness) && graph.containsVertex(newfitness2)){
                     throw new IllegalStateException("branches in the graph are not right!");
                 }else if(graph.containsVertex(newFitness)){
-                    graph.addEdge((FitnessFunction<T>) newFitness, fitness);
+                    graph.addEdge( newFitness, fitness);
                 }else if(graph.containsVertex(newfitness2)){
-                    graph.addEdge((FitnessFunction<T>) newfitness2, fitness);
+                    graph.addEdge( newfitness2, fitness);
                 }else{
                     LOG.info("Removed vertex: {}",newFitness);
                 }

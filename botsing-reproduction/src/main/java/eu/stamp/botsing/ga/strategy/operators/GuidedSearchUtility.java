@@ -11,7 +11,7 @@ import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.statements.Statement;
 import org.evosuite.utils.generic.GenericAccessibleObject;
-import org.objectweb.asm.Opcodes;
+import org.evosuite.shaded.org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.evosuite.ga.Chromosome;

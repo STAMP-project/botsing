@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
+public class PESAII<T extends Chromosome<T>> extends GeneticAlgorithm<T> {
     private static final Logger LOG = LoggerFactory.getLogger(PESAII.class);
 
     Mutation mutation;
@@ -200,7 +200,7 @@ public class PESAII<T extends Chromosome> extends GeneticAlgorithm<T> {
         for (int i = 0; i < populationSize; i++) {
             T individual;
             individual = chromosomeFactory.getChromosome();
-            for (FitnessFunction<?> fitnessFunction : this.fitnessFunctions) {
+            for (FitnessFunction<T> fitnessFunction : this.fitnessFunctions) {
                 individual.addFitness(fitnessFunction);
             }
 

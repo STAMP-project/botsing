@@ -13,8 +13,8 @@ import org.evosuite.testcase.execution.MethodCall;
 import org.evosuite.testcase.execution.TestCaseExecutor;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.ArgumentMatchers;
+import org.evosuite.shaded.org.mockito.Mockito;
 
 import java.util.*;
 

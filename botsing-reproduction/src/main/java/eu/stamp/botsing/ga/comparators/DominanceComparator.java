@@ -4,7 +4,7 @@ import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 
 
-public class DominanceComparator <T extends Chromosome> extends org.evosuite.ga.comparators.DominanceComparator<T> {
+public class DominanceComparator <T extends Chromosome<T>> extends org.evosuite.ga.comparators.DominanceComparator<T> {
 
 
     public boolean isEqual(Chromosome c1, Chromosome c2){

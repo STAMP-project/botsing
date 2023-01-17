@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics.NSGAII<T> {
+public class NSGAII<T extends Chromosome<T>> extends org.evosuite.ga.metaheuristics.NSGAII<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(NSGAII.class);
 
@@ -239,7 +239,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
         for (int i = 0; i < populationSize; i++) {
             T individual;
             individual = chromosomeFactory.getChromosome();
-            for (FitnessFunction<?> fitnessFunction : this.fitnessFunctions) {
+            for (FitnessFunction<T> fitnessFunction : this.fitnessFunctions) {
                 individual.addFitness(fitnessFunction);
             }
 
@@ -281,7 +281,7 @@ public class NSGAII<T extends Chromosome> extends org.evosuite.ga.metaheuristics
             if(containsSinglecObjectiveZeroSC){
                 GAUtil.reportBestFF(stoppingConditions);
             }else{
-                GAUtil.reportNonDominatedFF((List<Chromosome>) this.rankingFunction.getSubfront(0),this.currentIteration+2);
+                GAUtil.reportNonDominatedFF((List<Chromosome<T>>) this.rankingFunction.getSubfront(0),this.currentIteration+2);
             }
 
             evolve();

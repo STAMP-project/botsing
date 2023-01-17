@@ -1,10 +1,9 @@
 package eu.stamp.botsing.commons.fitnessfunction;
 
-import org.evosuite.testcase.ExecutableChromosome;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
-import org.evosuite.testsuite.AbstractTestSuiteChromosome;
+import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,7 @@ public class CrashCoverageSuiteFitness extends TestSuiteFitnessFunction {
         this.fitnessCollector = fitnessCollector;
     }
     @Override
-    public double getFitness(AbstractTestSuiteChromosome<? extends ExecutableChromosome> abstractTestSuiteChromosome) {
+    public double getFitness(TestSuiteChromosome abstractTestSuiteChromosome) {
         List<ExecutionResult> results = runTestSuite(abstractTestSuiteChromosome);
         double goalcoverage;
 
@@ -33,13 +32,13 @@ public class CrashCoverageSuiteFitness extends TestSuiteFitnessFunction {
             abstractTestSuiteChromosome.setCoverage(this, goalcoverage);
         }
 
-        updateIndividual(this, abstractTestSuiteChromosome, totalFitnessValue);
+        updateIndividual(abstractTestSuiteChromosome, totalFitnessValue);
 
         return totalFitnessValue;
     }
 
 
-    private int calculateFitness (AbstractTestSuiteChromosome<? extends ExecutableChromosome>  suite){
+    private int calculateFitness (TestSuiteChromosome  suite){
         int coveredGoals = 0;
         double fitnessValue = 0.0;
         List<TestFitnessFunction> fitnessFunctions = this.fitnessCollector.getFitnessFunctionList();
@@ -65,7 +64,8 @@ public class CrashCoverageSuiteFitness extends TestSuiteFitnessFunction {
     }
 
     @Override
-    public List<ExecutionResult> runTestSuite(AbstractTestSuiteChromosome<? extends ExecutableChromosome> suite){
+    public List<ExecutionResult> runTestSuite(TestSuiteChromosome suite){
         return super.runTestSuite(suite);
     }
+
 }

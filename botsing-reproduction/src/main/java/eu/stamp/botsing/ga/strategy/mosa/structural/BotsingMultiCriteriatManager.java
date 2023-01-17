@@ -2,9 +2,8 @@ package eu.stamp.botsing.ga.strategy.mosa.structural;
 
 import eu.stamp.botsing.coverage.branch.IntegrationTestingBranchCoverageFactory;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
-import org.evosuite.ga.Chromosome;
-import org.evosuite.ga.FitnessFunction;
-import org.evosuite.ga.metaheuristics.mosa.structural.MultiCriteriatManager;
+import org.evosuite.ga.metaheuristics.mosa.structural.MultiCriteriaManager;
+import org.evosuite.testcase.TestFitnessFunction;
 
 
 import java.util.LinkedHashMap;
@@ -12,9 +11,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-public class BotsingMultiCriteriatManager<T extends Chromosome> extends MultiCriteriatManager<T> {
+public class BotsingMultiCriteriatManager extends MultiCriteriaManager {
 
-    public BotsingMultiCriteriatManager(List<FitnessFunction<T>> fitnessFunctions) {
+    public BotsingMultiCriteriatManager(List<TestFitnessFunction> fitnessFunctions) {
         super(fitnessFunctions);
     }
 
@@ -24,20 +23,20 @@ public class BotsingMultiCriteriatManager<T extends Chromosome> extends MultiCri
     }
 
     @Override
-    public BranchFitnessGraph getControlDepencies4Branches(List<FitnessFunction<T>> fitnessFunctions){
-        Set<FitnessFunction<T>> setOfBranches = new LinkedHashSet<FitnessFunction<T>>();
+    public BranchFitnessGraph getControlDependencies4Branches(List<TestFitnessFunction> fitnessFunctions){
+        Set<TestFitnessFunction> setOfBranches = new LinkedHashSet<>();
         this.dependencies = new LinkedHashMap();
 
         List<BranchCoverageTestFitness> branches = new IntegrationTestingBranchCoverageFactory().getCoverageGoals(0);
         for (BranchCoverageTestFitness branch : branches){
-            setOfBranches.add((FitnessFunction<T>) branch);
-            this.dependencies.put(branch, new LinkedHashSet<FitnessFunction<T>>());
+            setOfBranches.add((TestFitnessFunction) branch);
+            this.dependencies.put(branch, new LinkedHashSet<TestFitnessFunction>());
         }
 
         // initialize the maps
         this.initializeMaps(setOfBranches);
 
-        return new BranchFitnessGraph<T, FitnessFunction<T>>(setOfBranches);
+        return new BranchFitnessGraph(setOfBranches);
     }
 
 

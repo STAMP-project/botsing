@@ -6,7 +6,7 @@ import org.evosuite.testcase.execution.ExecutionTraceImpl;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

@@ -39,7 +39,7 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
         ExecutionTracer.enableTraceCalls();
 
         // Get the search algorithm
-        GeneticAlgorithm<TestSuiteChromosome> ga = utility.getGA();
+        GeneticAlgorithm ga = utility.getGA();
         if(!ga.getStoppingConditions().isEmpty()){
             Iterator it = ga.getStoppingConditions().iterator();
             while (it.hasNext()){

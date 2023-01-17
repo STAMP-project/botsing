@@ -45,8 +45,13 @@
             <artifactId>gson</artifactId>
             <version>${gson.version}</version>
         </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>jsr250-api</artifactId>
+            <version>1.0</version>
+        </dependency>
 
-<!--        <dependency>-->
+        <!--        <dependency>-->
 <!--            <groupId>org.uma.jmetal</groupId>-->
 <!--            <artifactId>jmetal-algorithm</artifactId>-->
 <!--            <version>${jmetal.version}</version>-->

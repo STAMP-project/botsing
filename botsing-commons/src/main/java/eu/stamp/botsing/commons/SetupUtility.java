@@ -76,7 +76,7 @@ public class SetupUtility {
 
 
         // locate Tool jar
-        if (TestSuiteWriterUtils.needToUseAgent() && Properties.JUNIT_CHECK) {
+        if (TestSuiteWriterUtils.needToUseAgent() && Properties.JUNIT_CHECK ==  Properties.JUnitCheckValues.TRUE) {
             ClassPathHacker.initializeToolJar();
         }
 

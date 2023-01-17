@@ -1,6 +1,7 @@
 package eu.stamp.botsing.fitnessfunction.utils;
 
 import eu.stamp.botsing.ga.stoppingconditions.MaxTimeStoppingCondition;
+import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.metaheuristics.SearchListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ public class CrashDistanceEvolution {
     }
 
 
-    public void setStartTime(Set<SearchListener> listeners) {
+    public <T extends Chromosome<T>> void setStartTime(Set<SearchListener<T>> listeners) {
         for (SearchListener listener : listeners){
             if (listener instanceof MaxTimeStoppingCondition){
                 startTime =((MaxTimeStoppingCondition) listener).getStartingTime();

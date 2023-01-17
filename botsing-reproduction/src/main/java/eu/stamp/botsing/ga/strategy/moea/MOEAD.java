@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 
-public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
+public class MOEAD <T extends Chromosome<T>> extends AbstractMOEAD<T> {
     private static final Logger LOG = LoggerFactory.getLogger(MOEAD.class);
 
     public MOEAD(ChromosomeFactory<T> factory, CrossOverFunction crossOverOperator, Mutation mutationOperator) {
@@ -108,7 +108,7 @@ public class MOEAD <T extends Chromosome> extends AbstractMOEAD<T> {
         for (int i = 0; i < populationSize; i++) {
             T individual;
             individual = chromosomeFactory.getChromosome();
-            for (FitnessFunction<?> fitnessFunction : this.fitnessFunctions) {
+            for (FitnessFunction<T> fitnessFunction : this.fitnessFunctions) {
                 individual.addFitness(fitnessFunction);
             }
 

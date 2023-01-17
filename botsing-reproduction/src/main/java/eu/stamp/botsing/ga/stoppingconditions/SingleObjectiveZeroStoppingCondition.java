@@ -6,11 +6,10 @@ import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.StoppingConditionImpl;
 import org.evosuite.testcase.TestFitnessFunction;
+import org.evosuite.testsuite.TestSuiteChromosome;
 
-import java.util.List;
 
-
-public class SingleObjectiveZeroStoppingCondition extends StoppingConditionImpl {
+public class SingleObjectiveZeroStoppingCondition<T extends Chromosome<T>> extends StoppingConditionImpl<T> {
 
 
     private TestFitnessFunction mainFF;
@@ -27,9 +26,9 @@ public class SingleObjectiveZeroStoppingCondition extends StoppingConditionImpl 
     }
 
     @Override
-    public void iteration(GeneticAlgorithm<?> algorithm) {
+    public void iteration(GeneticAlgorithm<T> algorithm) {
         if (algorithm instanceof MOSA){
-            for (Chromosome individual: (List<Chromosome>)((MOSA)algorithm).getOffspringPopulation()){
+            for (Chromosome individual: ((MOSA)algorithm).getOffspringPopulation()){
                 lastFitness = Math.min(lastFitness, individual.getFitness(mainFF));
             }
         }
@@ -71,5 +70,17 @@ public class SingleObjectiveZeroStoppingCondition extends StoppingConditionImpl 
 
     public String getNameOfObjective(){
         return this.mainFF.getClass().getSimpleName();
+    }
+
+
+    public void setLastFitness(double lastFitness) {
+        this.lastFitness = lastFitness;
+    }
+
+    @Override
+    public SingleObjectiveZeroStoppingCondition clone() {
+        SingleObjectiveZeroStoppingCondition clone = new SingleObjectiveZeroStoppingCondition(mainFF);;
+        clone.setLastFitness(lastFitness);
+        return clone;
     }
 }

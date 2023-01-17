@@ -15,7 +15,7 @@ import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.objectweb.asm.Type;
+import org.evosuite.shaded.org.objectweb.asm.Type;
 import java.util.*;
 
 import static eu.stamp.cling.graphs.cfg.CFGGeneratorUtility.isPrivateMethod;

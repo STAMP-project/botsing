@@ -4,7 +4,7 @@ import eu.stamp.cling.IntegrationTestingProperties;
 import eu.stamp.cling.graphs.cfg.CalleeClass;
 import eu.stamp.cling.graphs.cfg.CallerClass;
 import org.evosuite.graphs.cfg.*;
-import org.objectweb.asm.Type;
+import org.evosuite.shaded.org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

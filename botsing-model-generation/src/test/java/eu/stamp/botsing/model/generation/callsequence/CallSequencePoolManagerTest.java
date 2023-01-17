@@ -2,7 +2,7 @@ package eu.stamp.botsing.model.generation.callsequence;
 
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -7,7 +7,7 @@ import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.evosuite.shaded.org.mockito.Mockito;
 
 public class IntegrationTestingBranchCoverageGoalTest {
 

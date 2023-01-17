@@ -16,7 +16,7 @@ public class GAUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(GAUtil.class);
 
-    public static boolean getSinglecObjectiveZeroSC(Set<StoppingCondition> stoppingConditions){
+    public static <T extends Chromosome<T>> boolean getSinglecObjectiveZeroSC(Set<StoppingCondition<T>> stoppingConditions){
         for (StoppingCondition condition: stoppingConditions){
             if (condition instanceof SingleObjectiveZeroStoppingCondition){
                 return true;
@@ -27,7 +27,7 @@ public class GAUtil {
     }
 
 
-    public static void reportBestFF(Set<StoppingCondition> stoppingConditions) {
+    public static <T extends Chromosome<T>> void reportBestFF(Set<StoppingCondition<T>> stoppingConditions) {
         for (StoppingCondition condition: stoppingConditions){
             if (condition instanceof SingleObjectiveZeroStoppingCondition){
                 SingleObjectiveZeroStoppingCondition selectedCondition = (SingleObjectiveZeroStoppingCondition) condition;
@@ -37,9 +37,9 @@ public class GAUtil {
         }
     }
 
-    public static void reportNonDominatedFF(List<Chromosome> paretoFront,int numberOfIterations) {
+    public static <T extends Chromosome<T>> void reportNonDominatedFF(List<Chromosome<T>> paretoFront,int numberOfIterations) {
         int counter = 1;
-        for (Chromosome individual: paretoFront){
+        for (Chromosome<T> individual: paretoFront){
             LOG.info("Individual #{}:",counter);
             for (FitnessFunction<?> fitnessFunction: individual.getFitnessValues().keySet()){
                 double fitnessValue = individual.getFitnessValues().get(fitnessFunction);
@@ -50,7 +50,7 @@ public class GAUtil {
     }
 
 
-    public static void informWSEvolution(Chromosome individual){
+    public static <T extends Chromosome<T>> void informWSEvolution(Chromosome<T> individual){
         double LineCoverageFitness = 1;
         double exceptionCoverage = 1;
         double frameSimilarity = 1;

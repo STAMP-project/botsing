@@ -6,6 +6,7 @@ import eu.stamp.botsing.coverage.io.output.OutputCoverageFactory;
 import eu.stamp.botsing.reproduction.CrashReproductionGoalFactory;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
+import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +40,8 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
     }
 
     @Override
-    public <T extends Chromosome> boolean isCriticalGoalsAreCovered(Set<FitnessFunction<T>> uncoveredGoals) {
-        for (FitnessFunction<T> goal: uncoveredGoals){
+    public <T extends Chromosome> boolean isCriticalGoalsAreCovered(Set<TestFitnessFunction> uncoveredGoals) {
+        for (TestFitnessFunction goal: uncoveredGoals){
             if(goal instanceof IntegrationTestingFF || goal instanceof WeightedSum){
                 return false;
             }
@@ -49,8 +50,8 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
     }
 
     @Override
-    public void printCriticalTargets(Map<FitnessFunction<?>, Double> front0) {
-        for(FitnessFunction<?> g: front0.keySet()){
+    public void printCriticalTargets(Map<FitnessFunction<TestChromosome>, Double> front0) {
+        for(FitnessFunction<TestChromosome> g: front0.keySet()){
             if(g instanceof IntegrationTestingFF ){
                 LOG.info(""+g+": "+front0.get(g));
             }

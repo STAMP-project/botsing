@@ -11,13 +11,13 @@ import org.evosuite.coverage.branch.Branch;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cdg.ControlDependenceGraph;
 import org.evosuite.graphs.cfg.*;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnNode;
+import org.evosuite.shaded.org.objectweb.asm.tree.AbstractInsnNode;
+import org.evosuite.shaded.org.objectweb.asm.tree.InsnNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import org.objectweb.asm.Type;
+import org.evosuite.shaded.org.objectweb.asm.Type;
 
 public class CFGGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(CFGGenerator.class);
