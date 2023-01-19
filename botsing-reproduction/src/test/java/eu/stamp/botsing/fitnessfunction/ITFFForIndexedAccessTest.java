@@ -15,9 +15,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.evosuite.shaded.org.mockito.ArgumentMatchers.anyString;
+import static org.evosuite.shaded.org.mockito.Mockito.doReturn;
 
 @RunWith(Parameterized.class)
 public class ITFFForIndexedAccessTest extends IntegrationTestingFFTest {
@@ -46,7 +45,7 @@ public class ITFFForIndexedAccessTest extends IntegrationTestingFFTest {
 
     @Override
     public void testExceptionCoverage_executionResultWithoutTargetCrash() throws FileNotFoundException {
-        ExecutionResult executionResult = mock(ExecutionResult.class);
+        ExecutionResult executionResult = Mockito.mock(ExecutionResult.class);
         HashSet<Integer> exceptionLocators = new HashSet<>();
         exceptionLocators.add(1);
         doReturn(exceptionLocators).when(executionResult).getPositionsWhereExceptionsWereThrown();

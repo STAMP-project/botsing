@@ -3,13 +3,13 @@ package eu.stamp.botsing.commons.testgeneration.strategy;
 import eu.stamp.botsing.commons.fitnessfunction.FitnessFunctions;
 import eu.stamp.botsing.commons.ga.strategy.mosa.MOSA;
 import eu.stamp.botsing.commons.ga.strategy.operators.Mutation;
+import eu.stamp.botsing.commons.testutil.ChromosomeUtil;
 import org.evosuite.Properties;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
 import org.evosuite.ga.stoppingconditions.MaxTimeStoppingCondition;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.evosuite.ga.stoppingconditions.ZeroFitnessStoppingCondition;
-import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testsuite.TestSuiteChromosome;
@@ -29,23 +29,9 @@ public class MOSuiteStrategyTest {
 
         // Mock chromosome factory
         ChromosomeFactory factory = Mockito.mock(ChromosomeFactory.class);
-        TestChromosome ch1 = Mockito.mock(TestChromosome.class,  Mockito.RETURNS_DEEP_STUBS);
-        TestChromosome ch2 = Mockito.mock(TestChromosome.class);
+        TestChromosome ch1 =  ChromosomeUtil.createTestChromosome(new ArrayList<Integer>(){{add(10);}});
+        TestChromosome ch2 =  ChromosomeUtil.createTestChromosome(new ArrayList<Integer>(){{add(9);}});
 
-
-        TestCase testCase = Mockito.mock(TestCase.class);
-        Mockito.doNothing().when(testCase).addCoveredGoal(Mockito.any());
-        Iterator testIt = Mockito.mock(Iterator.class);
-        Mockito.when(testIt.hasNext()).thenReturn(false);
-        Mockito.when(testCase.iterator()).thenReturn(testIt);
-        Mockito.when(ch1.getTestCase()).thenReturn(testCase);
-        Mockito.when(ch1.size()).thenReturn(10);
-        Mockito.when(ch1.clone()).thenReturn(ch1);
-
-        Mockito.doNothing().when(testCase).addCoveredGoal(Mockito.any());
-        Mockito.when(ch2.getTestCase()).thenReturn(testCase);
-        Mockito.when(ch2.size()).thenReturn(9);
-        Mockito.when(ch2.clone()).thenReturn(ch2);
 
         Mockito.when(factory.getChromosome()).thenReturn(ch1).thenReturn(ch2);
 

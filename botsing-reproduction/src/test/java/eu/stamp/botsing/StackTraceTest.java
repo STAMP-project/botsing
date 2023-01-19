@@ -5,9 +5,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.junit.runner.RunWith;
 import org.evosuite.shaded.org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,9 +15,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyString;
 
-@RunWith(MockitoJUnitRunner.class)
+
 public class StackTraceTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(StackTraceTest.class);
@@ -41,7 +38,7 @@ public class StackTraceTest {
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
 
         StackTrace trace = Mockito.spy(new StackTrace());
-        Mockito.doReturn(obj).when(trace).readFromFile(anyString());
+        Mockito.doReturn(obj).when(trace).readFromFile("");
         trace.setup("", 2);
 
         assertEquals("java.lang.IllegalArgumentException", trace.getExceptionType());
@@ -58,7 +55,7 @@ public class StackTraceTest {
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
 
         StackTrace trace = Mockito.spy(new StackTrace());
-        Mockito.doReturn(obj).when(trace).readFromFile(anyString());
+        Mockito.doReturn(obj).when(trace).readFromFile("");
         trace.setup("", 2);
 
         StackTraceElement frame = trace.getFrame(1);
@@ -74,7 +71,7 @@ public class StackTraceTest {
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
 
         StackTrace trace = Mockito.spy(new StackTrace());
-        Mockito.doReturn(obj).when(trace).readFromFile(anyString());
+        Mockito.doReturn(obj).when(trace).readFromFile("");
         trace.setup("", 2);
 
         ArrayList<StackTraceElement> list = trace.getFrames();
@@ -95,7 +92,7 @@ public class StackTraceTest {
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
 
         StackTrace trace = Mockito.spy(new StackTrace());
-        Mockito.doReturn(obj).when(trace).readFromFile(anyString());
+        Mockito.doReturn(obj).when(trace).readFromFile("");
         trace.setup("", 4);
 
         trace.setup("mockedFile",4);

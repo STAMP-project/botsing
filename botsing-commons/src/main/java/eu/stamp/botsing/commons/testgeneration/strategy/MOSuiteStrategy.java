@@ -10,6 +10,7 @@ import org.evosuite.ga.stoppingconditions.MaxTimeStoppingCondition;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.evosuite.ga.stoppingconditions.ZeroFitnessStoppingCondition;
 import org.evosuite.strategy.TestGenerationStrategy;
+import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testsuite.RelativeSuiteLengthBloatControl;
@@ -34,7 +35,7 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
     @Override
     public TestSuiteChromosome generateTests() {
         LOG.info("test generation strategy: MOSuite");
-        TestSuiteChromosome suite;
+        TestSuiteChromosome suite = new TestSuiteChromosome();
 
         ExecutionTracer.enableTraceCalls();
 
@@ -87,17 +88,17 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
         List<TestFitnessFunction> fitnessFunctions = fitnessFunctionCollector.getFitnessFunctionList();
         LOG.info("The number of goals are {}: ",fitnessFunctions.size());
 
-        ga.addFitnessFunctions((List)fitnessFunctions);
+        ga.addFitnessFunctions(fitnessFunctions);
 
         // Start the search process
         ga.generateSolution();
 
-        List<TestSuiteChromosome> bestSuites = (List<TestSuiteChromosome>) ga.getBestIndividuals();
-        if (bestSuites.isEmpty()) {
+        List<TestChromosome> bestChromosomes =  ga.getBestIndividuals();
+        if (bestChromosomes.isEmpty()) {
             LOG.warn("Could not find any suitable chromosome");
-            return new TestSuiteChromosome();
         }else{
-            suite = bestSuites.get(0);
+            suite.addTest(bestChromosomes.get(0));
+
         }
 
         return suite;

@@ -11,8 +11,8 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.evosuite.shaded.org.mockito.InjectMocks;
+import org.evosuite.shaded.org.mockito.Mock;
 import org.evosuite.shaded.org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ import java.io.StringReader;
 
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.evosuite.shaded.org.mockito.ArgumentMatchers.anyString;
 
 
 public class CrashReproductionGoalFactoryTest {

@@ -66,6 +66,8 @@
                 <!--<version>${surefire-plugin.version}</version>-->
                 <configuration>
                     <runOrder>alphabetical</runOrder>
+<!--                    <forkCount>0</forkCount>-->
+<!--                    <debugForkedProcess>true</debugForkedProcess>-->
                 </configuration>
             </plugin>
             <plugin>

@@ -3,10 +3,9 @@ package eu.stamp.botsing.coverage.io.input;
 import eu.stamp.botsing.coverage.io.IOCoverageUtility;
 import org.evosuite.coverage.io.input.InputCoverageTestFitness;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.evosuite.shaded.org.mockito.Mockito;
 import org.evosuite.shaded.org.objectweb.asm.Type;
 
 import java.lang.reflect.Constructor;
@@ -16,13 +15,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@RunWith(MockitoJUnitRunner.class)
 public class InputCoverageFactoryTest {
-    @Spy
     private IOCoverageUtility utility;
 
-    @InjectMocks
-    InputCoverageFactory inputCoverageFactory = new InputCoverageFactory();
+    InputCoverageFactory inputCoverageFactory;
+    @Before
+    public void prepareOutPutCoverageFactory(){
+        utility = Mockito.spy(new IOCoverageUtility());
+        inputCoverageFactory =  new InputCoverageFactory(utility);
+    }
 
 
     @Test

@@ -6,7 +6,6 @@ import eu.stamp.botsing.commons.coverage.branch.IntegrationTestingBranchCoverage
 import org.evosuite.coverage.branch.Branch;
 
 import org.evosuite.ga.Chromosome;
-import org.evosuite.ga.FitnessFunction;
 import org.evosuite.graphs.GraphPool;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BasicBlock;

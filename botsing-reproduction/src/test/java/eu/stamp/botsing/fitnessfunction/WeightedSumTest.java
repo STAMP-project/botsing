@@ -12,9 +12,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.junit.runner.RunWith;
 import org.evosuite.shaded.org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +25,9 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.evosuite.shaded.org.mockito.ArgumentMatchers.anyInt;
 
-@RunWith(MockitoJUnitRunner.class)
+
 public class WeightedSumTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(WeightedSumTest.class);
@@ -58,13 +55,14 @@ public class WeightedSumTest {
 
     @Before
     public void loadCrashes() throws FileNotFoundException {
+        Mockito.clearAllCaches();
         CrashProperties.getInstance().clearStackTraceList();
         //Prepare the given stack trace
         BufferedReader givenStackTrace = new BufferedReader(new StringReader("java.lang.IllegalArgumentException:\n" +
                 "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
         target= Mockito.spy(new StackTrace());
-        Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
+        Mockito.doReturn(givenStackTrace).when(target).readFromFile("");
         target.setup("", 2);
         fitnessCalculator = Mockito.spy(new CrashCoverageFitnessCalculator(target));
 
@@ -170,7 +168,7 @@ public class WeightedSumTest {
                 "\tat eu.stamp.ClassA.method2(ClassA.java:10)\n" +
                 "\tat eu.stamp.ClassB.method1(ClassB.java:20)"));
         StackTrace target = Mockito.spy(new StackTrace());
-        Mockito.doReturn(givenStackTrace).when(target).readFromFile(anyString());
+        Mockito.doReturn(givenStackTrace).when(target).readFromFile("");
         target.setup("", 2);
         WeightedSum ws = new WeightedSum(target);
         assertTrue(weightedSum.equals(ws));

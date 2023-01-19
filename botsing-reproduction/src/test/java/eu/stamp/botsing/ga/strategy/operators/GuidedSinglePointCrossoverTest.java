@@ -57,8 +57,8 @@ public class GuidedSinglePointCrossoverTest {
         TestChromosome tch2 = new TestChromosome();
         tch2.setTestCase(tc2);
 
-        TestChromosome parent1 = (TestChromosome) tch1.clone();
-        TestChromosome parent2 = (TestChromosome) tch2.clone();
+        TestChromosome parent1 = tch1.clone();
+        TestChromosome parent2 = tch2.clone();
 
         GuidedSinglePointCrossover crossover = Mockito.spy(new GuidedSinglePointCrossover());
         Mockito.doReturn(true).when(crossover).isValid(tch1);

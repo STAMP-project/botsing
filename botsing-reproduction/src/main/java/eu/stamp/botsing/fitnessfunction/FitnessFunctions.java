@@ -1,6 +1,7 @@
 package eu.stamp.botsing.fitnessfunction;
 
 import eu.stamp.botsing.CrashProperties;
+import eu.stamp.botsing.coverage.io.IOCoverageUtility;
 import eu.stamp.botsing.coverage.io.input.InputCoverageFactory;
 import eu.stamp.botsing.coverage.io.output.OutputCoverageFactory;
 import eu.stamp.botsing.reproduction.CrashReproductionGoalFactory;
@@ -27,12 +28,13 @@ public class FitnessFunctions extends eu.stamp.botsing.commons.fitnessfunction.F
         goalsList.addAll(goalFactory.getCoverageGoals());
 
         if(CrashProperties.IODiversity){
+            IOCoverageUtility coverageUtility = new IOCoverageUtility();
             // input coverage goals
-            InputCoverageFactory inputFactory = new InputCoverageFactory();
+            InputCoverageFactory inputFactory = new InputCoverageFactory(coverageUtility);
             goalsList.addAll(inputFactory.getCoverageGoals());
 
             // output coverage goals
-            OutputCoverageFactory outputFactory = new OutputCoverageFactory();
+            OutputCoverageFactory outputFactory = new OutputCoverageFactory(coverageUtility);
             goalsList.addAll(outputFactory.getCoverageGoals());
         }
 

@@ -1,5 +1,6 @@
 package eu.stamp.botsing.commons.fitnessfunction;
 
+import eu.stamp.botsing.commons.testutil.ChromosomeUtil;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testsuite.TestSuiteChromosome;
@@ -19,7 +20,7 @@ public class CrashCoverageSuiteFitnessTest {
         CrashCoverageSuiteFitness crashCoverageSuiteFitness = new CrashCoverageSuiteFitness(ff);
         CrashCoverageSuiteFitness spiedCrashCoverageSuiteFitness = Mockito.spy(crashCoverageSuiteFitness);
         // Mock abstractTestSuiteChromosome
-        TestSuiteChromosome abstractTestSuiteChromosome = Mockito.mock(TestSuiteChromosome.class);
+        TestSuiteChromosome abstractTestSuiteChromosome = ChromosomeUtil.createTestSuiteChromosome(0);
 
         Mockito.doReturn(null).when(spiedCrashCoverageSuiteFitness).runTestSuite(abstractTestSuiteChromosome);
         // Get fitness
@@ -55,14 +56,13 @@ public class CrashCoverageSuiteFitnessTest {
         List<ExecutionResult> results = new ArrayList<>();
         ExecutionResult result = Mockito.mock(ExecutionResult.class, Mockito.RETURNS_DEEP_STUBS);
         results.add(result);
-        // Mock abstractTestSuiteChromosome
-        TestSuiteChromosome abstractTestSuiteChromosome = Mockito.mock(TestSuiteChromosome.class);
-        Mockito.doReturn(1).when(abstractTestSuiteChromosome).size();
+        // Create a test suite chromosome with 1 test case in it.
+        TestSuiteChromosome testSuiteChromosome = ChromosomeUtil.createTestSuiteChromosome(1);
 
-        Mockito.doReturn(results).when(spiedCrashCoverageSuiteFitness).runTestSuite(abstractTestSuiteChromosome);
+        Mockito.doReturn(results).when(spiedCrashCoverageSuiteFitness).runTestSuite(testSuiteChromosome);
 
         // Get fitness
-        double fitness = spiedCrashCoverageSuiteFitness.getFitness(abstractTestSuiteChromosome);
+        double fitness = spiedCrashCoverageSuiteFitness.getFitness(testSuiteChromosome);
         Assert.assertEquals(0.0, fitness, 0);
 
 

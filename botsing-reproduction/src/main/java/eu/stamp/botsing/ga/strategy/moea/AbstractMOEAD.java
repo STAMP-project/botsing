@@ -13,7 +13,6 @@ import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.operators.crossover.CrossOverFunction;
-import org.evosuite.testcase.TestChromosome;
 import org.evosuite.utils.Randomness;
 
 

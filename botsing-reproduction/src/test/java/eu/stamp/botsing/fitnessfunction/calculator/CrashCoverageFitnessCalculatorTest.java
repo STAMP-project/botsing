@@ -26,12 +26,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.evosuite.shaded.org.mockito.ArgumentMatchers.any;
+import static org.evosuite.shaded.org.mockito.ArgumentMatchers.anyString;
 
 public class CrashCoverageFitnessCalculatorTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(CrashCoverageFitnessCalculatorTest.class);
+
 
     @Rule
     public TestRule watcher = new TestWatcher() {
@@ -236,7 +237,7 @@ public class CrashCoverageFitnessCalculatorTest {
         distance.setApproachLevel(0);
         distance.setBranchDistance(1);
         BranchCoverageGoal goal = Mockito.mock(BranchCoverageGoal.class);
-        Mockito.doReturn(distance).when(goal).getDistance(any(ExecutionResult.class));
+        Mockito.doReturn(distance).when(goal).getDistance(any());
         BranchCoverageTestFitness fitness = new BranchCoverageTestFitness(goal);
 
         double fitnessValue = calculator.computeBranchDistance(fitness, result);

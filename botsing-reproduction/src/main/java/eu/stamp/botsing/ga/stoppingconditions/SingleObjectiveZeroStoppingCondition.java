@@ -6,7 +6,6 @@ import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.StoppingConditionImpl;
 import org.evosuite.testcase.TestFitnessFunction;
-import org.evosuite.testsuite.TestSuiteChromosome;
 
 
 public class SingleObjectiveZeroStoppingCondition<T extends Chromosome<T>> extends StoppingConditionImpl<T> {

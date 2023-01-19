@@ -2,24 +2,27 @@ package eu.stamp.botsing.coverage.io.output;
 
 import eu.stamp.botsing.coverage.io.IOCoverageUtility;
 import org.evosuite.coverage.io.output.OutputCoverageTestFitness;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.evosuite.shaded.org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-@RunWith(MockitoJUnitRunner.class)
+//@RunWith(MockitoJUnitRunner.class)
 public class OutputCoverageFactoryTest {
-    @Spy
+//    @Spy
     private IOCoverageUtility utility;
 
-    @InjectMocks
-    OutputCoverageFactory outputCoverageFactory = new OutputCoverageFactory();
+    OutputCoverageFactory outputCoverageFactory;
+    @Before
+    public void prepareOutPutCoverageFactory(){
+        utility = Mockito.spy(new IOCoverageUtility());
+        outputCoverageFactory =  new OutputCoverageFactory(utility);
+    }
+
     @Test
     public void testWithRegularClass() throws NoSuchMethodException {
 
